@@ -3,7 +3,7 @@
 A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](https://strapi.io) as the database backend. This package allows you to integrate Better Auth's authentication system with your Strapi application seamlessly.
 
 
-> [!DANGER]  
+> [!CAUTION]  
 > This plugin is in ALPHA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
 
 ## Features
