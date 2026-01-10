@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "oauth-application",
     pluralName: "oauth-applications",
-    displayName: "OAuth Application",
+    displayName: "OAuth Applications",
     description: "Better Auth OAuth applications",
   },
   options: {

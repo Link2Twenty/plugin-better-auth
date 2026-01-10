@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "oauth-consent",
     pluralName: "oauth-consents",
-    displayName: "OAuth Consent",
+    displayName: "OAuth Consents",
     description: "Better Auth OAuth user consents",
   },
   options: {

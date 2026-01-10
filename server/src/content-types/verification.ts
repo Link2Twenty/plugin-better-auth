@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "verification",
     pluralName: "verifications",
-    displayName: "Verification",
+    displayName: "Verifications",
     description: "Better Auth verification",
   },
   options: {

@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "rate-limit",
     pluralName: "rate-limits",
-    displayName: "Rate Limit",
+    displayName: "Rate Limits",
     description: "Better Auth rate limiting",
   },
   options: {

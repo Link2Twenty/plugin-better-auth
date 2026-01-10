@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "oauth-access-token",
     pluralName: "oauth-access-tokens",
-    displayName: "OAuth Access Token",
+    displayName: "OAuth Access Tokens",
     description: "Better Auth OAuth access tokens",
   },
   options: {

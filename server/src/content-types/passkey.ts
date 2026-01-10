@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "passkey",
     pluralName: "passkeys",
-    displayName: "Passkey",
+    displayName: "Passkeys",
     description: "Better Auth passkey authentication",
   },
   options: {

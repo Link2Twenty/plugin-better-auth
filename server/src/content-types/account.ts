@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "account",
     pluralName: "accounts",
-    displayName: "Account",
+    displayName: "Accounts",
     description: "Better Auth account",
   },
   options: {

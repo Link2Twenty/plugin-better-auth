@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "session",
     pluralName: "sessions",
-    displayName: "Session",
+    displayName: "Sessions",
     description: "Better Auth session",
   },
   options: {

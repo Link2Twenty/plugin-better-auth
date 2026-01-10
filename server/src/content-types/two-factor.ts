@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "two-factor",
     pluralName: "two-factors",
-    displayName: "Two Factor",
+    displayName: "Two Factors",
     description: "Better Auth two factor authentication",
   },
   options: {

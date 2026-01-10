@@ -4,7 +4,7 @@ export default {
   info: {
     singularName: "jwk",
     pluralName: "jwks",
-    displayName: "JWK",
+    displayName: "JWKs",
     description: "Better Auth JSON Web Keys",
   },
   options: {
