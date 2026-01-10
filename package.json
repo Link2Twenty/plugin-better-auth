@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "keywords": [
     "better-auth",
     "strapi",
@@ -58,5 +58,24 @@
   "name": "@strapi-community/plugin-better-auth",
   "description": "Better Auth database adapter for Strapi",
   "license": "MIT",
-  "author": "Boaz Poolman <boaz@pluginpal.io>"
+  "author": {
+    "name": "Boaz Poolman",
+    "email": "boaz@pluginpal.io",
+    "url": "https://github.com/boazpoolman"
+  },
+  "maintainers": [
+    {
+      "name": "Boaz Poolman",
+      "email": "boaz@pluginpal.io",
+      "url": "https://github.com/boazpoolman"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/strapi-community/plugin-better-auth/issues"
+  },
+  "homepage": "https://github.com/strapi-community/plugin-better-auth",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/strapi-community/plugin-better-auth.git"
+  }
 }
