@@ -10,11 +10,17 @@
   "exports": {
     "./package.json": "./package.json",
     "./strapi-server": {
-      "types": "./dist/server/src/index.d.ts",
       "source": "./server/src/index.ts",
+      "types": "./dist/server/index.d.ts",
       "import": "./dist/server/index.mjs",
       "require": "./dist/server/index.js",
       "default": "./dist/server/index.js"
+    },
+    "./adapter": {
+      "source": "./server/src/adapter/index.ts",
+      "types": "./dist/adapter/index.d.ts",
+      "require": "./dist/adapter/index.js",
+      "default": "./dist/adapter/index.js"
     }
   },
   "files": [
@@ -35,7 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
-    "@strapi/sdk-plugin": "^5.4.0",
+    "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/strapi": "^5.33.2",
     "@strapi/typescript-utils": "^5.33.2",
     "@types/koa": "^3.0.1",
@@ -45,7 +51,6 @@
   "peerDependencies": {
     "@strapi/design-system": "^2.0.0",
     "@strapi/icons": "^2.0.0",
-    "@strapi/sdk-plugin": "^5.0.0",
     "@strapi/strapi": "^5.0.0",
     "@strapi/utils": "^5.0.0"
   },
