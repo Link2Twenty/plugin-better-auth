@@ -1,62 +1,60 @@
 export default {
-  kind: "collectionType",
-  collectionName: "better_auth_users",
-  info: {
-    singularName: "user",
-    pluralName: "users",
-    displayName: "Users",
-    description: "Better Auth user",
+  "kind": "collectionType",
+  "collectionName": "better_auth_users",
+  "info": {
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "Users",
+    "description": "Better Auth user"
   },
-  options: {
-    draftAndPublish: false,
+  "options": {
+    "draftAndPublish": false
   },
-  pluginOptions: {
+  "pluginOptions": {
     "content-manager": {
-      visible: true,
+      "visible": true
     },
     "content-type-builder": {
-      visible: true,
-    },
+      "visible": true
+    }
   },
-  attributes: {
-    name: {
-      type: "string",
+  "attributes": {
+    "name": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
     },
-    email: {
-      type: "email",
-      required: true,
-      unique: true,
+    "email": {
+      "type": "email",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "unique": true
     },
-    emailVerified: {
-      type: "boolean",
-      default: false,
+    "emailVerified": {
+      "type": "boolean",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "default": false
     },
-    image: {
-      type: "string",
+    "image": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    // Two Factor plugin fields
-    twoFactorEnabled: {
-      type: "boolean",
-    },
-    // Anonymous plugin fields
-    isAnonymous: {
-      type: "boolean",
-    },
-    // Username plugin fields
-    username: {
-      type: "string",
-      unique: true,
-    },
-    displayUsername: {
-      type: "string",
-    },
-    // Phone Number plugin fields
-    phoneNumber: {
-      type: "string",
-      unique: true,
-    },
-    phoneNumberVerified: {
-      type: "boolean",
-    },
-  },
+  }
 };

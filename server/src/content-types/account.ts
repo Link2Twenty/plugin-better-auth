@@ -1,62 +1,106 @@
 export default {
-  kind: "collectionType",
-  collectionName: "better_auth_accounts",
-  info: {
-    singularName: "account",
-    pluralName: "accounts",
-    displayName: "Accounts",
-    description: "Better Auth account",
+  "kind": "collectionType",
+  "collectionName": "better_auth_accounts",
+  "info": {
+    "singularName": "account",
+    "pluralName": "accounts",
+    "displayName": "Accounts",
+    "description": "Better Auth account"
   },
-  options: {
-    draftAndPublish: false,
+  "options": {
+    "draftAndPublish": false
   },
-  pluginOptions: {
+  "pluginOptions": {
     "content-manager": {
-      visible: false,
+      "visible": false
     },
     "content-type-builder": {
-      visible: false,
-    },
+      "visible": false
+    }
   },
-  attributes: {
-    userId: {
-      type: "integer",
-      required: true,
+  "attributes": {
+    "accountId": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
     },
-    accountId: {
-      type: "integer",
-      required: true,
+    "providerId": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
     },
-    providerId: {
-      type: "string",
-      required: true,
+    "userId": {
+      "type": "integer",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
     },
-    accessToken: {
-      type: "text",
+    "accessToken": {
+      "type": "text",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    refreshToken: {
-      type: "text",
+    "refreshToken": {
+      "type": "text",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    accessTokenExpiresAt: {
-      type: "datetime",
+    "idToken": {
+      "type": "text",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    refreshTokenExpiresAt: {
-      type: "datetime",
+    "accessTokenExpiresAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    scope: {
-      type: "string",
+    "refreshTokenExpiresAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    idToken: {
-      type: "text",
+    "scope": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    password: {
-      type: "string",
-    },
-    createdAt: {
-      type: "datetime",
-    },
-    updatedAt: {
-      type: "datetime",
-    },
-  },
+    "password": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    }
+  }
 };

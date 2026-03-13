@@ -26,54 +26,28 @@ pnpm add @strapi-community/plugin-better-auth
 
 ## Usage
 
-### 1. Install the plugin in your Strapi application
+### 1. Create a Better Auth config file
 
-Add the plugin to your Strapi plugins configuration:
-
-```typescript
-// config/plugins.ts
-export default {
-  'better-auth': {
-    enabled: true,
-  }
-}
-```
-
-### 2. Customize the Better Auth options
-
-The [Better Auth options](https://www.better-auth.com/docs/reference/options) can be customized through the plugin config:
+Create the Better Auth config file and add the following content.
 
 ```typescript
-// config/plugins.ts
-export default {
-  'better-auth': {
-    enabled: true,
-    config: {
-      betterAuthOptions: {
-        emailAndPassword: {
-          enabled: true,
-          requireEmailVerification: true,
-        },
-        socialProviders: {
-          github: {
-            clientId: process.env.GITHUB_CLIENT_ID!,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-          },
-          google: {
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-          },
-        },
-        session: {
-          expiresIn: 60 * 60 * 24 * 7, // 7 days
-        },
-      },
+// config/better-auth.ts
+import { betterAuth } from "better-auth";
+import { strapiAdapter } from '@strapi-community/plugin-better-auth/adapter';
+
+const auth = () => betterAuth({
+  database: strapiAdapter(),
+  advanced: {
+    database: {
+      generateId: "serial",
     },
   },
-};
+});
+
+export default auth;
 ```
 
-### 3. Client implementation
+### 2. Client implementation
 
 Call the Better Auth API from your front-end:
 
@@ -93,7 +67,7 @@ await authClient.signUp.email({
 });
 ```
 
-### 4. Server side authentication
+### 3. Server side authentication
 
 Use the Better Auth session to authenticate your users in custom Strapi controllers.
 
@@ -103,7 +77,7 @@ export default {
   async customMethod(ctx) {
     // Access the Better Auth instance
     // @ts-expect-error - Accessing custom property
-    const auth = strapi.betterAuth;
+    const auth = strapi.internal_config['better-auth'];;
     
     // Use Better Auth API methods
     const session = await auth.api.getSession({
@@ -120,20 +94,11 @@ export default {
 
 ## Supported plugins
 
-Any Better Auth plugin may be used with Strapi + Better Auth, but only a subset are considered supported for the integration. Strapi + Better Auth works out of the box for these without any required schema changes.
+Any Better Auth plugin may be used with Strapi + Better Auth. Some plugins require you to run the `generate` CLI in order to make the required schema changes. In order to do that you have to manually specify the location of the Better Auth config file.
 
-| Plugin | Tested |
-|-----------|-------------|
-| Two Factor | ✅ |
-| Username | ✅ |
-| Anonymous | ❌ |
-| Email OTP | ❌ |
-| Generic OAuth | ❌ |
-| JWT | ❌ |
-| Magic Link | ❌ |
-| One Tap | ❌ |
-| Passkey | ❌ |
-| Phone Number | ❌ |
+```bash
+npx auth@latest generate --config config/better-auth.ts
+```
 
 
 ## Resources

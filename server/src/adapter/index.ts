@@ -7,16 +7,15 @@ import kebabCase from "lodash-es/kebabCase";
 import {
   transformFilters,
   transformSort,
+  updateStrapiSchema,
+  type SchemaTransformOptions,
 } from "./transformers";
+import { cleanupStrapiApp, getStrapiApp } from "./cli";
 
 /**
  * Configuration options for the Strapi Better Auth adapter
  */
 interface StrapiAdapterConfig {
-  /**
-   * The Strapi instance
-   */
-  strapi: Core.Strapi;
   /**
    * Helps you debug issues with the adapter
    */
@@ -33,8 +32,8 @@ interface StrapiAdapterConfig {
  * This adapter allows Better Auth to use Strapi as its database backend.
  * It implements all the required methods to interact with Strapi's entity service.
  */
-export const strapiAdapter = (config: StrapiAdapterConfig) => {
-  const { strapi, debugLogs = false, usePlural = false } = config;
+export const strapiAdapter = (config?: StrapiAdapterConfig) => {
+  const { debugLogs = false, usePlural = false } = config || {};
 
   return createAdapterFactory({
     config: {
@@ -47,6 +46,9 @@ export const strapiAdapter = (config: StrapiAdapterConfig) => {
       supportsBooleans: true,
       supportsNumericIds: true,
     },
+    // @ts-expect-error
+    // Caused by returning true to opt-out of Better Auth's file writing logic in createSchema method
+    // https://github.com/better-auth/better-auth/issues/8590
     adapter: ({
       getModelName,
       getFieldName,
@@ -277,6 +279,43 @@ export const strapiAdapter = (config: StrapiAdapterConfig) => {
 
           return records ? records.length : 0;
         },
+
+        /**
+         * Create schema files for Strapi content-types
+         *
+         * This method uses Strapi's content-type-builder updateSchema service
+         * to create/update content types based on Better Auth schema.
+         * This is the same API that Strapi's admin panel uses.
+         */
+        createSchema: async ({ tables }) => {
+          debugLog("createSchema", { tables });
+
+          const schemaOptions: SchemaTransformOptions = {
+            pluginName: "better-auth",
+          };
+
+          // Bootstrap Strapi to access the content-type-builder service
+          const { app: strapi, distDir } = await getStrapiApp();
+
+            // Use Strapi's content-type-builder service to create/update schemas
+          await updateStrapiSchema(strapi, tables, schemaOptions);
+
+          // Clean up Strapi's dist directory and destroy the app instance
+          cleanupStrapiApp(strapi, distDir);
+
+          /**
+           * We return true to opt-out of the file writing logic from Better Auth.
+           * This is more like a workaround than a proper solution.
+           * 
+           * @see https://github.com/better-auth/better-auth/issues/8590
+           */
+          return true;
+        },
+
+        /**
+         * Return adapter options
+         */
+        options: config,
       };
     },
   });

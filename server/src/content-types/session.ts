@@ -1,48 +1,67 @@
 export default {
-  kind: "collectionType",
-  collectionName: "better_auth_sessions",
-  info: {
-    singularName: "session",
-    pluralName: "sessions",
-    displayName: "Sessions",
-    description: "Better Auth session",
+  "kind": "collectionType",
+  "collectionName": "better_auth_sessions",
+  "info": {
+    "singularName": "session",
+    "pluralName": "sessions",
+    "displayName": "Sessions",
+    "description": "Better Auth session"
   },
-  options: {
-    draftAndPublish: false,
+  "options": {
+    "draftAndPublish": false
   },
-  pluginOptions: {
+  "pluginOptions": {
     "content-manager": {
-      visible: false,
+      "visible": false
     },
     "content-type-builder": {
-      visible: false,
-    },
+      "visible": false
+    }
   },
-  attributes: {
-    userId: {
-      type: "integer",
-      required: true,
+  "attributes": {
+    "expiresAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
     },
-    token: {
-      type: "string",
-      required: true,
-      unique: true,
+    "token": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "unique": true
     },
-    expiresAt: {
-      type: "datetime",
-      required: true,
+    "ipAddress": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    ipAddress: {
-      type: "string",
+    "userAgent": {
+      "type": "string",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     },
-    userAgent: {
-      type: "string",
-    },
-    createdAt: {
-      type: "datetime",
-    },
-    updatedAt: {
-      type: "datetime",
-    },
-  },
+    "userId": {
+      "type": "integer",
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
+    }
+  }
 };

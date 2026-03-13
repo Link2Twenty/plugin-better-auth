@@ -13,8 +13,8 @@ const authController = ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async handleAuthRequest(ctx: KoaContext) {
     // Get the stored Better Auth instance
-    // @ts-expect-error - Accessing custom property
-    const auth = strapi.betterAuth;
+    // @ts-expect-error
+    const auth = strapi.internal_config['better-auth'];
 
     if (!auth) {
       throw new errors.ApplicationError("Better Auth not initialized");
