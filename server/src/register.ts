@@ -1,7 +1,7 @@
 // server/src/register.ts
 import type { Core } from "@strapi/strapi";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
-import { strapiAdapter } from "./adapter/strapi-adapter";
+import { strapiAdapter } from "./adapter";
 
 const register = ({ strapi }: { strapi: Core.Strapi }) => {
   // Get plugin configuration

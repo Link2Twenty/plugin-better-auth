@@ -4,7 +4,7 @@ import type { Where } from "better-auth/types";
 /**
  * Transform Better Auth where clause to Strapi filters
  */
-export const buildStrapiFilters = (
+export const transformFilters = (
   where: Where[],
   model: string,
   getFieldName: (args: { model: string; field: string }) => string,

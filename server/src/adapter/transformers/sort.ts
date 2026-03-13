@@ -3,7 +3,7 @@
  * Better Auth format: { field: 'createdAt', direction: 'desc' }
  * Strapi format: 'field:asc' or 'field:desc' or ['field1:asc', 'field2:desc']
  */
-export const buildStrapiSort = (
+export const transformSort = (
   sortBy: { field: string; direction: "asc" | "desc" },
   model: string,
   getFieldName: (args: { model: string; field: string }) => string,
