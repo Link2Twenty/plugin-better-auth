@@ -1,9 +1,9 @@
 import type { DBFieldAttribute } from "better-auth";
 import type { Core, UID } from "@strapi/strapi";
-import kebabCase from "lodash-es/kebabCase";
-import snakeCase from "lodash-es/snakeCase";
-import camelCase from "lodash-es/camelCase";
-import upperFirst from "lodash-es/upperFirst";
+import kebabCase from "lodash/kebabCase";
+import snakeCase from "lodash/snakeCase";
+import camelCase from "lodash/camelCase";
+import upperFirst from "lodash/upperFirst";
 import type { StrapiAttribute, CTBAttributeProperties } from "./types";
 
 /**

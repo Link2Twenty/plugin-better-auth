@@ -1,0 +1,14 @@
+packages:
+  - apps/*
+  - packages/*
+
+catalogs:
+  strapi:
+    "@strapi/plugin-users-permissions": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+    "@strapi/strapi": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+    "@strapi/types": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+    "@strapi/typescript-utils": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+    "@strapi/utils": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+
+onlyBuiltDependencies:
+  - better-sqlite3

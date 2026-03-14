@@ -1,7 +1,7 @@
 import type { BetterAuthDBSchema } from "better-auth";
 import type { Core, UID } from "@strapi/strapi";
-import snakeCase from "lodash-es/snakeCase";
-import isEqual from "lodash-es/isEqual";
+import snakeCase from "lodash/snakeCase";
+import isEqual from "lodash/isEqual";
 import type {
   CTBAttribute,
   CTBAttributeProperties,

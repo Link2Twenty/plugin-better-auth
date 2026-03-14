@@ -3,7 +3,7 @@ import {
   createAdapterFactory,
   type DBAdapterDebugLogOption,
 } from "better-auth/adapters";
-import kebabCase from "lodash-es/kebabCase";
+import kebabCase from "lodash/kebabCase";
 import {
   transformFilters,
   transformSort,
