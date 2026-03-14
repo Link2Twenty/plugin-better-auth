@@ -1,7 +1,6 @@
 // @ts-expect-error
 import { strapiAdapter } from "@strapi-community/plugin-better-auth/adapter";
 import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
 
 const auth = () =>
   betterAuth({
@@ -9,7 +8,6 @@ const auth = () =>
     emailAndPassword: {
       enabled: true,
     },
-    plugins: [twoFactor()],
     database: strapiAdapter(),
     advanced: {
       database: {

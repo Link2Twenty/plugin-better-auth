@@ -18,6 +18,7 @@
     "./adapter": {
       "source": "./server/src/adapter/index.ts",
       "types": "./dist/adapter/index.d.ts",
+      "import": "./dist/adapter/index.mjs",
       "require": "./dist/adapter/index.js",
       "default": "./dist/adapter/index.js"
     }

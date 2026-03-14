@@ -47,7 +47,7 @@ export default {
       required: true,
     },
     accessToken: {
-      type: "text",
+      type: "string",
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -55,7 +55,7 @@ export default {
       },
     },
     refreshToken: {
-      type: "text",
+      type: "string",
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -63,7 +63,7 @@ export default {
       },
     },
     idToken: {
-      type: "text",
+      type: "string",
       pluginOptions: {
         "better-auth": {
           managed: true,
