@@ -1,6 +1,6 @@
-import { createStrapi, compileStrapi } from '@strapi/strapi';
+import fs from "node:fs/promises";
 import { resolve } from "node:path";
-import fs from 'node:fs/promises';
+import { compileStrapi, createStrapi } from "@strapi/strapi";
 
 // This method removes all non-admin build files from the dist directory
 const cleanupDistDirectory = async ({ distDir }) => {
@@ -18,11 +18,11 @@ const cleanupDistDirectory = async ({ distDir }) => {
     const dirContent = await fs.readdir(distDir);
     const validFilenames = dirContent
       // Ignore the admin build folder
-      .filter((filename) => filename !== 'build');
+      .filter((filename) => filename !== "build");
     for (const filename of validFilenames) {
       await fs.rm(resolve(distDir, filename), { recursive: true });
     }
-  } catch (err: unknown) {
+  } catch {
     return;
   }
 };
@@ -30,7 +30,7 @@ const cleanupDistDirectory = async ({ distDir }) => {
 export const cleanupStrapiApp = async (strapi, distDir) => {
   await strapi.destroy();
   await cleanupDistDirectory({ distDir });
-}
+};
 
 /**
  * Get the Strapi application instance
@@ -45,6 +45,6 @@ export const getStrapiApp = async () => {
   const app = await createStrapi(appContext).load();
   return {
     app,
-    distDir: appContext.distDir
+    distDir: appContext.distDir,
   };
 };

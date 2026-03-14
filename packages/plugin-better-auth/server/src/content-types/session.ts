@@ -1,67 +1,67 @@
 export default {
-  "kind": "collectionType",
-  "collectionName": "better_auth_sessions",
-  "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions",
-    "description": "Better Auth session"
+  kind: "collectionType",
+  collectionName: "better_auth_sessions",
+  info: {
+    singularName: "session",
+    pluralName: "sessions",
+    displayName: "Sessions",
+    description: "Better Auth session",
   },
-  "options": {
-    "draftAndPublish": false
+  options: {
+    draftAndPublish: false,
   },
-  "pluginOptions": {
+  pluginOptions: {
     "content-manager": {
-      "visible": false
+      visible: false,
     },
     "content-type-builder": {
-      "visible": false
-    }
+      visible: false,
+    },
   },
-  "attributes": {
-    "expiresAt": {
-      "type": "datetime",
-      "pluginOptions": {
+  attributes: {
+    expiresAt: {
+      type: "datetime",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "token": {
-      "type": "string",
-      "pluginOptions": {
+    token: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true,
-      "unique": true
+      required: true,
+      unique: true,
     },
-    "ipAddress": {
-      "type": "string",
-      "pluginOptions": {
+    ipAddress: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userAgent": {
-      "type": "string",
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userId": {
-      "type": "integer",
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
-    }
-  }
+    },
+    userAgent: {
+      type: "string",
+      pluginOptions: {
+        "better-auth": {
+          managed: true,
+        },
+      },
+    },
+    userId: {
+      type: "integer",
+      pluginOptions: {
+        "better-auth": {
+          managed: true,
+        },
+      },
+      required: true,
+    },
+  },
 };

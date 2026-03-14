@@ -1,60 +1,60 @@
 export default {
-  "kind": "collectionType",
-  "collectionName": "better_auth_users",
-  "info": {
-    "singularName": "user",
-    "pluralName": "users",
-    "displayName": "Users",
-    "description": "Better Auth user"
+  kind: "collectionType",
+  collectionName: "better_auth_users",
+  info: {
+    singularName: "user",
+    pluralName: "users",
+    displayName: "Users",
+    description: "Better Auth user",
   },
-  "options": {
-    "draftAndPublish": false
+  options: {
+    draftAndPublish: false,
   },
-  "pluginOptions": {
+  pluginOptions: {
     "content-manager": {
-      "visible": true
+      visible: true,
     },
     "content-type-builder": {
-      "visible": true
-    }
+      visible: true,
+    },
   },
-  "attributes": {
-    "name": {
-      "type": "string",
-      "pluginOptions": {
+  attributes: {
+    name: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "email": {
-      "type": "email",
-      "pluginOptions": {
+    email: {
+      type: "email",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true,
-      "unique": true
+      required: true,
+      unique: true,
     },
-    "emailVerified": {
-      "type": "boolean",
-      "pluginOptions": {
+    emailVerified: {
+      type: "boolean",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true,
-      "default": false
+      required: true,
+      default: false,
     },
-    "image": {
-      "type": "string",
-      "pluginOptions": {
+    image: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-  }
+  },
 };

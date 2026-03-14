@@ -1,10 +1,10 @@
-import type { DBFieldAttribute } from "better-auth";
 import type { Core, UID } from "@strapi/strapi";
+import type { DBFieldAttribute } from "better-auth";
+import camelCase from "lodash/camelCase";
 import kebabCase from "lodash/kebabCase";
 import snakeCase from "lodash/snakeCase";
-import camelCase from "lodash/camelCase";
 import upperFirst from "lodash/upperFirst";
-import type { StrapiAttribute, CTBAttributeProperties } from "./types";
+import type { CTBAttributeProperties, StrapiAttribute } from "./types";
 
 /**
  * Maps Better Auth field types to Strapi attribute types
@@ -37,7 +37,7 @@ export function mapFieldType(field: DBFieldAttribute): string {
  */
 export function createAttributeProperties(
   fieldName: string,
-  field: DBFieldAttribute
+  field: DBFieldAttribute,
 ): CTBAttributeProperties {
   const properties: CTBAttributeProperties = {
     type: mapFieldType(field),
@@ -47,7 +47,10 @@ export function createAttributeProperties(
   if (field.required) properties.required = true;
   if (field.unique) properties.unique = true;
 
-  if (field.defaultValue !== undefined && typeof field.defaultValue !== "function") {
+  if (
+    field.defaultValue !== undefined &&
+    typeof field.defaultValue !== "function"
+  ) {
     properties.default = field.defaultValue;
   }
 
@@ -57,7 +60,7 @@ export function createAttributeProperties(
 
   // Foreign keys should be integers as we're using numeric IDs
   if (field.references) {
-    properties.type = "integer"
+    properties.type = "integer";
   }
 
   // Special field type overrides
@@ -78,16 +81,21 @@ export function isManagedField(attr: StrapiAttribute): boolean {
  */
 export function getExistingAttributes(
   strapi: Core.Strapi,
-  uid: UID.ContentType
+  uid: UID.ContentType,
 ): Record<string, StrapiAttribute> {
   const contentType = strapi.contentTypes[uid];
-  return contentType ? (contentType.attributes as Record<string, StrapiAttribute>) : {};
+  return contentType
+    ? (contentType.attributes as Record<string, StrapiAttribute>)
+    : {};
 }
 
 /**
  * Checks if a content type exists
  */
-export function contentTypeExists(strapi: Core.Strapi, uid: UID.ContentType): boolean {
+export function contentTypeExists(
+  strapi: Core.Strapi,
+  uid: UID.ContentType,
+): boolean {
   return uid in strapi.contentTypes;
 }
 
@@ -96,11 +104,11 @@ export function contentTypeExists(strapi: Core.Strapi, uid: UID.ContentType): bo
  */
 export function getExistingBAContentTypes(
   strapi: Core.Strapi,
-  pluginName: string
+  pluginName: string,
 ): UID.ContentType[] {
   const prefix = `plugin::${pluginName}.`;
   return Object.keys(strapi.contentTypes).filter((uid) =>
-    uid.startsWith(prefix)
+    uid.startsWith(prefix),
   ) as UID.ContentType[];
 }
 
@@ -109,14 +117,19 @@ export function getExistingBAContentTypes(
  */
 export function generateNames(modelName: string, pluginName: string) {
   const singularName = kebabCase(modelName);
-  const pluralName = singularName.endsWith("s") ? singularName : `${singularName}s`;
+  const pluralName = singularName.endsWith("s")
+    ? singularName
+    : `${singularName}s`;
 
   return {
     singularName,
     pluralName,
     collectionName: `${snakeCase(pluginName)}_${snakeCase(pluralName)}`,
     uid: `plugin::${pluginName}.${singularName}`,
-    globalId: modelName.split("-").map((w) => upperFirst(camelCase(w))).join(""),
+    globalId: modelName
+      .split("-")
+      .map((w) => upperFirst(camelCase(w)))
+      .join(""),
     displayName: pluralName
       .split("-")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))

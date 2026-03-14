@@ -1,16 +1,16 @@
-import type { Core, UID } from "@strapi/strapi";
+import type { UID } from "@strapi/strapi";
 import {
   createAdapterFactory,
   type DBAdapterDebugLogOption,
 } from "better-auth/adapters";
 import kebabCase from "lodash/kebabCase";
+import { cleanupStrapiApp, getStrapiApp } from "./cli";
 import {
+  type SchemaTransformOptions,
   transformFilters,
   transformSort,
   updateStrapiSchema,
-  type SchemaTransformOptions,
 } from "./transformers";
-import { cleanupStrapiApp, getStrapiApp } from "./cli";
 
 /**
  * Configuration options for the Strapi Better Auth adapter
@@ -78,7 +78,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             data: transformedData,
           });
 
-          const output = (await transformOutput(result, model)) as any;
+          const output = await transformOutput(result, model);
 
           return output;
         },
@@ -92,7 +92,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
           const transformedUpdate = await transformInput(
-            update as any,
+            update as Record<string, unknown>,
             model,
             "update",
           );
@@ -112,7 +112,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             data: transformedUpdate,
           });
 
-          const output = (await transformOutput(result, model)) as any;
+          const output = await transformOutput(result, model);
           return output;
         },
 
@@ -220,7 +220,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             return null;
           }
 
-          const output = (await transformOutput(record, model)) as any;
+          const output = await transformOutput(record, model);
           return output;
         },
 
@@ -233,7 +233,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
 
-          const queryOptions: any = {
+          const queryOptions: { [key: string]: unknown } = {
             filters,
           };
 
@@ -258,7 +258,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           return Promise.all(
             records.map(async (record) => {
-              const output = (await transformOutput(record, model)) as any;
+              const output = await transformOutput(record, model);
               return output;
             }),
           );
@@ -297,7 +297,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           // Bootstrap Strapi to access the content-type-builder service
           const { app: strapi, distDir } = await getStrapiApp();
 
-            // Use Strapi's content-type-builder service to create/update schemas
+          // Use Strapi's content-type-builder service to create/update schemas
           await updateStrapiSchema(strapi, tables, schemaOptions);
 
           // Clean up Strapi's dist directory and destroy the app instance
@@ -306,7 +306,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           /**
            * We return true to opt-out of the file writing logic from Better Auth.
            * This is more like a workaround than a proper solution.
-           * 
+           *
            * @see https://github.com/better-auth/better-auth/issues/8590
            */
           return true;

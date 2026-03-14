@@ -1,106 +1,106 @@
 export default {
-  "kind": "collectionType",
-  "collectionName": "better_auth_accounts",
-  "info": {
-    "singularName": "account",
-    "pluralName": "accounts",
-    "displayName": "Accounts",
-    "description": "Better Auth account"
+  kind: "collectionType",
+  collectionName: "better_auth_accounts",
+  info: {
+    singularName: "account",
+    pluralName: "accounts",
+    displayName: "Accounts",
+    description: "Better Auth account",
   },
-  "options": {
-    "draftAndPublish": false
+  options: {
+    draftAndPublish: false,
   },
-  "pluginOptions": {
+  pluginOptions: {
     "content-manager": {
-      "visible": false
+      visible: false,
     },
     "content-type-builder": {
-      "visible": false
-    }
+      visible: false,
+    },
   },
-  "attributes": {
-    "accountId": {
-      "type": "string",
-      "pluginOptions": {
+  attributes: {
+    accountId: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "providerId": {
-      "type": "string",
-      "pluginOptions": {
+    providerId: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "userId": {
-      "type": "integer",
-      "pluginOptions": {
+    userId: {
+      type: "integer",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "accessToken": {
-      "type": "text",
-      "pluginOptions": {
+    accessToken: {
+      type: "text",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "refreshToken": {
-      "type": "text",
-      "pluginOptions": {
+    refreshToken: {
+      type: "text",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "idToken": {
-      "type": "text",
-      "pluginOptions": {
+    idToken: {
+      type: "text",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "accessTokenExpiresAt": {
-      "type": "datetime",
-      "pluginOptions": {
+    accessTokenExpiresAt: {
+      type: "datetime",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "refreshTokenExpiresAt": {
-      "type": "datetime",
-      "pluginOptions": {
+    refreshTokenExpiresAt: {
+      type: "datetime",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "scope": {
-      "type": "string",
-      "pluginOptions": {
+    scope: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
+          managed: true,
+        },
+      },
     },
-    "password": {
-      "type": "string",
-      "pluginOptions": {
+    password: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
-      }
-    }
-  }
+          managed: true,
+        },
+      },
+    },
+  },
 };

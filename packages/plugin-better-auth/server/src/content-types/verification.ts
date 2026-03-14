@@ -1,50 +1,50 @@
 export default {
-  "kind": "collectionType",
-  "collectionName": "better_auth_verifications",
-  "info": {
-    "singularName": "verification",
-    "pluralName": "verifications",
-    "displayName": "Verifications",
-    "description": "Better Auth verification"
+  kind: "collectionType",
+  collectionName: "better_auth_verifications",
+  info: {
+    singularName: "verification",
+    pluralName: "verifications",
+    displayName: "Verifications",
+    description: "Better Auth verification",
   },
-  "options": {
-    "draftAndPublish": false
+  options: {
+    draftAndPublish: false,
   },
-  "pluginOptions": {
+  pluginOptions: {
     "content-manager": {
-      "visible": false
+      visible: false,
     },
     "content-type-builder": {
-      "visible": false
-    }
+      visible: false,
+    },
   },
-  "attributes": {
-    "identifier": {
-      "type": "string",
-      "pluginOptions": {
+  attributes: {
+    identifier: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "value": {
-      "type": "string",
-      "pluginOptions": {
+    value: {
+      type: "string",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
+      required: true,
     },
-    "expiresAt": {
-      "type": "datetime",
-      "pluginOptions": {
+    expiresAt: {
+      type: "datetime",
+      pluginOptions: {
         "better-auth": {
-          "managed": true
-        }
+          managed: true,
+        },
       },
-      "required": true
-    }
-  }
+      required: true,
+    },
+  },
 };
