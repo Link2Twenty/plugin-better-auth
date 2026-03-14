@@ -21,7 +21,7 @@
     "@strapi/plugin-users-permissions": "catalog:strapi",
     "@strapi/strapi": "catalog:strapi",
     "@strapi/types": "catalog:strapi",
-    "better-auth": "^1.4.10",
+    "better-auth": "catalog:better-auth",
     "better-sqlite3": "12.4.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

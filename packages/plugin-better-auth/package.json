@@ -31,6 +31,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
+    "test": "vitest run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -38,13 +39,15 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@better-auth/test-utils": "catalog:better-auth",
     "@biomejs/biome": "^2.3.11",
     "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/strapi": "catalog:strapi",
     "@strapi/typescript-utils": "catalog:strapi",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "@strapi/design-system": "^2.0.0",
