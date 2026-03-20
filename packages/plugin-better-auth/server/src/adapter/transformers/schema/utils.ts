@@ -41,6 +41,7 @@ export function createAttributeProperties(
 ): CTBAttributeProperties {
   const properties: CTBAttributeProperties = {
     type: mapFieldType(field),
+    configurable: false,
     pluginOptions: { "better-auth": { managed: true } },
   };
 

@@ -21,6 +21,7 @@ export default {
   attributes: {
     identifier: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -30,6 +31,7 @@ export default {
     },
     value: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -39,6 +41,7 @@ export default {
     },
     expiresAt: {
       type: "datetime",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,

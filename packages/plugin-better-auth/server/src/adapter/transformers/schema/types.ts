@@ -36,6 +36,7 @@ export interface StrapiAttribute {
 export interface CTBAttributeProperties {
   type: string;
   required?: boolean;
+  configurable?: boolean;
   unique?: boolean;
   default?: unknown;
   enum?: string[];
