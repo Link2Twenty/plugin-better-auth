@@ -155,6 +155,16 @@ export function transformTable(
   hasChanges = hasChanges || hasFieldChanges;
 
   const visible = options.contentManagerVisible ?? isVisible(modelName);
+  const defaultPluginOptions = {
+    "content-manager": { visible },
+    "content-type-builder": {
+      visible: options.contentTypeBuilderVisible ?? visible,
+    },
+  };
+  const pluginOptions = exists
+    ? ((strapi.contentTypes[uid]?.pluginOptions as Record<string, unknown>) ??
+      defaultPluginOptions)
+    : defaultPluginOptions;
 
   return {
     contentType: {
@@ -163,12 +173,7 @@ export function transformTable(
       modelName: names.singularName,
       kind: "collectionType",
       globalId: names.globalId,
-      pluginOptions: {
-        "content-manager": { visible },
-        "content-type-builder": {
-          visible: options.contentTypeBuilderVisible ?? visible,
-        },
-      },
+      pluginOptions,
       collectionName: names.collectionName,
       modelType: "contentType",
       attributes,
