@@ -4,18 +4,26 @@ import fspromises from "node:fs/promises";
 import { createRequire } from "node:module";
 import path, { resolve } from "node:path";
 import type { Core } from "@strapi/strapi";
+import { getAuthTables } from "better-auth";
+import {
+  generateNames,
+  getExistingBAContentTypes,
+} from "../src/adapter/transformers";
 
 const require = createRequire(import.meta.url);
 const { compileStrapi, createStrapi } =
   require("@strapi/strapi") as typeof import("@strapi/strapi");
 
 let instance: Core.Strapi | undefined;
+export const playgroundDir = path.resolve(
+  process.cwd(),
+  "../../apps/playground-ts",
+);
 
 /**
  * Setups strapi for futher testing
  */
 export async function setupStrapi() {
-  const playgroundDir = path.resolve(process.cwd(), "../../apps/playground-ts");
   const databaseFilename = `.tmp/vitest-${process.pid}.db`;
   const databasePath = path.join(playgroundDir, databaseFilename);
 
@@ -44,11 +52,12 @@ export async function setupStrapi() {
 }
 
 // This method removes all non-admin build files from the dist directory
-export const cleanupDistDirectory = async ({ distDir }: any) => {
+export const cleanupDir = async (dir: string) => {
+  console.log("cleanup, ", dir);
   if (
-    !distDir || // we don't have a dist dir
+    !dir || // we don't have a dist dir
     (await fspromises
-      .access(distDir)
+      .access(dir)
       .then(() => false)
       .catch(() => true)) // it doesn't exist -- if it does but no access, that will be caught later
   ) {
@@ -56,12 +65,12 @@ export const cleanupDistDirectory = async ({ distDir }: any) => {
   }
 
   try {
-    const dirContent = await fspromises.readdir(distDir);
+    const dirContent = await fspromises.readdir(dir);
     const validFilenames = dirContent
       // Ignore the admin build folder
       .filter((filename) => filename !== "build");
     for (const filename of validFilenames) {
-      await fspromises.rm(resolve(distDir, filename), { recursive: true });
+      await fspromises.rm(resolve(dir, filename), { recursive: true });
     }
   } catch {
     return;
@@ -80,12 +89,27 @@ export async function stopStrapi() {
     assert(typeof tmpDbFile === "string");
 
     await instance.destroy();
-    await cleanupDistDirectory({ distDir: instance.dirs.dist });
 
     if (fs.existsSync(tmpDbFile)) {
       fs.unlinkSync(tmpDbFile);
     }
 
     instance = undefined;
+  }
+}
+
+export async function ensureExistingContentTypeDirs() {
+  const contentTypesRoot = path.join(
+    playgroundDir,
+    "src/extensions/better-auth/content-types",
+  );
+
+  for (const uid of getExistingBAContentTypes(strapi, "better-auth")) {
+    const singularName = uid.split(".").pop();
+    if (!singularName) continue;
+
+    await fspromises.mkdir(path.join(contentTypesRoot, singularName), {
+      recursive: true,
+    });
   }
 }
