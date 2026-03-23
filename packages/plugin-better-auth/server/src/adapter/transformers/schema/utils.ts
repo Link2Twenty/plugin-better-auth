@@ -60,7 +60,7 @@ export function createAttributeProperties(
   }
 
   // Foreign keys should be integers as we're using numeric IDs
-  if (field.references) {
+  if (field.references?.field === "id") {
     properties.type = "integer";
   }
 
