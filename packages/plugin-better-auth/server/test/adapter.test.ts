@@ -1,4 +1,8 @@
-import { createTestSuite, testAdapter } from "@better-auth/test-utils/adapter";
+import {
+  authFlowTestSuite,
+  createTestSuite,
+  testAdapter,
+} from "@better-auth/test-utils/adapter";
 import { getAuthTables } from "better-auth/db";
 import { expect } from "vitest";
 import { strapiAdapter } from "../src/adapter";
@@ -67,7 +71,7 @@ const { execute } = await testAdapter({
     await stopStrapi();
     await setupStrapi();
   },
-  tests: [normalTestSuite()],
+  tests: [normalTestSuite(), authFlowTestSuite()],
   async onFinish() {
     await stopStrapi();
   },
