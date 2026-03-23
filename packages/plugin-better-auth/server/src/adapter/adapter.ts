@@ -8,6 +8,7 @@ import {
   type SchemaTransformOptions,
   transformFilters,
   transformSort,
+  transformOutput as transformStrapiOutput,
   updateStrapiSchema,
 } from "./transformers";
 
@@ -78,8 +79,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           });
 
           const output = await transformOutput(result, model);
-
-          return output;
+          return transformStrapiOutput(output);
         },
 
         /**
@@ -112,7 +112,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           });
 
           const output = await transformOutput(result, model);
-          return output;
+          return transformStrapiOutput(output);
         },
 
         /**
@@ -220,7 +220,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           }
 
           const output = await transformOutput(record, model);
-          return output;
+          return transformStrapiOutput(output);
         },
 
         /**
@@ -258,7 +258,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           return Promise.all(
             records.map(async (record) => {
               const output = await transformOutput(record, model);
-              return output;
+              return transformStrapiOutput(output);
             }),
           );
         },
