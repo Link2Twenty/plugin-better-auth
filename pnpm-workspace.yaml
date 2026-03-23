@@ -7,11 +7,11 @@ catalogs:
     "@better-auth/test-utils": 1.5.6
     "better-auth": 1.5.6
   strapi:
-    "@strapi/plugin-users-permissions": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
-    "@strapi/strapi": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
-    "@strapi/types": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
-    "@strapi/typescript-utils": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
-    "@strapi/utils": 0.0.0-experimental.f768670d38e0477718b8b96efd79a9d87687cc6c
+    "@strapi/plugin-users-permissions": 0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66
+    "@strapi/strapi": 0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66
+    "@strapi/types": 0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66
+    "@strapi/typescript-utils": 0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66
+    "@strapi/utils": 0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66
 
 onlyBuiltDependencies:
   - better-sqlite3
