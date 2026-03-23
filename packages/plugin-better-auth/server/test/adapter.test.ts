@@ -1,9 +1,12 @@
+import { createTestSuite, testAdapter } from "@better-auth/test-utils/adapter";
+import { getAuthTables } from "better-auth/db";
 import { expect } from "vitest";
-import { testAdapter, createTestSuite } from "@better-auth/test-utils/adapter";
-import { setupStrapi, stopStrapi } from "./utils";
 import { strapiAdapter } from "../src/adapter";
-
-await setupStrapi();
+import {
+  type SchemaTransformOptions,
+  updateStrapiSchema,
+} from "../src/adapter/transformers";
+import { setupStrapi, stopStrapi } from "./utils";
 
 const normalTestSuite = createTestSuite("Normal", {}, ({ adapter }) => ({
   "should create and find a user": async () => {
@@ -54,11 +57,17 @@ const { execute } = await testAdapter({
       },
     },
   }),
-  runMigrations: async () => {
+  runMigrations: async (opts) => {
+    const authTables = getAuthTables(opts);
+    const schemaOptions: SchemaTransformOptions = {
+      pluginName: "better-auth",
+    };
+    await setupStrapi();
+    await updateStrapiSchema(strapi, authTables, schemaOptions);
+    await stopStrapi();
+    await setupStrapi();
   },
-  tests: [
-    normalTestSuite(),
-  ],
+  tests: [normalTestSuite()],
   async onFinish() {
     await stopStrapi();
   },
