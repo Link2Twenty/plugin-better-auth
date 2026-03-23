@@ -31,7 +31,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
-    "test": "vitest run",
+    "test": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -51,9 +51,9 @@
   "peerDependencies": {
     "@strapi/design-system": "^2.0.0",
     "@strapi/icons": "^2.0.0",
-    "@strapi/strapi": "^5.0.0",
-    "@strapi/utils": "^5.0.0",
-    "better-auth": ">=1.4.0 <2"
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/utils": "catalog:strapi",
+    "better-auth": "catalog:better-auth"
   },
   "strapi": {
     "kind": "plugin",
