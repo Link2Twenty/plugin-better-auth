@@ -2,6 +2,16 @@ export default () => ({
   type: "content-api",
   routes: [
     {
+      method: "POST",
+      path: "/better-auth/invite/set-password",
+      handler: "invite-controller.setPasswordFromInvite",
+      config: {
+        auth: false,
+        policies: [],
+        prefix: "",
+      },
+    },
+    {
       method: "GET",
       path: "/better-auth/:path*",
       handler: "auth-controller.handleAuthRequest",

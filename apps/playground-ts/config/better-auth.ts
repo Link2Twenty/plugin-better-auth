@@ -9,6 +9,12 @@ const auth = () =>
       enabled: true,
     },
     database: strapiAdapter(),
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ["credential", "google", "github"],
+      },
+    },
     advanced: {
       database: {
         generateId: "serial",
