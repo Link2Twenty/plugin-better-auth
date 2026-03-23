@@ -31,6 +31,29 @@ export async function updateStrapiSchema(
     return { updated: false, changeDetails: [] };
   }
 
+  // The CTB service's editContentType preserves non-configurable attributes and
+  // will not delete them even when they are absent from the new attribute list.
+  // Orphaned managed fields (e.g. renamed fields) must be removed from the
+  // in-memory schema before the CTB service clones it, so they are not written
+  // back to disk.
+  for (const contentType of schema.contentTypes) {
+    if (contentType.action === "delete") continue;
+    const uid = contentType.uid;
+    const orphanedFields = contentType.attributes
+      .filter((attr) => attr.action === "delete")
+      .map((attr) => attr.name);
+
+    if (orphanedFields.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawSchema = (strapi.contentTypes[uid] as any)?.__schema__;
+      if (rawSchema?.attributes) {
+        for (const field of orphanedFields) {
+          delete rawSchema.attributes[field];
+        }
+      }
+    }
+  }
+
   const schemaService = strapi.plugin("content-type-builder").service("schema");
   await schemaService.updateSchema(schema);
 
