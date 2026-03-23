@@ -49,13 +49,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
     // @ts-expect-error
     // Caused by returning true to opt-out of Better Auth's file writing logic in createSchema method
     // https://github.com/better-auth/better-auth/issues/8590
-    adapter: ({
-      getModelName,
-      getFieldName,
-      transformInput,
-      transformOutput,
-      debugLog,
-    }) => {
+    adapter: ({ getModelName, getFieldName, debugLog }) => {
       /**
        * Get the Strapi UID for a model
        */
@@ -72,14 +66,13 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("create", { model, data, select });
 
           const uid = getModelUid(model);
-          const transformedData = await transformInput(data, model, "create");
 
           const result = await strapi.documents(uid).create({
-            data: transformedData,
+            data,
+            fields: select,
           });
 
-          const output = await transformOutput(result, model);
-          return transformStrapiOutput(output);
+          return transformStrapiOutput(result);
         },
 
         /**
@@ -90,11 +83,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
-          const transformedUpdate = await transformInput(
-            update as Record<string, unknown>,
-            model,
-            "update",
-          );
 
           // Find the record first
           const record = await strapi.documents(uid).findFirst({
@@ -108,11 +96,10 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const result = await strapi.documents(uid).update({
             documentId: record.documentId,
-            data: transformedUpdate,
+            data: update,
           });
 
-          const output = await transformOutput(result, model);
-          return transformStrapiOutput(output);
+          return transformStrapiOutput(result);
         },
 
         /**
@@ -123,11 +110,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
-          const transformedUpdate = await transformInput(
-            update,
-            model,
-            "update",
-          );
 
           // Find all matching records
           const records = await strapi.documents(uid).findMany({
@@ -142,7 +124,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           for (const record of records) {
             await strapi.documents(uid).update({
               documentId: record.documentId,
-              data: transformedUpdate,
+              data: update,
             });
           }
 
@@ -212,6 +194,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const record = await strapi.documents(uid).findFirst({
             filters,
+            fields: select,
             limit: 1,
           });
 
@@ -219,14 +202,13 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             return null;
           }
 
-          const output = await transformOutput(record, model);
-          return transformStrapiOutput(output);
+          return transformStrapiOutput(record);
         },
 
         /**
          * Find multiple records
          */
-        findMany: async ({ where, model, limit, offset, sortBy }) => {
+        findMany: async ({ where, model, limit, offset, sortBy, select }) => {
           debugLog("findMany", { model, where, limit, offset, sortBy });
 
           const uid = getModelUid(model);
@@ -234,6 +216,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const queryOptions: { [key: string]: unknown } = {
             filters,
+            fields: select,
           };
 
           if (limit !== undefined) {
@@ -257,8 +240,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           return Promise.all(
             records.map(async (record) => {
-              const output = await transformOutput(record, model);
-              return transformStrapiOutput(output);
+              return transformStrapiOutput(record);
             }),
           );
         },
