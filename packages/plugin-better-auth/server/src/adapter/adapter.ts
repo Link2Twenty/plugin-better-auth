@@ -58,6 +58,17 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
         return `plugin::better-auth.${kebabCase(modelName)}`;
       };
 
+      /**
+       * Map select fields to support field renaming
+       */
+      const mapSelectFields = (model: string, select?: string[]) => {
+        if (!select) {
+          return undefined;
+        }
+
+        return select.map((field) => getFieldName({ model, field }));
+      };
+
       return {
         /**
          * Create a new record
@@ -66,10 +77,11 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("create", { model, data, select });
 
           const uid = getModelUid(model);
+          const fields = mapSelectFields(model, select);
 
           const result = await strapi.documents(uid).create({
             data,
-            fields: select,
+            fields,
           });
 
           return transformStrapiOutput(result);
@@ -191,10 +203,11 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
+          const fields = mapSelectFields(model, select);
 
           const record = await strapi.documents(uid).findFirst({
             filters,
-            fields: select,
+            fields,
             limit: 1,
           });
 
@@ -213,10 +226,11 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
+          const fields = mapSelectFields(model, select);
 
           const queryOptions: { [key: string]: unknown } = {
             filters,
-            fields: select,
+            fields,
           };
 
           if (limit !== undefined) {
