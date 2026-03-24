@@ -97,25 +97,36 @@ function buildAttributes(
   for (const [name, field] of Object.entries(table.fields)) {
     if (SKIP_FIELDS.includes(name)) continue;
 
+    const actualName = field.fieldName ?? name;
     const props = createAttributeProperties(name, field);
-    const existing = existingAttributes[name];
+    const existing = existingAttributes[actualName];
 
     if (existing) {
       if (!attributesAreEqual(existing, props)) {
         hasFieldChanges = true;
-        changeDetails.push(`Updating field: ${name} in ${uid}`);
+        changeDetails.push(`Updating field: ${actualName} in ${uid}`);
       }
-      attributes.push({ action: "update", name, properties: props });
+      attributes.push({
+        action: "update",
+        name: actualName,
+        properties: props,
+      });
     } else {
       hasFieldChanges = true;
-      changeDetails.push(`Creating field: ${name} in ${uid}`);
-      attributes.push({ action: "create", name, properties: props });
+      changeDetails.push(`Creating field: ${actualName} in ${uid}`);
+      attributes.push({
+        action: "create",
+        name: actualName,
+        properties: props,
+      });
     }
   }
 
   // Delete orphaned fields
   const expectedFields = new Set(
-    Object.keys(table.fields).filter((n) => !SKIP_FIELDS.includes(n)),
+    Object.entries(table.fields)
+      .filter(([n]) => !SKIP_FIELDS.includes(n))
+      .map(([n, f]) => f.fieldName ?? n),
   );
   for (const name of getOrphanedFields(strapi, uid, expectedFields)) {
     hasFieldChanges = true;
@@ -155,6 +166,16 @@ export function transformTable(
   hasChanges = hasChanges || hasFieldChanges;
 
   const visible = options.contentManagerVisible ?? isVisible(modelName);
+  const defaultPluginOptions = {
+    "content-manager": { visible },
+    "content-type-builder": {
+      visible: options.contentTypeBuilderVisible ?? visible,
+    },
+  };
+  const pluginOptions = exists
+    ? ((strapi.contentTypes[uid]?.pluginOptions as Record<string, unknown>) ??
+      defaultPluginOptions)
+    : defaultPluginOptions;
 
   return {
     contentType: {
@@ -163,12 +184,7 @@ export function transformTable(
       modelName: names.singularName,
       kind: "collectionType",
       globalId: names.globalId,
-      pluginOptions: {
-        "content-manager": { visible },
-        "content-type-builder": {
-          visible: options.contentTypeBuilderVisible ?? visible,
-        },
-      },
+      pluginOptions,
       collectionName: names.collectionName,
       modelType: "contentType",
       attributes,

@@ -1,44 +1,22 @@
-import { expect } from "vitest";
-import { testAdapter, createTestSuite } from "@better-auth/test-utils/adapter";
-import { setupStrapi, stopStrapi } from "./utils";
+import path from "node:path";
+import {
+  authFlowTestSuite,
+  numberIdTestSuite,
+  testAdapter,
+} from "@better-auth/test-utils/adapter";
+import { getAuthTables } from "better-auth/db";
 import { strapiAdapter } from "../src/adapter";
-
-await setupStrapi();
-
-const normalTestSuite = createTestSuite("Normal", {}, ({ adapter }) => ({
-  "should create and find a user": async () => {
-    const createdUser = await adapter.create({
-      model: "user",
-      data: {
-        email: "user@example.com",
-        name: "Test User",
-        emailVerified: true,
-      },
-    });
-
-    const foundUser = await adapter.findOne({
-      model: "user",
-      where: [
-        {
-          field: "email",
-          operator: "eq",
-          value: "user@example.com",
-        },
-      ],
-    });
-
-    expect(createdUser).toMatchObject({
-      email: "user@example.com",
-    });
-    expect(createdUser.id).toBeDefined();
-    expect(foundUser).not.toBeNull();
-    expect(foundUser).toMatchObject({
-      id: createdUser.id,
-      email: "user@example.com",
-      name: "Test User",
-    });
-  },
-}));
+import {
+  type SchemaTransformOptions,
+  updateStrapiSchema,
+} from "../src/adapter/transformers";
+import {
+  cleanupDir,
+  ensureExistingContentTypeDirs,
+  playgroundDir,
+  setupStrapi,
+  stopStrapi,
+} from "./utils";
 
 const { execute } = await testAdapter({
   adapter: (_options) => {
@@ -54,12 +32,36 @@ const { execute } = await testAdapter({
       },
     },
   }),
-  runMigrations: async () => {
+  runMigrations: async (opts) => {
+    const authTables = getAuthTables(opts);
+    const schemaOptions: SchemaTransformOptions = {
+      pluginName: "better-auth",
+    };
+
+    // Remove stale compiled extension artifacts so Strapi loads fresh schema JSON.
+    await cleanupDir(path.join(playgroundDir, "dist"));
+
+    // Start up Strapi and run the schema updates.
+    await setupStrapi();
+
+    /**
+     * @todo Check if this needs to be part of the core package.
+     */
+    await ensureExistingContentTypeDirs();
+
+    // Update Strapi schemas based on Better Auth configuration.
+    await updateStrapiSchema(strapi, authTables, schemaOptions);
+
+    // Restart Strapi in order to load the new schemas before running tests.
+    await stopStrapi();
+    await setupStrapi();
   },
-  tests: [
-    normalTestSuite(),
-  ],
+  /**
+   * @todo Implement normalTestSuite(), uuidTestSuite(), transactionsTestSuite() and joinsTestSuite()
+   */
+  tests: [authFlowTestSuite(), numberIdTestSuite()],
   async onFinish() {
+    // Stop Strapi.
     await stopStrapi();
   },
 });

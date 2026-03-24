@@ -21,6 +21,7 @@ export default {
   attributes: {
     name: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -30,6 +31,7 @@ export default {
     },
     email: {
       type: "email",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -40,6 +42,7 @@ export default {
     },
     emailVerified: {
       type: "boolean",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -50,6 +53,7 @@ export default {
     },
     image: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,

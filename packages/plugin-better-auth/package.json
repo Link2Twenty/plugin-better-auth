@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha.2",
+  "version": "0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66",
   "keywords": [
     "better-auth",
     "strapi",
@@ -24,7 +24,6 @@
     "./adapter": {
       "source": "./server/src/adapter/index.ts",
       "types": "./dist/adapter/index.d.ts",
-      "import": "./dist/adapter/index.mjs",
       "require": "./dist/adapter/index.js",
       "default": "./dist/adapter/index.js"
     }
@@ -38,7 +37,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
-    "test": "vitest run",
+    "test": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -50,7 +49,6 @@
     "react-intl": "^6.0.0",
     "@biomejs/biome": "^2.3.11",
     "@strapi/sdk-plugin": "^6.0.0",
-    "@strapi/strapi": "catalog:strapi",
     "@strapi/typescript-utils": "catalog:strapi",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
@@ -61,12 +59,12 @@
     "@strapi/design-system": "^2.0.0",
     "styled-components": "^5.0.0 || ^6.0.0",
     "@strapi/icons": "^2.0.0",
-    "@strapi/strapi": "^5.0.0",
-    "@strapi/utils": "^5.0.0",
-    "better-auth": ">=1.4.0 <2",
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
-    "react-intl": "^6.0.0 || ^7.0.0"
+    "react-intl": "^6.0.0 || ^7.0.0",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/utils": "catalog:strapi",
+    "better-auth": "catalog:better-auth"
   },
   "strapi": {
     "kind": "plugin",

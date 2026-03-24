@@ -8,6 +8,7 @@ import {
   type SchemaTransformOptions,
   transformFilters,
   transformSort,
+  transformOutput as transformStrapiOutput,
   updateStrapiSchema,
 } from "./transformers";
 
@@ -48,19 +49,24 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
     // @ts-expect-error
     // Caused by returning true to opt-out of Better Auth's file writing logic in createSchema method
     // https://github.com/better-auth/better-auth/issues/8590
-    adapter: ({
-      getModelName,
-      getFieldName,
-      transformInput,
-      transformOutput,
-      debugLog,
-    }) => {
+    adapter: ({ getModelName, getFieldName, debugLog }) => {
       /**
        * Get the Strapi UID for a model
        */
       const getModelUid = (model: string): UID.ContentType => {
         const modelName = getModelName(model);
         return `plugin::better-auth.${kebabCase(modelName)}`;
+      };
+
+      /**
+       * Map select fields to support field renaming
+       */
+      const mapSelectFields = (model: string, select?: string[]) => {
+        if (!select) {
+          return undefined;
+        }
+
+        return select.map((field) => getFieldName({ model, field }));
       };
 
       return {
@@ -71,15 +77,14 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("create", { model, data, select });
 
           const uid = getModelUid(model);
-          const transformedData = await transformInput(data, model, "create");
+          const fields = mapSelectFields(model, select);
 
           const result = await strapi.documents(uid).create({
-            data: transformedData,
+            data,
+            fields,
           });
 
-          const output = await transformOutput(result, model);
-
-          return output;
+          return transformStrapiOutput(result);
         },
 
         /**
@@ -90,11 +95,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
-          const transformedUpdate = await transformInput(
-            update as Record<string, unknown>,
-            model,
-            "update",
-          );
 
           // Find the record first
           const record = await strapi.documents(uid).findFirst({
@@ -108,11 +108,10 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const result = await strapi.documents(uid).update({
             documentId: record.documentId,
-            data: transformedUpdate,
+            data: update,
           });
 
-          const output = await transformOutput(result, model);
-          return output;
+          return transformStrapiOutput(result);
         },
 
         /**
@@ -123,11 +122,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
-          const transformedUpdate = await transformInput(
-            update,
-            model,
-            "update",
-          );
 
           // Find all matching records
           const records = await strapi.documents(uid).findMany({
@@ -142,7 +136,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           for (const record of records) {
             await strapi.documents(uid).update({
               documentId: record.documentId,
-              data: transformedUpdate,
+              data: update,
             });
           }
 
@@ -209,9 +203,11 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
+          const fields = mapSelectFields(model, select);
 
           const record = await strapi.documents(uid).findFirst({
             filters,
+            fields,
             limit: 1,
           });
 
@@ -219,21 +215,22 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             return null;
           }
 
-          const output = await transformOutput(record, model);
-          return output;
+          return transformStrapiOutput(record);
         },
 
         /**
          * Find multiple records
          */
-        findMany: async ({ where, model, limit, offset, sortBy }) => {
+        findMany: async ({ where, model, limit, offset, sortBy, select }) => {
           debugLog("findMany", { model, where, limit, offset, sortBy });
 
           const uid = getModelUid(model);
           const filters = transformFilters(where, model, getFieldName);
+          const fields = mapSelectFields(model, select);
 
           const queryOptions: { [key: string]: unknown } = {
             filters,
+            fields,
           };
 
           if (limit !== undefined) {
@@ -257,8 +254,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           return Promise.all(
             records.map(async (record) => {
-              const output = await transformOutput(record, model);
-              return output;
+              return transformStrapiOutput(record);
             }),
           );
         },
