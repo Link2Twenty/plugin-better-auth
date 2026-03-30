@@ -142,8 +142,7 @@ Use the Better Auth session to authenticate your users in custom Strapi controll
 export default {
   async customMethod(ctx) {
     // Access the Better Auth instance
-    // @ts-expect-error - Accessing custom property
-    const auth = strapi.internal_config['better-auth'];;
+    const auth = strapi.internal_config['better-auth'];
     
     // Use Better Auth API methods
     const session = await auth.api.getSession({
