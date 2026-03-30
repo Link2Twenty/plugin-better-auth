@@ -17,6 +17,7 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
+    "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi-community/plugin-better-auth": "workspace:*",
     "@strapi/plugin-users-permissions": "catalog:strapi",
     "@strapi/strapi": "catalog:strapi",

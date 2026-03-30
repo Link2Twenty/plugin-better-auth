@@ -59,7 +59,7 @@ export const RolesCreatePage = () => {
   const [isLoadingLayout, setIsLoadingLayout] = useState(true);
 
   useEffect(() => {
-    get("/better-auth/permissions-layout")
+    get("/api-permissions/permissions-layout")
       .then((res) => res.data?.data?.sections ?? res.data?.sections ?? res.data)
       .then((sections) => {
         if (sections) {
@@ -85,7 +85,7 @@ export const RolesCreatePage = () => {
     setIsSaving(true);
     try {
       const permissionsToSend = permissionsRef.current?.getPermissions() ?? {};
-      await post("/better-auth/roles", {
+      await post("/api-permissions/roles", {
         name,
         description,
         permissions: permissionsToSend,
@@ -139,10 +139,7 @@ export const RolesCreatePage = () => {
           })}
           primaryAction={
             <Button type="submit" loading={isSaving} startIcon={<Check />}>
-              {formatMessage({
-                id: "global.save",
-                defaultMessage: "Save",
-              })}
+              {formatMessage({ id: "global.save", defaultMessage: "Save" })}
             </Button>
           }
           navigationAction={
@@ -160,20 +157,12 @@ export const RolesCreatePage = () => {
         />
         <Layouts.Content>
           <Flex direction="column" alignItems="stretch" gap={6}>
-            <Box
-              background="neutral0"
-              padding={6}
-              shadow="filterShadow"
-              hasRadius
-            >
+            <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
               <Flex direction="column" alignItems="stretch" gap={4}>
                 <Flex justifyContent="space-between">
                   <Box>
                     <Typography fontWeight="bold">
-                      {formatMessage({
-                        id: "global.details",
-                        defaultMessage: "Details",
-                      })}
+                      {formatMessage({ id: "global.details", defaultMessage: "Details" })}
                     </Typography>
                     <Typography variant="pi" textColor="neutral600">
                       {formatMessage({
@@ -205,12 +194,7 @@ export const RolesCreatePage = () => {
                   </Box>
                 </Flex>
                 <Grid.Root gap={4}>
-                  <Grid.Item
-                    xs={12}
-                    col={6}
-                    direction="column"
-                    alignItems="stretch"
-                  >
+                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
                     <Field.Root
                       name="name"
                       error={
@@ -224,36 +208,18 @@ export const RolesCreatePage = () => {
                       required
                     >
                       <Field.Label>
-                        {formatMessage({
-                          id: "global.name",
-                          defaultMessage: "Name",
-                        })}
+                        {formatMessage({ id: "global.name", defaultMessage: "Name" })}
                       </Field.Label>
-                      <TextInput
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        type="text"
-                      />
+                      <TextInput value={name} onChange={(e) => setName(e.target.value)} type="text" />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
-                  <Grid.Item
-                    xs={12}
-                    col={6}
-                    direction="column"
-                    alignItems="stretch"
-                  >
+                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
                     <Field.Root name="description">
                       <Field.Label>
-                        {formatMessage({
-                          id: "global.description",
-                          defaultMessage: "Description",
-                        })}
+                        {formatMessage({ id: "global.description", defaultMessage: "Description" })}
                       </Field.Label>
-                      <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                      />
+                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
@@ -262,11 +228,7 @@ export const RolesCreatePage = () => {
             </Box>
             <Box shadow="filterShadow" hasRadius>
               <PermissionsProvider permissions={permissionsForm}>
-                <Permissions
-                  ref={permissionsRef}
-                  permissions={permissionsForm}
-                  layout={layout}
-                />
+                <Permissions ref={permissionsRef} permissions={permissionsForm} layout={layout} />
               </PermissionsProvider>
             </Box>
           </Flex>

@@ -455,6 +455,95 @@ export interface ApiTestTest extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface PluginApiPermissionsPermission
+  extends Struct.CollectionTypeSchema {
+  collectionName: "api_permissions_permissions";
+  info: {
+    description: "Content API permission";
+    displayName: "Permission";
+    pluralName: "permissions";
+    singularName: "permission";
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    "content-manager": {
+      visible: false;
+    };
+    "content-type-builder": {
+      visible: false;
+    };
+  };
+  attributes: {
+    action: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      "oneToMany",
+      "plugin::api-permissions.permission"
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.Relation<
+      "manyToOne",
+      "plugin::api-permissions.role"
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface PluginApiPermissionsRole extends Struct.CollectionTypeSchema {
+  collectionName: "api_permissions_roles";
+  info: {
+    description: "Content API role";
+    displayName: "Role";
+    pluralName: "roles";
+    singularName: "role";
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    "content-manager": {
+      visible: false;
+    };
+    "content-type-builder": {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      "oneToMany",
+      "plugin::api-permissions.role"
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 3;
+      }>;
+    permissions: Schema.Attribute.Relation<
+      "oneToMany",
+      "plugin::api-permissions.permission"
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    type: Schema.Attribute.String & Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
   collectionName: "better_auth_accounts";
   info: {
@@ -683,6 +772,15 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.Relation<
+      "manyToOne",
+      "plugin::api-permissions.role"
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        "better-auth": {
+          managed: true;
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -1259,6 +1357,8 @@ declare module "@strapi/strapi" {
       "admin::transfer-token-permission": AdminTransferTokenPermission;
       "admin::user": AdminUser;
       "api::test.test": ApiTestTest;
+      "plugin::api-permissions.permission": PluginApiPermissionsPermission;
+      "plugin::api-permissions.role": PluginApiPermissionsRole;
       "plugin::better-auth.account": PluginBetterAuthAccount;
       "plugin::better-auth.session": PluginBetterAuthSession;
       "plugin::better-auth.user": PluginBetterAuthUser;

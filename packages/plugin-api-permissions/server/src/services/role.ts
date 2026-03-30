@@ -5,8 +5,11 @@ import omit from "lodash/omit";
 import pick from "lodash/pick";
 import set from "lodash/set";
 
-const ROLE_UID = "plugin::better-auth.role" as const;
-const PERMISSION_UID = "plugin::better-auth.permission" as const;
+const ROLE_UID = "plugin::api-permissions.role" as const;
+const PERMISSION_UID = "plugin::api-permissions.permission" as const;
+
+// The user UID is provided by the auth provider (e.g. plugin-better-auth).
+// User counting will silently return 0 if the content-type is not registered.
 const USER_UID = "plugin::better-auth.user" as const;
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -58,10 +61,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       throw new errors.NotFoundError("Role not found");
     }
 
-    const betterAuthService = strapi.plugin("better-auth").service("better-auth") as {
+    const apiPermissionsService = strapi.plugin("api-permissions").service("api-permissions") as {
       getActions: () => Record<string, unknown>;
     };
-    const allActions = betterAuthService.getActions();
+    const allActions = apiPermissionsService.getActions();
 
     for (const permission of role.permissions ?? []) {
       const parts = (permission as { action: string }).action.split(".");
@@ -74,9 +77,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     }
 
-    const nb_users = await strapi.db.query(USER_UID).count({
-      where: { role: { id: role.id } },
-    });
+    let nb_users = 0;
+    try {
+      nb_users = await strapi.db.query(USER_UID).count({
+        where: { role: { id: role.id } },
+      });
+    } catch {
+      // User content-type may not be from better-auth
+    }
 
     return {
       ...role,
@@ -95,9 +103,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     );
 
     for (const role of roles) {
-      const count = await strapi.db.query(USER_UID).count({
-        where: { role: { id: role.id } },
-      });
+      let count = 0;
+      try {
+        count = await strapi.db.query(USER_UID).count({
+          where: { role: { id: role.id } },
+        });
+      } catch {
+        // User content-type may not be from better-auth
+      }
       (role as Record<string, unknown>).nb_users = count;
     }
 
@@ -163,18 +176,25 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   async deleteRole(roleId: string | number, defaultRoleId: string | number) {
     const role = await strapi.db
       .query(ROLE_UID)
-      .findOne({ where: { id: roleId }, populate: ["users", "permissions"] });
+      .findOne({ where: { id: roleId }, populate: ["permissions"] });
 
     if (!role) {
       throw new errors.NotFoundError("Role not found");
     }
 
-    const users = (role.users ?? []) as Array<{ id: number }>;
-    for (const user of users) {
-      await strapi.db.query(USER_UID).update({
-        where: { id: user.id },
-        data: { role: defaultRoleId },
+    // Reassign users from the deleted role to the default (public) role
+    try {
+      const users = await strapi.db.query(USER_UID).findMany({
+        where: { role: { id: roleId } },
       });
+      for (const user of users) {
+        await strapi.db.query(USER_UID).update({
+          where: { id: (user as { id: number }).id },
+          data: { role: defaultRoleId },
+        });
+      }
+    } catch {
+      // User content-type may not be from better-auth
     }
 
     const permissions = (role.permissions ?? []) as Array<{ id: number }>;

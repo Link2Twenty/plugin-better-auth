@@ -59,8 +59,7 @@ export default {
     role: {
       type: "relation",
       relation: "manyToOne",
-      target: "plugin::better-auth.role",
-      inversedBy: "users",
+      target: "plugin::api-permissions.role",
       pluginOptions: {
         "better-auth": {
           managed: true,

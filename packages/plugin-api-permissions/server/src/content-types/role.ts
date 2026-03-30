@@ -1,19 +1,15 @@
 export default {
   kind: "collectionType",
-  collectionName: "better_auth_roles",
+  collectionName: "api_permissions_roles",
   info: {
     singularName: "role",
     pluralName: "roles",
     displayName: "Role",
-    description: "Better Auth role",
+    description: "Content API role",
   },
   pluginOptions: {
-    "content-manager": {
-      visible: false,
-    },
-    "content-type-builder": {
-      visible: false,
-    },
+    "content-manager": { visible: false },
+    "content-type-builder": { visible: false },
   },
   attributes: {
     name: {
@@ -31,13 +27,7 @@ export default {
     permissions: {
       type: "relation",
       relation: "oneToMany",
-      target: "plugin::better-auth.permission",
-      mappedBy: "role",
-    },
-    users: {
-      type: "relation",
-      relation: "oneToMany",
-      target: "plugin::better-auth.user",
+      target: "plugin::api-permissions.permission",
       mappedBy: "role",
     },
   },

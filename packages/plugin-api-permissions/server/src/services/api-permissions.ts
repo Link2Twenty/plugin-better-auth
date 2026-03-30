@@ -1,9 +1,15 @@
 import type { Core } from "@strapi/strapi";
+import type { ParameterizedContext } from "koa";
 
-const isSingleType = (ct: { kind?: string }) => ct?.kind === "singleType";
+export type SessionResolverResult = {
+  userId?: string | number;
+  roleId?: string | number;
+} | null;
 
-const CONTENT_API_CRUD_ACTIONS = ["find", "findOne", "create", "update", "delete"] as const;
-const SINGLE_TYPE_ACTIONS = ["find", "update", "delete"] as const;
+export type SessionResolver = (ctx: ParameterizedContext) => Promise<SessionResolverResult>;
+
+// Actions that don't apply to single types (no concept of creating or fetching one-by-id)
+const SINGLE_TYPE_EXCLUDED_ACTIONS = new Set(["create", "findOne"]);
 
 const actionLabels: Record<string, string> = {
   create: "Create",
@@ -13,17 +19,14 @@ const actionLabels: Record<string, string> = {
   delete: "Delete",
 };
 
+const isSingleType = (ct: { kind?: string }) => ct?.kind === "singleType";
+
 type ContentPermission = {
   actions: Array<{ actionId: string; label: string; subjects: string[] }>;
   subjects: Array<{ uid: string; label: string }>;
 };
 type PluginPermission = { action: string; displayName: string; plugin: string; subCategory: string };
 
-/**
- * Builds a permissions layout for Content API only.
- * Content types get CRUD actions (find, findOne, create, update, delete).
- * No field-level permissions.
- */
 function buildPermissionsLayout(strapi: Core.Strapi): {
   collectionTypes: ContentPermission;
   singleTypes: ContentPermission;
@@ -53,8 +56,8 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
       const controllerActions = apiEntry?.controllers?.[controllerName] ?? [];
 
       const allowedActions = isSingle
-        ? SINGLE_TYPE_ACTIONS.filter((a) => controllerActions.includes(a))
-        : CONTENT_API_CRUD_ACTIONS.filter((a) => controllerActions.includes(a));
+        ? (controllerActions as string[]).filter((a) => !SINGLE_TYPE_EXCLUDED_ACTIONS.has(a))
+        : (controllerActions as string[]);
 
       if (allowedActions.length === 0) continue;
 
@@ -86,7 +89,7 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
     }
 
     for (const [pluginKey, value] of Object.entries(actionsMap)) {
-      if (!pluginKey.startsWith("plugin::") || pluginKey.includes("better-auth")) continue;
+      if (!pluginKey.startsWith("plugin::") || pluginKey.includes("api-permissions")) continue;
       const pluginName = pluginKey.replace("plugin::", "");
       const { controllers } = value ?? {};
       for (const [subCategory, actions] of Object.entries(controllers ?? {})) {
@@ -118,64 +121,72 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
   };
 }
 
-/**
- * Builds the full action map from all content-api controllers (APIs + plugins).
- * Used by the role edit page to populate the permissions accordion.
- */
-export default ({ strapi }: { strapi: Core.Strapi }) => ({
-  getPermissionsLayout() {
-    return buildPermissionsLayout(strapi);
-  },
+export default ({ strapi }: { strapi: Core.Strapi }) => {
+  let sessionResolver: SessionResolver = async () => null;
 
-  getActions(): Record<string, { controllers: Record<string, Record<string, { enabled: boolean; policy: string }>> }> {
-    const actionMap: Record<
-      string,
-      { controllers: Record<string, Record<string, { enabled: boolean; policy: string }>> }
-    > = {};
+  return {
+    registerSessionResolver(fn: SessionResolver) {
+      sessionResolver = fn;
+    },
 
-    try {
-      for (const [apiName, api] of Object.entries(strapi.apis ?? {})) {
-        const apiKey = `api::${apiName}`;
-        if (!actionMap[apiKey]) actionMap[apiKey] = { controllers: {} };
-        const controllers = (api as { controllers?: Record<string, unknown> }).controllers ?? {};
-        for (const [controllerName, controller] of Object.entries(controllers)) {
-          const routes = (controller as { routes?: Record<string, unknown> })?.routes ?? {};
-          const actions: Record<string, { enabled: boolean; policy: string }> = {};
-          for (const actionName of Object.keys(routes)) {
-            actions[actionName] = { enabled: false, policy: "" };
-          }
-          if (Object.keys(actions).length > 0) {
-            actionMap[apiKey].controllers[controllerName] = actions;
-          }
-        }
-      }
+    getSessionResolver(): SessionResolver {
+      return sessionResolver;
+    },
 
-      for (const [pluginName, plugin] of Object.entries(strapi.plugins ?? {})) {
-        const pluginKey = `plugin::${pluginName}`;
-        if (!actionMap[pluginKey]) actionMap[pluginKey] = { controllers: {} };
-        const routes = (plugin as { routes?: Record<string, unknown> }).routes ?? {};
-        const contentApiRoutes = routes["content-api"] as { routes?: Array<{ handler?: string }> } | undefined;
-        const routeList = contentApiRoutes?.routes ?? [];
-        for (const route of routeList) {
-          const handler = route.handler ?? "";
-          const parts = handler.split(".");
-          if (parts.length >= 2) {
-            const controllerName = parts[0]?.replace("-controller", "") ?? "unknown";
-            const actionName = parts[1] ?? "unknown";
-            if (!actionMap[pluginKey].controllers[controllerName]) {
-              actionMap[pluginKey].controllers[controllerName] = {};
+    getPermissionsLayout() {
+      return buildPermissionsLayout(strapi);
+    },
+
+    getActions(): Record<string, { controllers: Record<string, Record<string, { enabled: boolean; policy: string }>> }> {
+      const actionMap: Record<
+        string,
+        { controllers: Record<string, Record<string, { enabled: boolean; policy: string }>> }
+      > = {};
+
+      try {
+        for (const [apiName, api] of Object.entries(strapi.apis ?? {})) {
+          const apiKey = `api::${apiName}`;
+          if (!actionMap[apiKey]) actionMap[apiKey] = { controllers: {} };
+          const controllers = (api as { controllers?: Record<string, unknown> }).controllers ?? {};
+          for (const [controllerName, controller] of Object.entries(controllers)) {
+            const routes = (controller as { routes?: Record<string, unknown> })?.routes ?? {};
+            const actions: Record<string, { enabled: boolean; policy: string }> = {};
+            for (const actionName of Object.keys(routes)) {
+              actions[actionName] = { enabled: false, policy: "" };
             }
-            actionMap[pluginKey].controllers[controllerName][actionName] = {
-              enabled: false,
-              policy: "",
-            };
+            if (Object.keys(actions).length > 0) {
+              actionMap[apiKey].controllers[controllerName] = actions;
+            }
           }
         }
-      }
-    } catch {
-      // Fallback to empty map if structure is unexpected
-    }
 
-    return actionMap;
-  },
-});
+        for (const [pluginName, plugin] of Object.entries(strapi.plugins ?? {})) {
+          const pluginKey = `plugin::${pluginName}`;
+          if (!actionMap[pluginKey]) actionMap[pluginKey] = { controllers: {} };
+          const routes = (plugin as { routes?: Record<string, unknown> }).routes ?? {};
+          const contentApiRoutes = routes["content-api"] as { routes?: Array<{ handler?: string }> } | undefined;
+          const routeList = contentApiRoutes?.routes ?? [];
+          for (const route of routeList) {
+            const handler = route.handler ?? "";
+            const parts = handler.split(".");
+            if (parts.length >= 2) {
+              const controllerName = parts[0]?.replace("-controller", "") ?? "unknown";
+              const actionName = parts[1] ?? "unknown";
+              if (!actionMap[pluginKey].controllers[controllerName]) {
+                actionMap[pluginKey].controllers[controllerName] = {};
+              }
+              actionMap[pluginKey].controllers[controllerName][actionName] = {
+                enabled: false,
+                policy: "",
+              };
+            }
+          }
+        }
+      } catch {
+        // Fallback to empty map if structure is unexpected
+      }
+
+      return actionMap;
+    },
+  };
+};

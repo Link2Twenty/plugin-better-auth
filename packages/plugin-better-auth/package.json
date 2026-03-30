@@ -47,10 +47,8 @@
   },
   "devDependencies": {
     "@better-auth/test-utils": "catalog:better-auth",
-    "react-intl": "^6.0.0",
     "@biomejs/biome": "^2.3.11",
     "@strapi/sdk-plugin": "^6.0.0",
-    "@strapi/strapi": "catalog:strapi",
     "@strapi/typescript-utils": "catalog:strapi",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
@@ -58,10 +56,12 @@
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
+    "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi/design-system": "^2.0.0",
     "styled-components": "^5.0.0 || ^6.0.0",
     "@strapi/icons": "^2.0.0",
     "@strapi/strapi": "^5.0.0",
+    "@strapi/types": "^5.0.0",
     "@strapi/utils": "^5.0.0",
     "better-auth": ">=1.4.0 <2",
     "react": "^17.0.0 || ^18.0.0",

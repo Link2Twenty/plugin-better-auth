@@ -54,7 +54,7 @@ export const RolesListPage = () => {
     if (!canRead) return;
     setIsLoadingData(true);
     try {
-      const { data } = await get("/better-auth/roles");
+      const { data } = await get("/api-permissions/roles");
       setRoles(data?.roles ?? []);
     } finally {
       setIsLoadingData(false);
@@ -78,7 +78,7 @@ export const RolesListPage = () => {
       );
       if (!confirmed) return;
       try {
-        await del(`/better-auth/roles/${id}`);
+        await del(`/api-permissions/roles/${id}`);
         await fetchRoles();
       } catch {
         toggleNotification({
@@ -133,7 +133,7 @@ export const RolesListPage = () => {
           canCreate ? (
             <LinkButton href={ROLES_NEW} startIcon={<Plus />} size="S">
               {formatMessage({
-                id: "better-auth.List.button.roles",
+                id: "api-permissions.List.button.roles",
                 defaultMessage: "Add new role",
               })}
             </LinkButton>
@@ -162,34 +162,22 @@ export const RolesListPage = () => {
               <Tr>
                 <Th>
                   <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({
-                      id: "global.name",
-                      defaultMessage: "Name",
-                    })}
+                    {formatMessage({ id: "global.name", defaultMessage: "Name" })}
                   </Typography>
                 </Th>
                 <Th>
                   <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({
-                      id: "global.description",
-                      defaultMessage: "Description",
-                    })}
+                    {formatMessage({ id: "global.description", defaultMessage: "Description" })}
                   </Typography>
                 </Th>
                 <Th>
                   <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({
-                      id: "global.users",
-                      defaultMessage: "Users",
-                    })}
+                    {formatMessage({ id: "global.users", defaultMessage: "Users" })}
                   </Typography>
                 </Th>
                 <Th>
                   <VisuallyHidden>
-                    {formatMessage({
-                      id: "global.actions",
-                      defaultMessage: "Actions",
-                    })}
+                    {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
                   </VisuallyHidden>
                 </Th>
               </Tr>
@@ -204,7 +192,7 @@ export const RolesListPage = () => {
         ) : (
           <EmptyStateLayout
             content={formatMessage({
-              id: "better-auth.Roles.empty",
+              id: "api-permissions.Roles.empty",
               defaultMessage: "You don't have any roles yet.",
             })}
           />

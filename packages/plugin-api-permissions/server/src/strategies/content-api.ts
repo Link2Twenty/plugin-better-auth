@@ -1,10 +1,8 @@
 import type { Core } from "@strapi/strapi";
 import type { ParameterizedContext } from "koa";
-import { fromNodeHeaders } from "better-auth/node";
 
-const ROLE_UID = "plugin::better-auth.role" as const;
-const PERMISSION_UID = "plugin::better-auth.permission" as const;
-const USER_UID = "plugin::better-auth.user" as const;
+const ROLE_UID = "plugin::api-permissions.role" as const;
+const PERMISSION_UID = "plugin::api-permissions.permission" as const;
 
 type AuthResult = {
   authenticated: boolean;
@@ -19,7 +17,7 @@ function toContentAPIPermissions(
   return permissions.map((p) => ({ action: p.action }));
 }
 
-async function getRolePermissions(strapi: Core.Strapi, roleId: number): Promise<Array<{ action: string }>> {
+async function getRolePermissions(strapi: Core.Strapi, roleId: string | number): Promise<Array<{ action: string }>> {
   const permissions = await strapi.db.query(PERMISSION_UID).findMany({
     where: { role: { id: roleId } },
   });
@@ -36,44 +34,24 @@ async function getPublicRolePermissions(strapi: Core.Strapi): Promise<Array<{ ac
 
 export default function createContentApiStrategy(strapi: Core.Strapi) {
   return {
-    name: "better-auth",
+    name: "content-api",
     authenticate: async (ctx: ParameterizedContext): Promise<AuthResult> => {
       try {
-        const authConfig = (strapi as unknown as { internal_config: Record<string, unknown> }).internal_config["better-auth"] as
-          | { api?: { getSession?: (opts: { headers: Headers }) => Promise<{ user?: { id: string }; session?: unknown } | null> } }
-          | (() => { api?: { getSession?: (opts: { headers: Headers }) => Promise<{ user?: { id: string }; session?: unknown } | null> } })
-          | undefined;
+        const resolver = (
+          strapi.plugin("api-permissions").service("api-permissions") as {
+            getSessionResolver: () => (ctx: ParameterizedContext) => Promise<{
+              userId?: string | number;
+              roleId?: string | number;
+            } | null>;
+          }
+        ).getSessionResolver();
 
-        const auth = typeof authConfig === "function" ? authConfig() : authConfig;
-
-        if (!auth?.api?.getSession) {
-          return { authenticated: false };
-        }
-
-        const headers = fromNodeHeaders(ctx.request.headers as Record<string, string | string[] | undefined>);
-        const session = await auth.api.getSession({ headers });
+        const sessionInfo = await resolver(ctx);
 
         let permissions: Array<{ action: string }>;
 
-        if (session?.user?.id != null) {
-          const userId = typeof session.user.id === "string" ? Number(session.user.id) : session.user.id;
-          const user = await strapi.db.query(USER_UID).findOne({
-            where: { id: userId },
-            populate: ["role"],
-          });
-
-          if (!user) {
-            return { authenticated: false };
-          }
-
-          const role = (user as { role?: { id: number } }).role;
-          if (!role?.id) {
-            permissions = await getPublicRolePermissions(strapi);
-          } else {
-            permissions = await getRolePermissions(strapi, role.id);
-          }
-
-          ctx.state.user = user;
+        if (sessionInfo?.roleId != null) {
+          permissions = await getRolePermissions(strapi, sessionInfo.roleId);
         } else {
           permissions = await getPublicRolePermissions(strapi);
         }
@@ -88,7 +66,7 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
 
         return {
           authenticated: true,
-          credentials: session?.user ? ctx.state.user : null,
+          credentials: sessionInfo != null ? (ctx.state.user ?? sessionInfo) : null,
           ability,
         };
       } catch {

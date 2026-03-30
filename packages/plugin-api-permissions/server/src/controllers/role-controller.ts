@@ -1,5 +1,6 @@
 import type { Core } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
+import type { Context } from "koa";
 import { getService } from "../utils";
 
 const { ApplicationError, ValidationError } = errors;
@@ -7,21 +8,21 @@ const { ApplicationError, ValidationError } = errors;
 export default ({ strapi }: { strapi: Core.Strapi }) => {
   const roleService = () =>
     getService(strapi, "role") as ReturnType<(typeof import("../services/role"))["default"]>;
-  const betterAuthService = () =>
-    getService(strapi, "better-auth") as ReturnType<(typeof import("../services/better-auth"))["default"]>;
+  const apiPermissionsService = () =>
+    getService(strapi, "api-permissions") as ReturnType<(typeof import("../services/api-permissions"))["default"]>;
 
   return {
-    async getActions(ctx: { send: (body: unknown) => void }) {
-      const actions = betterAuthService().getActions();
+    async getActions(ctx: Context) {
+      const actions = apiPermissionsService().getActions();
       ctx.send({ actions });
     },
 
-    async getPermissionsLayout(ctx: { send: (body: unknown) => void }) {
-      const layout = betterAuthService().getPermissionsLayout();
+    async getPermissionsLayout(ctx: Context) {
+      const layout = apiPermissionsService().getPermissionsLayout();
       ctx.send({ data: { conditions: [], sections: layout } });
     },
 
-    async createRole(ctx: { request: { body: unknown }; send: (body: unknown) => void }) {
+    async createRole(ctx: Context) {
       const body = ctx.request.body as Record<string, unknown>;
       if (!body || Object.keys(body).length === 0) {
         throw new ValidationError("Request body cannot be empty");
@@ -30,7 +31,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
       ctx.send({ ok: true });
     },
 
-    async findOne(ctx: { params: { id: string }; send: (body: unknown) => void; notFound: () => void }) {
+    async findOne(ctx: Context) {
       const { id } = ctx.params;
       try {
         const role = await roleService().findOne(id);
@@ -43,16 +44,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
       }
     },
 
-    async find(ctx: { send: (body: unknown) => void }) {
+    async find(ctx: Context) {
       const roles = await roleService().find();
       ctx.send({ roles });
     },
 
-    async updateRole(ctx: {
-      params: { role: string };
-      request: { body: unknown };
-      send: (body: unknown) => void;
-    }) {
+    async updateRole(ctx: Context) {
       const roleId = ctx.params.role;
       const body = ctx.request.body as Record<string, unknown>;
       if (!body || Object.keys(body).length === 0) {
@@ -62,11 +59,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
       ctx.send({ ok: true });
     },
 
-    async deleteRole(ctx: { params: { role: string }; send: (body: unknown) => void }) {
+    async deleteRole(ctx: Context) {
       const roleId = ctx.params.role;
 
+      const ROLE_UID = "plugin::api-permissions.role";
       const publicRole = await strapi.db
-        .query("plugin::better-auth.role")
+        .query(ROLE_UID)
         .findOne({ where: { type: "public" } });
 
       if (!publicRole) {

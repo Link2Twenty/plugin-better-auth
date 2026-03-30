@@ -1,19 +1,15 @@
 export default {
   kind: "collectionType",
-  collectionName: "better_auth_permissions",
+  collectionName: "api_permissions_permissions",
   info: {
     singularName: "permission",
     pluralName: "permissions",
     displayName: "Permission",
-    description: "Better Auth permission",
+    description: "Content API permission",
   },
   pluginOptions: {
-    "content-manager": {
-      visible: false,
-    },
-    "content-type-builder": {
-      visible: false,
-    },
+    "content-manager": { visible: false },
+    "content-type-builder": { visible: false },
   },
   attributes: {
     action: {
@@ -23,7 +19,7 @@ export default {
     role: {
       type: "relation",
       relation: "manyToOne",
-      target: "plugin::better-auth.role",
+      target: "plugin::api-permissions.role",
       inversedBy: "permissions",
     },
   },
