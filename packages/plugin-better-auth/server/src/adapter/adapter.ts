@@ -60,7 +60,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
        */
       const getModelUid = (model: string): UID.ContentType => {
         const modelName = getModelName(model);
-        return `plugin::better-auth.${kebabCase(modelName)}`;
+        return `plugin::better-auth.${kebabCase(modelName)}` as UID.ContentType;
       };
 
       return {
@@ -110,6 +110,10 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
             documentId: record.documentId,
             data: transformedUpdate,
           });
+
+          if (!result) {
+            throw new Error(`Failed to update record for model ${model}`);
+          }
 
           const output = await transformOutput(result, model);
           return output;
@@ -230,7 +234,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("findMany", { model, where, limit, offset, sortBy });
 
           const uid = getModelUid(model);
-          const filters = transformFilters(where, model, getFieldName);
+          const filters = where ? transformFilters(where, model, getFieldName) : undefined;
 
           const queryOptions: { [key: string]: unknown } = {
             filters,
@@ -270,7 +274,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("count", { model, where });
 
           const uid = getModelUid(model);
-          const filters = transformFilters(where, model, getFieldName);
+          const filters = where ? transformFilters(where, model, getFieldName) : undefined;
 
           const records = await strapi.documents(uid).findMany({
             filters,

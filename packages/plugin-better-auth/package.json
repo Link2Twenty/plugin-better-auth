@@ -16,12 +16,6 @@
       "default": "./dist/adapter/index.js"
     },
     "./package.json": "./package.json",
-    "./strapi-admin": {
-      "source": "./admin/src/index.ts",
-      "import": "./dist/admin/index.mjs",
-      "require": "./dist/admin/index.js",
-      "default": "./dist/admin/index.js"
-    },
     "./strapi-server": {
       "source": "./server/src/index.ts",
       "import": "./dist/server/index.mjs",
@@ -57,16 +51,10 @@
   },
   "peerDependencies": {
     "@strapi-community/plugin-api-permissions": "workspace:*",
-    "@strapi/design-system": "^2.0.0",
-    "styled-components": "^5.0.0 || ^6.0.0",
-    "@strapi/icons": "^2.0.0",
     "@strapi/strapi": "^5.0.0",
     "@strapi/types": "^5.0.0",
     "@strapi/utils": "^5.0.0",
-    "better-auth": ">=1.4.0 <2",
-    "react": "^17.0.0 || ^18.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0",
-    "react-intl": "^6.0.0 || ^7.0.0"
+    "better-auth": ">=1.4.0 <2"
   },
   "strapi": {
     "kind": "plugin",

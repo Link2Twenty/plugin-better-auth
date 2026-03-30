@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import { resolve } from "node:path";
-import { compileStrapi, createStrapi } from "@strapi/strapi";
+import { compileStrapi, Core, createStrapi } from "@strapi/strapi";
 
 // This method removes all non-admin build files from the dist directory
-const cleanupDistDirectory = async ({ distDir }) => {
+const cleanupDistDirectory = async ({ distDir }: { distDir?: string }) => {
   if (
     !distDir || // we don't have a dist dir
     (await fs
@@ -27,7 +27,7 @@ const cleanupDistDirectory = async ({ distDir }) => {
   }
 };
 
-export const cleanupStrapiApp = async (strapi, distDir) => {
+export const cleanupStrapiApp = async (strapi: Core.Strapi, distDir?: string) => {
   await strapi.destroy();
   await cleanupDistDirectory({ distDir });
 };
