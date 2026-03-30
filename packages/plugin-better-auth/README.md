@@ -36,7 +36,7 @@ Create the Better Auth config file and add the following content.
 ```typescript
 // config/better-auth.ts
 import { betterAuth } from "better-auth";
-import { strapiAdapter } from '@strapi-community/plugin-better-auth/adapter';
+import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
 const auth = () => betterAuth({
   database: strapiAdapter(),

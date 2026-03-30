@@ -8,6 +8,13 @@
   ],
   "type": "commonjs",
   "exports": {
+    ".": {
+      "source": "./server/src/adapter/index.ts",
+      "types": "./dist/adapter/index.d.ts",
+      "import": "./dist/adapter/index.mjs",
+      "require": "./dist/adapter/index.js",
+      "default": "./dist/adapter/index.js"
+    },
     "./package.json": "./package.json",
     "./strapi-admin": {
       "source": "./admin/src/index.ts",
@@ -20,13 +27,6 @@
       "import": "./dist/server/index.mjs",
       "require": "./dist/server/index.js",
       "default": "./dist/server/index.js"
-    },
-    "./adapter": {
-      "source": "./server/src/adapter/index.ts",
-      "types": "./dist/adapter/index.d.ts",
-      "import": "./dist/adapter/index.mjs",
-      "require": "./dist/adapter/index.js",
-      "default": "./dist/adapter/index.js"
     }
   },
   "files": [
