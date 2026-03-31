@@ -772,15 +772,10 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
-    role: Schema.Attribute.Relation<
-      "manyToOne",
+    roles: Schema.Attribute.Relation<
+      "manyToMany",
       "plugin::api-permissions.role"
-    > &
-      Schema.Attribute.SetPluginOptions<{
-        "better-auth": {
-          managed: true;
-        };
-      }>;
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;

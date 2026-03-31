@@ -1,5 +1,6 @@
 import type { Core } from "@strapi/strapi";
 import type { ParameterizedContext } from "koa";
+import { getPluginService } from "../utils";
 
 const ROLE_UID = "plugin::api-permissions.role" as const;
 const PERMISSION_UID = "plugin::api-permissions.permission" as const;
@@ -37,21 +38,19 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
     name: "content-api",
     authenticate: async (ctx: ParameterizedContext): Promise<AuthResult> => {
       try {
-        const resolver = (
-          strapi.plugin("api-permissions").service("api-permissions") as {
-            getSessionResolver: () => (ctx: ParameterizedContext) => Promise<{
-              userId?: string | number;
-              roleId?: string | number;
-            } | null>;
-          }
-        ).getSessionResolver();
+        const resolver = getPluginService('api-permissions').getSessionResolver();
 
         const sessionInfo = await resolver(ctx);
 
+        const { roles } = sessionInfo ?? {};
+
         let permissions: Array<{ action: string }>;
 
-        if (sessionInfo?.roleId != null) {
-          permissions = await getRolePermissions(strapi, sessionInfo.roleId);
+        if (roles && roles.length > 0) {
+          const rolePermissions = await Promise.all(
+            roles.map((role) => getRolePermissions(strapi, role.id))
+          );
+          permissions = rolePermissions.flat();
         } else {
           permissions = await getPublicRolePermissions(strapi);
         }

@@ -24,6 +24,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
       "[@strapi-community/plugin-better-auth] plugin-api-permissions is not installed. " +
       "Content API authentication will not work."
     );
+
     return;
   }
 
@@ -46,16 +47,15 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
       const userId = Number(session.user.id);
 
       const user = await strapi.documents("plugin::better-auth.user").findFirst({
-        where: { id: userId },
-        populate: ["role"],
+        filters: { id: userId },
+        populate: ["roles"],
       });
 
       if (!user) return null;
 
       ctx.state.user = user;
 
-      const role = user.role;
-      return { userId, roleId: role?.id };
+      return { user, roles: user.roles };
     }
   );
 }
