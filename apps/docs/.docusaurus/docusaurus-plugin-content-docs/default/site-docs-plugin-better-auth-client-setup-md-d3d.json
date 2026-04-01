@@ -1,0 +1,29 @@
+{
+  "id": "plugin-better-auth/client-setup",
+  "title": "Client Setup",
+  "description": "Better Auth provides framework-specific client helpers for React, Vue, Svelte, and more. All of them point to the Strapi-hosted Better Auth API at /api/better-auth.",
+  "source": "@site/docs/plugin-better-auth/client-setup.md",
+  "sourceDirName": "plugin-better-auth",
+  "slug": "/plugin-better-auth/client-setup",
+  "permalink": "/plugin-better-auth/docs/plugin-better-auth/client-setup",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-better-auth/client-setup.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "client-setup",
+    "title": "Client Setup",
+    "sidebar_position": 4
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Configuration",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/configuration"
+  },
+  "next": {
+    "title": "Server Usage",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/server-usage"
+  }
+}

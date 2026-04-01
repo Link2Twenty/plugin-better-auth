@@ -1,0 +1,29 @@
+{
+  "id": "plugin-better-auth/installation",
+  "title": "Installation",
+  "description": "1. Install the packages",
+  "source": "@site/docs/plugin-better-auth/installation.md",
+  "sourceDirName": "plugin-better-auth",
+  "slug": "/plugin-better-auth/installation",
+  "permalink": "/plugin-better-auth/docs/plugin-better-auth/installation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-better-auth/installation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "installation",
+    "title": "Installation",
+    "sidebar_position": 2
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/"
+  },
+  "next": {
+    "title": "Configuration",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/configuration"
+  }
+}

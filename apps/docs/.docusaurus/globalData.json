@@ -1,0 +1,98 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/plugin-better-auth/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/plugin-better-auth/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "integration",
+              "path": "/plugin-better-auth/docs/integration",
+              "sidebar": "docs"
+            },
+            {
+              "id": "intro",
+              "path": "/plugin-better-auth/docs/intro",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/admin-panel",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/admin-panel",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/configuration",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/configuration",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/how-it-works",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/how-it-works",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/installation",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/installation",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/plugin-api-permissions",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-api-permissions/session-resolver",
+              "path": "/plugin-better-auth/docs/plugin-api-permissions/session-resolver",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/better-auth-plugins",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/better-auth-plugins",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/client-setup",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/client-setup",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/configuration",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/configuration",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/installation",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/installation",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/plugin-better-auth",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "plugin-better-auth/server-usage",
+              "path": "/plugin-better-auth/docs/plugin-better-auth/server-usage",
+              "sidebar": "docs"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docs": {
+              "link": {
+                "path": "/plugin-better-auth/docs/intro",
+                "label": "Introduction"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

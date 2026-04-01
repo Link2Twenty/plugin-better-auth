@@ -1,0 +1,121 @@
+{
+  "/plugin-better-auth/__docusaurus/debug-0ed": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/__docusaurus/debug/config-d31": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/__docusaurus/debug/content-62a": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    },
+    "__props": "__props---plugin-better-auth-docusaurus-debug-contentfb-4-857"
+  },
+  "/plugin-better-auth/__docusaurus/debug/globalData-317": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/__docusaurus/debug/metadata-306": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/__docusaurus/debug/registry-e16": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/__docusaurus/debug/routes-b1c": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docusaurus-debugb-38-f7e"
+    }
+  },
+  "/plugin-better-auth/docs-f63": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-docsaba-9f8"
+    }
+  },
+  "/plugin-better-auth/docs-782": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---plugin-better-auth-docsd-50-33e"
+  },
+  "/plugin-better-auth/docs-b4f": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/plugin-better-auth/docs/integration-cb9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-integration-8-ef-578"
+  },
+  "/plugin-better-auth/docs/intro-4b0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-intro-0-e-3-9fe"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/-5ed": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-b-80-d79"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/admin-panel-a47": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-admin-paneld-33-eb7"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/configuration-796": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-configuration-32-a-55e"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/how-it-works-3e8": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-how-it-works-24-e-4b9"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/installation-8d8": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-installationce-5-313"
+  },
+  "/plugin-better-auth/docs/plugin-api-permissions/session-resolver-bff": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-api-permissions-session-resolver-947-2f1"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/-175": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-22-f-d6a"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/better-auth-plugins-428": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-better-auth-pluginsa-5-a-0ea"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/client-setup-5ec": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-client-setupd-3-d-a69"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/configuration-efb": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-configurationc-9-f-08b"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/installation-565": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-installation-98-e-9e8"
+  },
+  "/plugin-better-auth/docs/plugin-better-auth/server-usage-e33": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---plugin-better-auth-docs-plugin-better-auth-server-usagec-32-58a"
+  },
+  "/plugin-better-auth/-021": {
+    "__comp": "__comp---site-src-pages-index-tsx-1-df-d3e",
+    "__context": {
+      "plugin": "plugin---plugin-better-auth-a-74-eff"
+    },
+    "config": "config---plugin-better-auth-5-e-9-7c9"
+  }
+}
