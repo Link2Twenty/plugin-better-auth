@@ -17,7 +17,7 @@ export default defineConfig({
   },
   // Run your local dev server before starting the tests.
   webServer: {
-    command: "cd ../../apps/playground-ts/ && pnpm run dev",
+    command: "cd ../../apps/playground/ && pnpm run dev",
     url: "http://localhost:1337",
     reuseExistingServer: !process.env.CI,
     env: {

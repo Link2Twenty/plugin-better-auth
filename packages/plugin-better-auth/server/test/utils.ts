@@ -30,14 +30,14 @@ const instanceId = `${process.pid}-${threadId}`;
 let instance: Core.Strapi | undefined;
 export const playgroundDir = path.resolve(
   process.cwd(),
-  "../../apps/playground-ts",
+  "../../apps/playground",
 );
 
 /**
  * Setups strapi for futher testing
  */
 export async function setupStrapi() {
-  const playgroundDir = path.resolve(process.cwd(), "../../apps/playground-ts");
+  const playgroundDir = path.resolve(process.cwd(), "../../apps/playground");
   const databaseFilename = `.tmp/vitest-${instanceId}.db`;
   const databasePath = path.join(playgroundDir, databaseFilename);
 
