@@ -78,11 +78,12 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/strapi-community/plugin-better-auth/issues"
+    "url": "https://github.com/strapi-community/auth/issues"
   },
-  "homepage": "https://github.com/strapi-community/plugin-better-auth",
+  "homepage": "https://github.com/strapi-community/auth",
   "repository": {
     "type": "git",
-    "url": "git://github.com/strapi-community/plugin-better-auth.git"
+    "url": "git+https://github.com/strapi-community/auth.git",
+    "directory": "packages/plugin-better-auth"
   }
 }
