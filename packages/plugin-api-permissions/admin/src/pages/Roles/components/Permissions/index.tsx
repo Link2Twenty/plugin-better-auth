@@ -1,5 +1,5 @@
 import { Box, Tabs, Typography } from "@strapi/design-system";
-import React, { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { useIntl } from "react-intl";
 
 import { usePermissions } from "../../contexts/PermissionsContext";
@@ -44,7 +44,7 @@ const TAB_LABELS = [
 ] as const;
 
 export const Permissions = forwardRef<PermissionsRef, PermissionsProps>(
-  function Permissions({ permissions, layout, isFormDisabled }, ref) {
+  function Permissions({ layout, isFormDisabled }, ref) {
     const { formatMessage } = useIntl();
     const { modifiedData } = usePermissions();
 

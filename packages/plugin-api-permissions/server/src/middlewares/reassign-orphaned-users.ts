@@ -1,4 +1,4 @@
-import type { Data, Modules } from "@strapi/strapi";
+import type { Modules } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
 import { getUserUID, ROLE_UID } from "../utils";
 

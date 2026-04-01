@@ -7,7 +7,6 @@ import {
   Typography,
 } from "@strapi/design-system";
 import get from "lodash/get";
-import React from "react";
 import { useIntl } from "react-intl";
 import { styled } from "styled-components";
 
