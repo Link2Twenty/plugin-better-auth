@@ -44,7 +44,7 @@
     "dist"
   ],
   "scripts": {
-    "postinstall": "pnpm dlx playwright install --with-deps",
+    "postinstall": "playwright install --with-deps",
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
