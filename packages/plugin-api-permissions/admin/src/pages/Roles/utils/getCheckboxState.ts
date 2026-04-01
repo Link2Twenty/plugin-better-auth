@@ -1,7 +1,6 @@
-type RecursiveRecordOfBooleans = Record<
-  string,
-  boolean | RecursiveRecordOfBooleans
->;
+interface RecursiveRecordOfBooleans {
+  [key: string]: boolean | RecursiveRecordOfBooleans;
+}
 
 function getLeafValues(obj: unknown): boolean[] {
   if (obj === null || obj === undefined) {

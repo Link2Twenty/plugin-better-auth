@@ -8,7 +8,7 @@ import {
 } from "@strapi/design-system";
 import get from "lodash/get";
 import { useIntl } from "react-intl";
-import { styled } from "styled-components";
+import styled from "styled-components";
 
 import { usePermissions } from "../../contexts/PermissionsContext";
 import { getCheckboxState } from "../../utils/getCheckboxState";

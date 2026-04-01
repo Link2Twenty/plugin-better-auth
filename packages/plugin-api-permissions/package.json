@@ -47,8 +47,9 @@
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
-    "test:ts:back": "cd server && tsc --noEmit",
-    "check-types": "pnpm run test:ts:back",
+    "test:ts:server": "cd server && tsc --noEmit",
+    "test:ts:admin": "cd admin && tsc --noEmit",
+    "check-types": "pnpm run test:ts:server && pnpm run test:ts:admin",
     "lint": "biome check --fix",
     "test:integration": "vitest run",
     "test:e2e": "playwright test"
@@ -66,6 +67,7 @@
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
     "@types/node": "^22",
+    "@types/styled-components": "^5.1.0",
     "@types/supertest": "^6.0.0",
     "supertest": "^7.0.0",
     "typescript": "^5.9.3"
