@@ -2,6 +2,7 @@
   "name": "@strapi-community/auth",
   "private": true,
   "scripts": {
+    "postinstall": "pnpm dlx playwright install --with-deps",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
