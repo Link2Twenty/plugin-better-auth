@@ -70,7 +70,6 @@ export async function setupStrapi() {
 
 // This method removes all non-admin build files from the dist directory
 export const cleanupDir = async (dir: string) => {
-  console.log("cleanup, ", dir);
   if (
     !dir || // we don't have a dist dir
     (await fspromises
