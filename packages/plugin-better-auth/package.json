@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha.2",
+  "version": "0.0.0-experimental.593681493255d3a39231f63454a967a71fdd7d66",
   "keywords": [
     "better-auth",
     "strapi",
@@ -11,7 +11,6 @@
     ".": {
       "source": "./server/src/adapter/index.ts",
       "types": "./dist/adapter/index.d.ts",
-      "import": "./dist/adapter/index.mjs",
       "require": "./dist/adapter/index.js",
       "default": "./dist/adapter/index.js"
     },
@@ -32,7 +31,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
-    "test:integration": "vitest run",
+    "test:integration": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -55,6 +54,11 @@
     "@strapi/types": "catalog:strapi",
     "@strapi/utils": "catalog:strapi",
     "better-auth": ">=1.4.0 <2"
+  },
+  "peerDependenciesMeta": {
+    "@strapi-community/plugin-api-permissions": {
+      "optional": true
+    }
   },
   "strapi": {
     "kind": "plugin",

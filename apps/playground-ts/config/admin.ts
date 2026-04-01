@@ -17,5 +17,8 @@ export default ({ env }) => ({
     nps: env.bool("FLAG_NPS", true),
     promoteEE: env.bool("FLAG_PROMOTE_EE", true),
   },
-  watchIgnoreFiles: ["!**/node_modules/**"],
+  watchIgnoreFiles: [
+    "!**/node_modules/**/server/**",
+    "!**/node_modules/**/adapter/**",
+  ],
 });

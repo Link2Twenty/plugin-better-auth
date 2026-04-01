@@ -3,9 +3,10 @@ import fs from "node:fs";
 import fspromises from "node:fs/promises";
 import { createRequire } from "node:module";
 import net from "node:net";
-import path from "node:path";
+import path, { resolve } from "node:path";
 import { threadId } from "node:worker_threads";
 import type { Core } from "@strapi/strapi";
+import { getExistingBAContentTypes } from "../src/adapter/transformers";
 
 const require = createRequire(import.meta.url);
 const { compileStrapi, createStrapi } =
@@ -27,6 +28,10 @@ function getFreePort(): Promise<number> {
 const instanceId = `${process.pid}-${threadId}`;
 
 let instance: Core.Strapi | undefined;
+export const playgroundDir = path.resolve(
+  process.cwd(),
+  "../../apps/playground-ts",
+);
 
 /**
  * Setups strapi for futher testing
@@ -63,6 +68,32 @@ export async function setupStrapi() {
   }
 }
 
+// This method removes all non-admin build files from the dist directory
+export const cleanupDir = async (dir: string) => {
+  console.log("cleanup, ", dir);
+  if (
+    !dir || // we don't have a dist dir
+    (await fspromises
+      .access(dir)
+      .then(() => false)
+      .catch(() => true)) // it doesn't exist -- if it does but no access, that will be caught later
+  ) {
+    return;
+  }
+
+  try {
+    const dirContent = await fspromises.readdir(dir);
+    const validFilenames = dirContent
+      // Ignore the admin build folder
+      .filter((filename) => filename !== "build");
+    for (const filename of validFilenames) {
+      await fspromises.rm(resolve(dir, filename), { recursive: true });
+    }
+  } catch {
+    return;
+  }
+};
+
 /**
  * Closes strapi after testing
  */
@@ -81,5 +112,21 @@ export async function stopStrapi() {
     }
 
     instance = undefined;
+  }
+}
+
+export async function ensureExistingContentTypeDirs() {
+  const contentTypesRoot = path.join(
+    playgroundDir,
+    "src/extensions/better-auth/content-types",
+  );
+
+  for (const uid of getExistingBAContentTypes(strapi, "better-auth")) {
+    const singularName = uid.split(".").pop();
+    if (!singularName) continue;
+
+    await fspromises.mkdir(path.join(contentTypesRoot, singularName), {
+      recursive: true,
+    });
   }
 }

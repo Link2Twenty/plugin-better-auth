@@ -38,6 +38,9 @@ export const transformFilters = (
         case "in":
           filterValue = { $in: condition.value };
           break;
+        case "not_in":
+          filterValue = { $notIn: condition.value };
+          break;
         case "gt":
           filterValue = { $gt: condition.value };
           break;
@@ -52,6 +55,12 @@ export const transformFilters = (
           break;
         case "contains":
           filterValue = { $contains: condition.value };
+          break;
+        case "starts_with":
+          filterValue = { $startsWith: condition.value };
+          break;
+        case "ends_with":
+          filterValue = { $endsWith: condition.value };
           break;
         default:
           filterValue = { $eq: condition.value };

@@ -21,6 +21,7 @@ export default {
   attributes: {
     expiresAt: {
       type: "datetime",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -30,6 +31,7 @@ export default {
     },
     token: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -40,6 +42,7 @@ export default {
     },
     ipAddress: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -48,6 +51,7 @@ export default {
     },
     userAgent: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -56,6 +60,7 @@ export default {
     },
     userId: {
       type: "integer",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,

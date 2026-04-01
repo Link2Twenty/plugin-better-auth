@@ -21,6 +21,7 @@ export default {
   attributes: {
     accountId: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -30,6 +31,7 @@ export default {
     },
     providerId: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -39,6 +41,7 @@ export default {
     },
     userId: {
       type: "integer",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -48,6 +51,7 @@ export default {
     },
     accessToken: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -56,6 +60,7 @@ export default {
     },
     refreshToken: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -64,6 +69,7 @@ export default {
     },
     idToken: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -72,6 +78,7 @@ export default {
     },
     accessTokenExpiresAt: {
       type: "datetime",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -80,6 +87,7 @@ export default {
     },
     refreshTokenExpiresAt: {
       type: "datetime",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -88,6 +96,7 @@ export default {
     },
     scope: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
@@ -96,6 +105,7 @@ export default {
     },
     password: {
       type: "string",
+      configurable: false,
       pluginOptions: {
         "better-auth": {
           managed: true,
