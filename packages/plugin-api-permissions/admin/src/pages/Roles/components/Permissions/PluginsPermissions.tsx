@@ -13,6 +13,7 @@ import { styled } from "styled-components";
 
 import { usePermissions } from "../../contexts/PermissionsContext";
 import { getCheckboxState } from "../../utils/getCheckboxState";
+import getTrad from "../../utils/getTrad";
 
 type PluginPermission = {
   action: string;
@@ -75,7 +76,7 @@ export function PluginsPermissions({
       <Box padding={6}>
         <Typography variant="delta" textColor="neutral600">
           {formatMessage({
-            id: "better-auth.Permissions.pluginsEmpty",
+            id: getTrad("Permissions.pluginsEmpty"),
             defaultMessage: "No plugin permissions available.",
           })}
         </Typography>

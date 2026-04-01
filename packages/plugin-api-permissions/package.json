@@ -2,7 +2,13 @@
   "name": "@strapi-community/plugin-api-permissions",
   "version": "1.0.0-alpha.1",
   "description": "Content API RBAC for Strapi — auth-provider agnostic roles and permissions",
-  "keywords": ["strapi", "plugin", "rbac", "permissions", "roles"],
+  "keywords": [
+    "strapi",
+    "plugin",
+    "rbac",
+    "permissions",
+    "roles"
+  ],
   "license": "MIT",
   "author": {
     "name": "Boaz Poolman",
@@ -29,25 +35,30 @@
       "default": "./dist/server/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
     "test:ts:back": "cd server && tsc --noEmit",
     "check-types": "pnpm run test:ts:back",
-    "lint": "biome check --fix"
+    "lint": "biome check --fix",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
+    "@playwright/test": "^1.49.0",
     "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/strapi": "catalog:strapi",
     "@strapi/typescript-utils": "catalog:strapi",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
+    "@types/node": "^22",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {

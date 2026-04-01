@@ -3,6 +3,7 @@ import React, { forwardRef, useImperativeHandle } from "react";
 import { useIntl } from "react-intl";
 
 import { usePermissions } from "../../contexts/PermissionsContext";
+import getTrad from "../../utils/getTrad";
 import type {
   PermissionsFormState,
   PermissionsLayout,
@@ -61,7 +62,7 @@ export const Permissions = forwardRef<PermissionsRef, PermissionsProps>(
         <Box padding={6}>
           <Typography variant="delta" textColor="neutral600">
             {formatMessage({
-              id: "better-auth.Permissions.empty",
+              id: getTrad("Permissions.empty"),
               defaultMessage: "No Content API content types found.",
             })}
           </Typography>
