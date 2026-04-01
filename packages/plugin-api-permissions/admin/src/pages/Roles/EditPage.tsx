@@ -18,8 +18,10 @@ import {
   useRBAC,
 } from "@strapi/strapi/admin";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { useMutation, useQuery } from "react-query";
+import type { GenericResponse } from "../../types/content-api";
 import { Permissions, type PermissionsRef } from "./components/Permissions";
 import { PERMISSIONS } from "./constants";
 import { PermissionsProvider } from "./contexts/PermissionsContext";
@@ -51,45 +53,74 @@ export const RolesEditPage = ({ id }: { id: string }) => {
     update: PERMISSIONS.updateRole,
   });
 
-  const [data, setData] = useState<RoleData | null>(null);
-  const [layout, setLayout] = useState<PermissionsLayout | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [initialised, setInitialised] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
-    Promise.all([
-      get("/api-permissions/permissions-layout"),
-      get(`/api-permissions/roles/${id}`),
-    ])
-      .then(([layoutRes, roleRes]) => {
-        const sections =
-          layoutRes.data?.data?.sections ??
-          layoutRes.data?.sections ??
-          layoutRes.data;
-        const role = roleRes.data?.role;
-        if (!cancelled && sections) {
-          setLayout(sections);
-        }
-        if (!cancelled && role) {
-          setData(role);
-          setName(role.name ?? "");
-          setDescription(role.description ?? "");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, get]);
+  const { data: layoutData, isLoading: isLoadingLayout } = useQuery(
+    ["api-permissions", "permissions", "layout"],
+    async () =>
+      get<GenericResponse<{ sections: PermissionsLayout }>>(
+        "/api-permissions/permissions/layout",
+      ),
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { data: roleData, isLoading: isLoadingRole } = useQuery(
+    ["api-permissions", "roles", id],
+    async () => get<GenericResponse<RoleData>>(`/api-permissions/roles/${id}`),
+    {
+      enabled: !!id,
+      onSuccess: (res) => {
+        if (!initialised) {
+          setName(res.data?.data?.name ?? "");
+          setDescription(res.data?.data?.description ?? "");
+          setInitialised(true);
+        }
+      },
+    },
+  );
+
+  const layout = layoutData?.data?.data?.sections ?? null;
+  const roleApiData = roleData?.data?.data ?? null;
+
+  const permissionsForm = useMemo(
+    () =>
+      layout && roleApiData
+        ? apiToFormState(roleApiData?.permissions ?? {}, layout)
+        : null,
+    [layout, roleApiData],
+  );
+
+  const updateMutation = useMutation(
+    (body: { name: string; description: string }) =>
+      put(`/api-permissions/roles/${id}`, {
+        data: body,
+      }),
+    {
+      onSuccess: () => {
+        toggleNotification({
+          type: "success",
+          message: formatMessage({
+            id: "notification.success.saved",
+            defaultMessage: "Saved",
+          }),
+        });
+        goBack();
+      },
+      onError: () => {
+        toggleNotification({
+          type: "danger",
+          message: formatMessage({
+            id: "notification.error",
+            defaultMessage: "An error occurred",
+          }),
+        });
+      },
+    },
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!name || name.length < 3) {
@@ -101,37 +132,10 @@ export const RolesEditPage = ({ id }: { id: string }) => {
       );
       return;
     }
-    setIsSaving(true);
-    try {
-      const permissionsToSend =
-        permissionsRef.current?.getPermissions() ?? data?.permissions ?? {};
-      await put(`/api-permissions/roles/${id}`, {
-        name,
-        description,
-        permissions: permissionsToSend,
-      });
-      toggleNotification({
-        type: "success",
-        message: formatMessage({
-          id: "notification.success.saved",
-          defaultMessage: "Saved",
-        }),
-      });
-      goBack();
-    } catch {
-      toggleNotification({
-        type: "danger",
-        message: formatMessage({
-          id: "notification.error",
-          defaultMessage: "An error occurred",
-        }),
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    updateMutation.mutate({ name, description });
   };
 
-  if (isLoading || !data || !layout) {
+  if (isLoadingLayout || isLoadingRole || !permissionsForm || !layout) {
     return <Page.Loading />;
   }
 
@@ -139,8 +143,7 @@ export const RolesEditPage = ({ id }: { id: string }) => {
     return <Page.NoPermissions />;
   }
 
-  const permissionsForm = apiToFormState(data.permissions ?? {}, layout);
-  const usersCount = data.nb_users ?? 0;
+  const usersCount = roleApiData?.nb_users ?? 0;
 
   return (
     <Page.Main>
@@ -161,7 +164,11 @@ export const RolesEditPage = ({ id }: { id: string }) => {
             defaultMessage: "Define the rights given to the role",
           })}
           primaryAction={
-            <Button type="submit" loading={isSaving} startIcon={<Check />}>
+            <Button
+              type="submit"
+              loading={updateMutation.isLoading}
+              startIcon={<Check />}
+            >
               {formatMessage({ id: "global.save", defaultMessage: "Save" })}
             </Button>
           }
@@ -180,12 +187,20 @@ export const RolesEditPage = ({ id }: { id: string }) => {
         />
         <Layouts.Content>
           <Flex direction="column" alignItems="stretch" gap={6}>
-            <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
+            <Box
+              background="neutral0"
+              padding={6}
+              shadow="filterShadow"
+              hasRadius
+            >
               <Flex direction="column" alignItems="stretch" gap={4}>
                 <Flex justifyContent="space-between">
                   <Box>
                     <Typography fontWeight="bold">
-                      {formatMessage({ id: "global.details", defaultMessage: "Details" })}
+                      {formatMessage({
+                        id: "global.details",
+                        defaultMessage: "Details",
+                      })}
                     </Typography>
                     <Typography variant="pi" textColor="neutral600">
                       {formatMessage({
@@ -217,7 +232,12 @@ export const RolesEditPage = ({ id }: { id: string }) => {
                   </Box>
                 </Flex>
                 <Grid.Root gap={4}>
-                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
+                  <Grid.Item
+                    xs={12}
+                    col={6}
+                    direction="column"
+                    alignItems="stretch"
+                  >
                     <Field.Root
                       name="name"
                       error={
@@ -231,18 +251,36 @@ export const RolesEditPage = ({ id }: { id: string }) => {
                       required
                     >
                       <Field.Label>
-                        {formatMessage({ id: "global.name", defaultMessage: "Name" })}
+                        {formatMessage({
+                          id: "global.name",
+                          defaultMessage: "Name",
+                        })}
                       </Field.Label>
-                      <TextInput value={name} onChange={(e) => setName(e.target.value)} type="text" />
+                      <TextInput
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        type="text"
+                      />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
-                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
+                  <Grid.Item
+                    xs={12}
+                    col={6}
+                    direction="column"
+                    alignItems="stretch"
+                  >
                     <Field.Root name="description">
                       <Field.Label>
-                        {formatMessage({ id: "global.description", defaultMessage: "Description" })}
+                        {formatMessage({
+                          id: "global.description",
+                          defaultMessage: "Description",
+                        })}
                       </Field.Label>
-                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                      <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
@@ -251,7 +289,11 @@ export const RolesEditPage = ({ id }: { id: string }) => {
             </Box>
             <Box shadow="filterShadow" hasRadius>
               <PermissionsProvider permissions={permissionsForm}>
-                <Permissions ref={permissionsRef} permissions={permissionsForm} layout={layout} />
+                <Permissions
+                  ref={permissionsRef}
+                  permissions={permissionsForm}
+                  layout={layout}
+                />
               </PermissionsProvider>
             </Box>
           </Flex>

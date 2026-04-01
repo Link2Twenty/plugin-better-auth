@@ -15,7 +15,6 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 - ✅ Supports all Better Auth core features (users, sessions, accounts, verification)
 - ✅ All Better Auth endpoints available through Strapi API
 - ✅ Works with Strapi v5+
-- ✅ **Invite flow**: Create users from Content Manager and send "Set password" invites
 
 ## Installation
 

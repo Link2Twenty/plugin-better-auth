@@ -18,8 +18,10 @@ import {
   useRBAC,
 } from "@strapi/strapi/admin";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { useMutation, useQuery } from "react-query";
+import type { GenericResponse } from "../../types/content-api";
 import { Permissions, type PermissionsRef } from "./components/Permissions";
 import { PERMISSIONS } from "./constants";
 import { PermissionsProvider } from "./contexts/PermissionsContext";
@@ -48,29 +50,50 @@ export const RolesCreatePage = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [layout, setLayout] = useState<PermissionsLayout | null>(null);
-  const [permissionsForm, setPermissionsForm] = useState<PermissionsFormState>({
-    collectionTypes: {},
-    singleTypes: {},
-    plugins: {},
-    settings: {},
-  });
-  const [isLoadingLayout, setIsLoadingLayout] = useState(true);
 
-  useEffect(() => {
-    get("/api-permissions/permissions-layout")
-      .then((res) => res.data?.data?.sections ?? res.data?.sections ?? res.data)
-      .then((sections) => {
-        if (sections) {
-          setLayout(sections);
-          setPermissionsForm(createEmptyFormState(sections));
-        }
-      })
-      .finally(() => setIsLoadingLayout(false));
-  }, [get]);
+  const { data: layoutData, isLoading: isLoadingLayout } = useQuery(
+    ["api-permissions", "permissions", "layout"],
+    async () =>
+      get<GenericResponse<{ sections: PermissionsLayout }>>(
+        "/api-permissions/permissions/layout",
+      ),
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const layout = layoutData?.data?.data?.sections ?? null;
+
+  const permissionsForm: PermissionsFormState = layout
+    ? createEmptyFormState(layout)
+    : { collectionTypes: {}, singleTypes: {}, plugins: {}, settings: {} };
+
+  const createMutation = useMutation(
+    (body: { name: string; description: string }) =>
+      post("/api-permissions/roles", {
+        data: body,
+      }),
+    {
+      onSuccess: () => {
+        toggleNotification({
+          type: "success",
+          message: formatMessage({
+            id: "Settings.roles.created",
+            defaultMessage: "Created",
+          }),
+        });
+        goBack();
+      },
+      onError: () => {
+        toggleNotification({
+          type: "danger",
+          message: formatMessage({
+            id: "notification.error",
+            defaultMessage: "An error occurred",
+          }),
+        });
+      },
+    },
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!name || name.length < 3) {
@@ -82,33 +105,7 @@ export const RolesCreatePage = () => {
       );
       return;
     }
-    setIsSaving(true);
-    try {
-      const permissionsToSend = permissionsRef.current?.getPermissions() ?? {};
-      await post("/api-permissions/roles", {
-        name,
-        description,
-        permissions: permissionsToSend,
-      });
-      toggleNotification({
-        type: "success",
-        message: formatMessage({
-          id: "Settings.roles.created",
-          defaultMessage: "Created",
-        }),
-      });
-      goBack();
-    } catch {
-      toggleNotification({
-        type: "danger",
-        message: formatMessage({
-          id: "notification.error",
-          defaultMessage: "An error occurred",
-        }),
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    createMutation.mutate({ name, description });
   };
 
   if (!canCreate) {
@@ -138,7 +135,11 @@ export const RolesCreatePage = () => {
             defaultMessage: "Define the rights given to the role",
           })}
           primaryAction={
-            <Button type="submit" loading={isSaving} startIcon={<Check />}>
+            <Button
+              type="submit"
+              loading={createMutation.isLoading}
+              startIcon={<Check />}
+            >
               {formatMessage({ id: "global.save", defaultMessage: "Save" })}
             </Button>
           }
@@ -157,12 +158,20 @@ export const RolesCreatePage = () => {
         />
         <Layouts.Content>
           <Flex direction="column" alignItems="stretch" gap={6}>
-            <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
+            <Box
+              background="neutral0"
+              padding={6}
+              shadow="filterShadow"
+              hasRadius
+            >
               <Flex direction="column" alignItems="stretch" gap={4}>
                 <Flex justifyContent="space-between">
                   <Box>
                     <Typography fontWeight="bold">
-                      {formatMessage({ id: "global.details", defaultMessage: "Details" })}
+                      {formatMessage({
+                        id: "global.details",
+                        defaultMessage: "Details",
+                      })}
                     </Typography>
                     <Typography variant="pi" textColor="neutral600">
                       {formatMessage({
@@ -194,7 +203,12 @@ export const RolesCreatePage = () => {
                   </Box>
                 </Flex>
                 <Grid.Root gap={4}>
-                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
+                  <Grid.Item
+                    xs={12}
+                    col={6}
+                    direction="column"
+                    alignItems="stretch"
+                  >
                     <Field.Root
                       name="name"
                       error={
@@ -208,18 +222,36 @@ export const RolesCreatePage = () => {
                       required
                     >
                       <Field.Label>
-                        {formatMessage({ id: "global.name", defaultMessage: "Name" })}
+                        {formatMessage({
+                          id: "global.name",
+                          defaultMessage: "Name",
+                        })}
                       </Field.Label>
-                      <TextInput value={name} onChange={(e) => setName(e.target.value)} type="text" />
+                      <TextInput
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        type="text"
+                      />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
-                  <Grid.Item xs={12} col={6} direction="column" alignItems="stretch">
+                  <Grid.Item
+                    xs={12}
+                    col={6}
+                    direction="column"
+                    alignItems="stretch"
+                  >
                     <Field.Root name="description">
                       <Field.Label>
-                        {formatMessage({ id: "global.description", defaultMessage: "Description" })}
+                        {formatMessage({
+                          id: "global.description",
+                          defaultMessage: "Description",
+                        })}
                       </Field.Label>
-                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                      <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
                       <Field.Error />
                     </Field.Root>
                   </Grid.Item>
@@ -228,7 +260,11 @@ export const RolesCreatePage = () => {
             </Box>
             <Box shadow="filterShadow" hasRadius>
               <PermissionsProvider permissions={permissionsForm}>
-                <Permissions ref={permissionsRef} permissions={permissionsForm} layout={layout} />
+                <Permissions
+                  ref={permissionsRef}
+                  permissions={permissionsForm}
+                  layout={layout}
+                />
               </PermissionsProvider>
             </Box>
           </Flex>

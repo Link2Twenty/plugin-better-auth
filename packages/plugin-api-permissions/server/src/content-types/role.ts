@@ -1,3 +1,5 @@
+import { PERMISSION_UID } from "../utils";
+
 export default {
   kind: "collectionType",
   collectionName: "api_permissions_roles",
@@ -27,7 +29,7 @@ export default {
     permissions: {
       type: "relation",
       relation: "oneToMany",
-      target: "plugin::api-permissions.permission",
+      target: PERMISSION_UID,
       mappedBy: "role",
     },
   },

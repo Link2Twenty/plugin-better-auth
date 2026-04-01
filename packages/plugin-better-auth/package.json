@@ -51,9 +51,9 @@
   },
   "peerDependencies": {
     "@strapi-community/plugin-api-permissions": "workspace:*",
-    "@strapi/strapi": "^5.0.0",
-    "@strapi/types": "^5.0.0",
-    "@strapi/utils": "^5.0.0",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/types": "catalog:strapi",
+    "@strapi/utils": "catalog:strapi",
     "better-auth": ">=1.4.0 <2"
   },
   "strapi": {

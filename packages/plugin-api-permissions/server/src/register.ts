@@ -1,5 +1,7 @@
+import includeUserCount from "./middlewares/include-user-count";
+import reassignOrphanedUsers from "./middlewares/reassign-orphaned-users";
 import createContentApiStrategy from "./strategies/content-api";
-import { getUserUID } from "./utils";
+import { getUserUID, ROLE_UID } from "./utils";
 import { set } from "lodash";
 
 const extendUserContentType = () => {
@@ -28,11 +30,13 @@ const extendUserContentType = () => {
     default: null,
     type: "relation",
     relation: "manyToMany",
-    target: "plugin::api-permissions.role",
+    target: ROLE_UID,
   });
 }
 
 export default () => {
   extendUserContentType();
+  strapi.documents.use(reassignOrphanedUsers);
+  strapi.documents.use(includeUserCount);
   strapi.get("auth").register("content-api", createContentApiStrategy(strapi));
 }

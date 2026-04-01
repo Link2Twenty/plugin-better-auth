@@ -14,6 +14,7 @@ import { useIntl } from "react-intl";
 import { ROLES_BASE } from "../paths";
 
 interface Role {
+  documentId: string;
   id: number;
   name: string;
   description?: string;
@@ -52,9 +53,9 @@ const TableBody = ({
     <Tbody>
       {sortedRoles.map((role) => (
         <Tr
-          key={role.id}
+          key={role.documentId}
           cursor="pointer"
-          onClick={() => goToEdit(role.id.toString())}
+          onClick={() => goToEdit(role.documentId)}
         >
           <Td width="20%">
             <Typography>{role.name}</Typography>
@@ -78,7 +79,7 @@ const TableBody = ({
             <Flex justifyContent="end" onClick={(e) => e.stopPropagation()}>
               {canUpdate ? (
                 <Link
-                  href={`${ROLES_BASE}/${role.id}`}
+                  href={`${ROLES_BASE}/${role.documentId}`}
                   aria-label={formatMessage(
                     {
                       id: "app.component.table.edit",
@@ -94,7 +95,7 @@ const TableBody = ({
               {checkCanDeleteRole(role) && (
                 <IconButton
                   onClick={(e) =>
-                    handleClickDelete(e, role.id.toString(), role.name)
+                    handleClickDelete(e, role.documentId, role.name)
                   }
                   variant="ghost"
                   label={formatMessage(

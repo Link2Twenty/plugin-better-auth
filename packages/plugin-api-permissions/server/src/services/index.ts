@@ -1,7 +1,9 @@
-import apiPermissions from "./api-permissions";
 import role from "./role";
+import session from "./session";
+import permission from "./permission";
 
 export default {
-  "api-permissions": apiPermissions,
   role,
+  permission,
+  session,
 };

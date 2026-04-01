@@ -1,14 +1,13 @@
 import type { Core } from "@strapi/strapi";
 import type { ParameterizedContext } from "koa";
-import { getPluginService } from "../utils";
+import { getPluginService, PERMISSION_UID, ROLE_UID } from "../utils";
 
-const ROLE_UID = "plugin::api-permissions.role" as const;
-const PERMISSION_UID = "plugin::api-permissions.permission" as const;
+type StrapiAbility = { can: (action: string, subject: string) => boolean };
 
 type AuthResult = {
   authenticated: boolean;
   credentials?: unknown;
-  ability?: unknown;
+  ability?: StrapiAbility;
   error?: string | null;
 };
 
@@ -19,18 +18,20 @@ function toContentAPIPermissions(
 }
 
 async function getRolePermissions(strapi: Core.Strapi, roleId: string | number): Promise<Array<{ action: string }>> {
-  const permissions = await strapi.db.query(PERMISSION_UID).findMany({
-    where: { role: { id: roleId } },
+  const permissions = await strapi.documents(PERMISSION_UID).findMany({
+    filters: { role: { id: roleId } },
   });
-  return (permissions as Array<{ action: string }>).map((p) => ({ action: p.action }));
+  return permissions
+    .filter((p): p is typeof p & { action: string } => p.action != null)
+    .map((p) => ({ action: p.action }));
 }
 
 async function getPublicRolePermissions(strapi: Core.Strapi): Promise<Array<{ action: string }>> {
-  const publicRole = await strapi.db.query(ROLE_UID).findOne({
-    where: { type: "public" },
+  const publicRole = await strapi.documents(ROLE_UID).findFirst({
+    filters: { type: "public" },
   });
   if (!publicRole) return [];
-  return getRolePermissions(strapi, publicRole.id as number);
+  return getRolePermissions(strapi, publicRole.id);
 }
 
 export default function createContentApiStrategy(strapi: Core.Strapi) {
@@ -38,11 +39,11 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
     name: "content-api",
     authenticate: async (ctx: ParameterizedContext): Promise<AuthResult> => {
       try {
-        const resolver = getPluginService('api-permissions').getSessionResolver();
+        const resolver = getPluginService('session').getSessionResolver();
 
         const sessionInfo = await resolver(ctx);
 
-        const { roles } = sessionInfo ?? {};
+        const roles = sessionInfo?.roles;
 
         let permissions: Array<{ action: string }>;
 
@@ -61,7 +62,8 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
           return { authenticated: false };
         }
 
-        const ability = await strapi.contentAPI.permissions.engine.generateAbility(contentApiPermissions);
+        const rawAbility = await strapi.contentAPI.permissions.engine.generateAbility(contentApiPermissions);
+        const ability: StrapiAbility = { can: (action) => rawAbility.can(action, 'all') };
 
         return {
           authenticated: true,
@@ -73,7 +75,7 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
       }
     },
     verify: async (
-      auth: { credentials: unknown; ability: unknown },
+      auth: { credentials: unknown; ability: StrapiAbility | undefined },
       config: { scope?: string | string[] }
     ): Promise<void> => {
       const { UnauthorizedError, ForbiddenError } = await import("@strapi/utils").then((m) => m.errors);
@@ -90,8 +92,8 @@ export default function createContentApiStrategy(strapi: Core.Strapi) {
       }
 
       const scopes = Array.isArray(config.scope) ? config.scope : [config.scope];
-      const ability = auth.ability as { can: (action: string) => boolean };
-      const isAllowed = scopes.every((scope) => ability.can(scope));
+      const ability = auth.ability;
+      const isAllowed = scopes.every((scope) => ability!.can(scope, 'all'));
 
       if (!isAllowed) {
         throw new ForbiddenError();

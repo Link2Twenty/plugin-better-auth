@@ -50,6 +50,7 @@
     "test:ts:back": "cd server && tsc --noEmit",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix",
+    "test:integration": "vitest run",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
+    "vitest": "^4.1.0",
     "@playwright/test": "^1.49.0",
     "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/strapi": "catalog:strapi",
@@ -64,14 +66,17 @@
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
     "@types/node": "^22",
+    "@types/supertest": "^6.0.0",
+    "supertest": "^7.0.0",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@strapi/design-system": "^2.0.0",
-    "@strapi/icons": "^2.0.0",
-    "@strapi/strapi": "^5.0.0",
-    "@strapi/utils": "^5.0.0",
+    "@strapi/design-system": "catalog:strapi-design-system",
+    "@strapi/icons": "catalog:strapi-design-system",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/utils": "catalog:strapi",
     "react": "^17.0.0 || ^18.0.0",
+    "react-query": "^3.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
     "react-intl": "^6.0.0 || ^7.0.0",
     "styled-components": "^5.0.0 || ^6.0.0"

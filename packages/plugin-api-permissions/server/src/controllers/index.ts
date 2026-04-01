@@ -1,5 +1,7 @@
-import roleController from "./role-controller";
+import permission from "./permission";
+import role from "./role";
 
 export default {
-  "role-controller": roleController,
+  role,
+  permission,
 };

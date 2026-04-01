@@ -31,7 +31,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
   /**
    * Register a session resolver for the auth strategy of the API permissions plugin.
    */
-  apiPermissionsPlugin.service("api-permissions").registerSessionResolver(
+  apiPermissionsPlugin.service("session").registerSessionResolver(
     async (ctx: ParameterizedContext) => {
       const auth = strapi.internal_config['better-auth'];
 

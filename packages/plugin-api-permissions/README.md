@@ -69,7 +69,7 @@ export default {
   async bootstrap({ strapi }) {
     strapi
       .plugin('api-permissions')
-      .service('api-permissions')
+      .service('session')
       .registerSessionResolver(async (ctx) => {
         const token = ctx.request.headers.authorization?.replace('Bearer ', '');
         if (!token) return null;

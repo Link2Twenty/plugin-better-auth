@@ -1,19 +1,17 @@
-import contentTypes from "./content-types";
 import controllers from "./controllers";
+import contentTypes from "./content-types";
 import routes from "./routes";
 import services from "./services";
-import createContentApiStrategy from "./strategies/content-api";
+import register from "./register";
+import bootstrap from "./bootstrap";
+import config from "./config";
 
 export default {
   controllers,
   routes,
   contentTypes,
   services,
-  register({ strapi }) {
-    strapi.get("auth").register("content-api", createContentApiStrategy(strapi));
-  },
-  async bootstrap({ strapi }) {
-    const bootstrapFn = (await import("./bootstrap")).default;
-    await bootstrapFn({ strapi });
-  },
+  register,
+  bootstrap,
+  config,
 };

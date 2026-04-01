@@ -84,7 +84,7 @@ test.describe("Edit role", () => {
 
     await getRoleCell(page, TEST_ROLE_NAME).click();
 
-    await expect(page).toHaveURL(/\/admin\/settings\/api-permissions\/roles\/\d+/);
+    await expect(page).toHaveURL(/\/admin\/settings\/api-permissions\/roles\/[a-zA-Z0-9]+/);
     await expect(page.getByRole("heading", { name: /edit a role/i })).toBeVisible();
   });
 
@@ -137,7 +137,7 @@ test.describe("Search roles", () => {
         (resourceType === "xhr" || resourceType === "fetch") &&
         url.includes("api-permissions") &&
         url.includes("roles") &&
-        !url.includes("permissions-layout")
+        !url.includes("permissions/layout")
       ) {
         if (req.method() === "GET") {
           await route.fulfill({

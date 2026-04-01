@@ -1,17 +1,16 @@
 import packageJson from '../../../package.json';
 import type config from '..';
-import type { UID } from '@strapi/strapi';
 
 export const PLUGIN_ID = packageJson.strapi.name;
-export const ROLE_UID = `plugin::${PLUGIN_ID}.role` as const;
-export const PERMISSION_UID = `plugin::${PLUGIN_ID}.permission` as const;
+export const ROLE_UID = `plugin::api-permissions.role`;
+export const PERMISSION_UID = `plugin::api-permissions.permission`;
 
 /**
  * A helper function to obtain the UID of the user content type.
  *
  * @return {string} The UID of the user content type.
  */
-export const getUserUID = (): UID.CollectionType => {
+export const getUserUID = (): "plugin::better-auth.user" => {
   const userUID = strapi.config.get(`plugin::${PLUGIN_ID}.user_uid`, undefined);
 
   if (userUID) {
