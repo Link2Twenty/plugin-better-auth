@@ -1,7 +1,7 @@
+import { createTestSuite, testAdapter } from "@better-auth/test-utils/adapter";
 import { expect } from "vitest";
-import { testAdapter, createTestSuite } from "@better-auth/test-utils/adapter";
-import { setupStrapi, stopStrapi } from "./utils";
 import { strapiAdapter } from "../src/adapter";
+import { setupStrapi, stopStrapi } from "./utils";
 
 await setupStrapi();
 
@@ -54,11 +54,8 @@ const { execute } = await testAdapter({
       },
     },
   }),
-  runMigrations: async () => {
-  },
-  tests: [
-    normalTestSuite(),
-  ],
+  runMigrations: async () => {},
+  tests: [normalTestSuite()],
   async onFinish() {
     await stopStrapi();
   },

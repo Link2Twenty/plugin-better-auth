@@ -33,7 +33,9 @@ const RBAC_ACTIONS = [
 ];
 
 export default async ({ strapi }: { strapi: Core.Strapi }) => {
-  await strapi.service("admin::permission").actionProvider.registerMany(RBAC_ACTIONS);
+  await strapi
+    .service("admin::permission")
+    .actionProvider.registerMany(RBAC_ACTIONS);
 
   const roleCount = await strapi.documents(ROLE_UID).count({});
 

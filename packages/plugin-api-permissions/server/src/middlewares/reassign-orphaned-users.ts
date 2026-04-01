@@ -1,8 +1,11 @@
-import type { Modules, Data } from '@strapi/strapi';
-import { getUserUID, ROLE_UID } from '../utils';
-import { errors } from '@strapi/utils';
+import type { Data, Modules } from "@strapi/strapi";
+import { errors } from "@strapi/utils";
+import { getUserUID, ROLE_UID } from "../utils";
 
-const reassignOrphanedUsers: Modules.Documents.Middleware.Middleware = async (context, next) => {
+const reassignOrphanedUsers: Modules.Documents.Middleware.Middleware = async (
+  context,
+  next,
+) => {
   const { action, contentType } = context;
 
   // Only continue for the role content type
@@ -11,11 +14,13 @@ const reassignOrphanedUsers: Modules.Documents.Middleware.Middleware = async (co
   }
 
   // Run this middleware only for specific actions.
-  if (action !== 'delete') {
+  if (action !== "delete") {
     return next();
   }
 
-  const params = context.params as Modules.Documents.ServiceParams<typeof ROLE_UID>['delete'];
+  const params = context.params as Modules.Documents.ServiceParams<
+    typeof ROLE_UID
+  >["delete"];
 
   const publicRole = await strapi.documents(ROLE_UID).findFirst({
     filters: { type: "public" },

@@ -1,4 +1,7 @@
-type RecursiveRecordOfBooleans = Record<string, boolean | RecursiveRecordOfBooleans>;
+type RecursiveRecordOfBooleans = Record<
+  string,
+  boolean | RecursiveRecordOfBooleans
+>;
 
 function getLeafValues(obj: unknown): boolean[] {
   if (obj === null || obj === undefined) {
@@ -13,7 +16,9 @@ function getLeafValues(obj: unknown): boolean[] {
   return [];
 }
 
-export function getCheckboxState(dataObj: RecursiveRecordOfBooleans | null | undefined): {
+export function getCheckboxState(
+  dataObj: RecursiveRecordOfBooleans | null | undefined,
+): {
   hasAllActionsSelected: boolean;
   hasSomeActionsSelected: boolean;
 } {
@@ -24,7 +29,8 @@ export function getCheckboxState(dataObj: RecursiveRecordOfBooleans | null | und
   }
 
   const hasAllActionsSelected = arrayOfValues.every((val) => val);
-  const hasSomeActionsSelected = arrayOfValues.some((val) => val) && !hasAllActionsSelected;
+  const hasSomeActionsSelected =
+    arrayOfValues.some((val) => val) && !hasAllActionsSelected;
 
   return { hasAllActionsSelected, hasSomeActionsSelected };
 }

@@ -18,7 +18,12 @@ type ContentPermission = {
   actions: Array<{ actionId: string; label: string; subjects: string[] }>;
   subjects: Array<{ uid: string; label: string }>;
 };
-type PluginPermission = { action: string; displayName: string; plugin: string; subCategory: string };
+type PluginPermission = {
+  action: string;
+  displayName: string;
+  plugin: string;
+  subCategory: string;
+};
 
 function buildPermissionsLayout(strapi: Core.Strapi): {
   collectionTypes: ContentPermission;
@@ -28,14 +33,24 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
 } {
   const collectionSubjects: Array<{ uid: string; label: string }> = [];
   const singleSubjects: Array<{ uid: string; label: string }> = [];
-  const collectionActions = new Map<string, { actionId: string; label: string; subjects: string[] }>();
-  const singleActions = new Map<string, { actionId: string; label: string; subjects: string[] }>();
+  const collectionActions = new Map<
+    string,
+    { actionId: string; label: string; subjects: string[] }
+  >();
+  const singleActions = new Map<
+    string,
+    { actionId: string; label: string; subjects: string[] }
+  >();
   const plugins: PluginPermission[] = [];
 
   const actionsMap = strapi.contentAPI.permissions.getActionsMap();
 
   for (const [uid, contentType] of Object.entries(strapi.contentTypes ?? {})) {
-    const ct = contentType as { uid?: string; info?: { displayName?: string }; kind?: string };
+    const ct = contentType as {
+      uid?: string;
+      info?: { displayName?: string };
+      kind?: string;
+    };
     if (!uid.startsWith("api::")) continue;
 
     const label = ct.info?.displayName ?? uid.split(".").pop() ?? uid;
@@ -48,7 +63,9 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
     const controllerActions = apiEntry?.controllers?.[controllerName] ?? [];
 
     const allowedActions = isSingle
-      ? (controllerActions as string[]).filter((a) => !SINGLE_TYPE_EXCLUDED_ACTIONS.has(a))
+      ? (controllerActions as string[]).filter(
+          (a) => !SINGLE_TYPE_EXCLUDED_ACTIONS.has(a),
+        )
       : (controllerActions as string[]);
 
     if (allowedActions.length === 0) continue;
@@ -81,7 +98,8 @@ function buildPermissionsLayout(strapi: Core.Strapi): {
   }
 
   for (const [pluginKey, value] of Object.entries(actionsMap)) {
-    if (!pluginKey.startsWith("plugin::") || pluginKey.includes(PLUGIN_ID)) continue;
+    if (!pluginKey.startsWith("plugin::") || pluginKey.includes(PLUGIN_ID))
+      continue;
     const pluginName = pluginKey.replace("plugin::", "");
     const { controllers } = value ?? {};
     for (const [subCategory, actions] of Object.entries(controllers ?? {})) {

@@ -1,5 +1,5 @@
-import type { Modules, Data } from '@strapi/strapi';
-import { getUserUID, ROLE_UID } from '../utils';
+import type { Data, Modules } from "@strapi/strapi";
+import { getUserUID, ROLE_UID } from "../utils";
 
 const addUserCount = async (role: Data.ContentType<typeof ROLE_UID>) => {
   let nb_users = 0;
@@ -15,7 +15,10 @@ const addUserCount = async (role: Data.ContentType<typeof ROLE_UID>) => {
   return role;
 };
 
-const includeUserCount: Modules.Documents.Middleware.Middleware = async (context, next) => {
+const includeUserCount: Modules.Documents.Middleware.Middleware = async (
+  context,
+  next,
+) => {
   const { action, contentType } = context;
 
   // Only continue for the role content type
@@ -24,16 +27,18 @@ const includeUserCount: Modules.Documents.Middleware.Middleware = async (context
   }
 
   // Run this middleware only for specific actions.
-  if (!['findOne', 'findMany', 'findFirst'].includes(action)) {
+  if (!["findOne", "findMany", "findFirst"].includes(action)) {
     return next();
   }
 
   const response = await next();
 
   if (Array.isArray(response)) {
-    await Promise.all(response.map(async (role) => {
-      return addUserCount(role);
-    }));
+    await Promise.all(
+      response.map(async (role) => {
+        return addUserCount(role);
+      }),
+    );
 
     return response;
   }

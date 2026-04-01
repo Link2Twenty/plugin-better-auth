@@ -1,7 +1,7 @@
 import contentTypes from "./content-types";
 import controllers from "./controllers";
-import routes from "./routes";
 import register from "./register";
+import routes from "./routes";
 
 export default {
   controllers,

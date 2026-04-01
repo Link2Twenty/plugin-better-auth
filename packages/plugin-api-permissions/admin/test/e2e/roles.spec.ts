@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 const ROLES_URL = "/admin/settings/api-permissions/roles";
 const ROLES_NEW_URL = "/admin/settings/api-permissions/roles/new";
@@ -37,7 +37,9 @@ test.describe("Roles list page", () => {
   test("shows the Add new role button", async ({ page }) => {
     await page.goto(ROLES_URL);
 
-    await expect(page.getByRole("link", { name: /add new role/i })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /add new role/i }),
+    ).toBeVisible();
   });
 
   test("shows the search input", async ({ page }) => {
@@ -54,7 +56,9 @@ test.describe("Create role", () => {
     await page.getByRole("link", { name: /add new role/i }).click();
 
     await expect(page).toHaveURL(ROLES_NEW_URL);
-    await expect(page.getByRole("heading", { name: /create a role/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /create a role/i }),
+    ).toBeVisible();
   });
 
   test("shows validation error when name is too short", async ({ page }) => {
@@ -84,8 +88,12 @@ test.describe("Edit role", () => {
 
     await getRoleCell(page, TEST_ROLE_NAME).click();
 
-    await expect(page).toHaveURL(/\/admin\/settings\/api-permissions\/roles\/[a-zA-Z0-9]+/);
-    await expect(page.getByRole("heading", { name: /edit a role/i })).toBeVisible();
+    await expect(page).toHaveURL(
+      /\/admin\/settings\/api-permissions\/roles\/[a-zA-Z0-9]+/,
+    );
+    await expect(
+      page.getByRole("heading", { name: /edit a role/i }),
+    ).toBeVisible();
   });
 
   test("pre-fills the form with existing role data", async ({ page }) => {
@@ -94,7 +102,9 @@ test.describe("Edit role", () => {
     await getRoleCell(page, TEST_ROLE_NAME).click();
 
     await expect(page.getByLabel("Name")).toHaveValue(TEST_ROLE_NAME);
-    await expect(page.getByLabel("Description")).toHaveValue(TEST_ROLE_DESCRIPTION);
+    await expect(page.getByLabel("Description")).toHaveValue(
+      TEST_ROLE_DESCRIPTION,
+    );
   });
 
   test("updates the role name and redirects to list", async ({ page }) => {

@@ -7,7 +7,9 @@ export type SessionResolverResult = {
   roles: Modules.Documents.Document<typeof ROLE_UID>[];
 } | null;
 
-export type SessionResolver = (ctx: ParameterizedContext) => Promise<SessionResolverResult>;
+export type SessionResolver = (
+  ctx: ParameterizedContext,
+) => Promise<SessionResolverResult>;
 
 export default () => {
   let sessionResolver: SessionResolver = async () => null;

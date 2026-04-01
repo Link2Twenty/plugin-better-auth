@@ -5,8 +5,8 @@ export interface Config {
 }
 
 const config: {
-  default: Config,
-  validator: () => void
+  default: Config;
+  validator: () => void;
 } = {
   default: {
     user_uid: undefined,

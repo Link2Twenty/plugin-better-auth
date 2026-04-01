@@ -1,6 +1,6 @@
-import type { Auth } from "better-auth";
 // @ts-expect-error - An issue with the plugin SDK prevents types from being included in the build.
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
+import type { Auth } from "better-auth";
 import { betterAuth } from "better-auth";
 
 const auth = () =>
@@ -25,12 +25,12 @@ const auth = () =>
 
 export default auth;
 
-import type {} from '@strapi/types/dist/core/strapi';
+import type {} from "@strapi/types/dist/core/strapi";
 
-declare module '@strapi/types/dist/core/strapi' {
+declare module "@strapi/types/dist/core/strapi" {
   interface Strapi {
     internal_config: {
       "better-auth": Auth;
-    }
+    };
   }
 }

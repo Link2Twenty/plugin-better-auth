@@ -1,9 +1,9 @@
 import { Page } from "@strapi/strapi/admin";
 import React from "react";
 import { ProtectedRolesCreatePage } from "./CreatePage";
+import { PERMISSIONS } from "./constants";
 import { ProtectedRolesEditPage } from "./EditPage";
 import { ProtectedRolesListPage } from "./ListPage";
-import { PERMISSIONS } from "./constants";
 import { ROLES_BASE } from "./paths";
 
 const Roles = () => {

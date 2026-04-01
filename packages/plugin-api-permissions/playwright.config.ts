@@ -17,8 +17,8 @@ export default defineConfig({
   },
   // Run your local dev server before starting the tests.
   webServer: {
-    command: 'cd ../../apps/playground-ts/ && pnpm run dev',
-    url: 'http://localhost:1337',
+    command: "cd ../../apps/playground-ts/ && pnpm run dev",
+    url: "http://localhost:1337",
     reuseExistingServer: !process.env.CI,
     env: {
       APP_KEYS: "test-app-key-1,test-app-key-2,test-app-key-3,test-app-key-4",
@@ -31,17 +31,17 @@ export default defineConfig({
       DATABASE_FILENAME: databaseFilename,
     },
     wait: {
-      stdout: /Strapi started successfully/
-    }
+      stdout: /Strapi started successfully/,
+    },
   },
   projects: [
     {
       name: "setup",
       testMatch: "**/setup/auth.setup.ts",
-      teardown: 'teardown',
+      teardown: "teardown",
     },
     {
-      name: 'teardown',
+      name: "teardown",
       testMatch: "**/teardown/db.teardown.ts",
     },
     {

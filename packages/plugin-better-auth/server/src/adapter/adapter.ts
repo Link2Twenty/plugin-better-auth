@@ -234,7 +234,9 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("findMany", { model, where, limit, offset, sortBy });
 
           const uid = getModelUid(model);
-          const filters = where ? transformFilters(where, model, getFieldName) : undefined;
+          const filters = where
+            ? transformFilters(where, model, getFieldName)
+            : undefined;
 
           const queryOptions: { [key: string]: unknown } = {
             filters,
@@ -274,7 +276,9 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("count", { model, where });
 
           const uid = getModelUid(model);
-          const filters = where ? transformFilters(where, model, getFieldName) : undefined;
+          const filters = where
+            ? transformFilters(where, model, getFieldName)
+            : undefined;
 
           const records = await strapi.documents(uid).findMany({
             filters,

@@ -48,17 +48,21 @@ export type ApiPermissionsFormat = Record<
 /**
  * Create empty form state from layout.
  */
-export function createEmptyFormState(layout: PermissionsLayout): PermissionsFormState {
+export function createEmptyFormState(
+  layout: PermissionsLayout,
+): PermissionsFormState {
   const createContentForm = (
     subjects: PermissionsLayout["collectionTypes"]["subjects"],
-    actions: PermissionsLayout["collectionTypes"]["actions"]
+    actions: PermissionsLayout["collectionTypes"]["actions"],
   ) => {
     const form: PermissionsFormState["collectionTypes"] = {};
     for (const subject of subjects) {
       form[subject.uid] = {};
       for (const action of actions) {
         if (action.subjects.includes(subject.uid)) {
-          form[subject.uid][action.actionId] = { properties: { enabled: false } };
+          form[subject.uid][action.actionId] = {
+            properties: { enabled: false },
+          };
         }
       }
     }
@@ -86,14 +90,22 @@ export function createEmptyFormState(layout: PermissionsLayout): PermissionsForm
     for (const [subCategory, actions] of subMap) {
       pluginsForm[plugin][subCategory] = {};
       for (const action of actions) {
-        pluginsForm[plugin][subCategory][action] = { properties: { enabled: false } };
+        pluginsForm[plugin][subCategory][action] = {
+          properties: { enabled: false },
+        };
       }
     }
   }
 
   return {
-    collectionTypes: createContentForm(layout.collectionTypes.subjects, layout.collectionTypes.actions),
-    singleTypes: createContentForm(layout.singleTypes.subjects, layout.singleTypes.actions),
+    collectionTypes: createContentForm(
+      layout.collectionTypes.subjects,
+      layout.collectionTypes.actions,
+    ),
+    singleTypes: createContentForm(
+      layout.singleTypes.subjects,
+      layout.singleTypes.actions,
+    ),
     plugins: pluginsForm,
     settings: {},
   };
@@ -104,21 +116,28 @@ export function createEmptyFormState(layout: PermissionsLayout): PermissionsForm
  */
 export function apiToFormState(
   api: ApiPermissionsFormat,
-  layout: PermissionsLayout
+  layout: PermissionsLayout,
 ): PermissionsFormState {
   const form = createEmptyFormState(layout);
 
-  const collectionUids = new Set(layout.collectionTypes.subjects.map((s) => s.uid));
+  const collectionUids = new Set(
+    layout.collectionTypes.subjects.map((s) => s.uid),
+  );
   const singleUids = new Set(layout.singleTypes.subjects.map((s) => s.uid));
 
   for (const [typeKey, typeData] of Object.entries(api)) {
     if (!typeData?.controllers) continue;
-    for (const [controllerName, controllerData] of Object.entries(typeData.controllers)) {
+    for (const [controllerName, controllerData] of Object.entries(
+      typeData.controllers,
+    )) {
       for (const [actionName, actionData] of Object.entries(controllerData)) {
         if (!actionData?.enabled) continue;
         if (typeKey.startsWith("api::")) {
           const ctUid = `${typeKey}.${controllerName}`;
-          if (collectionUids.has(ctUid) && form.collectionTypes[ctUid]?.[actionName]) {
+          if (
+            collectionUids.has(ctUid) &&
+            form.collectionTypes[ctUid]?.[actionName]
+          ) {
             form.collectionTypes[ctUid][actionName].properties.enabled = true;
           }
           if (singleUids.has(ctUid) && form.singleTypes[ctUid]?.[actionName]) {
@@ -127,7 +146,9 @@ export function apiToFormState(
         } else if (typeKey.startsWith("plugin::")) {
           const pluginName = typeKey.replace("plugin::", "");
           if (form.plugins[pluginName]?.[controllerName]?.[actionName]) {
-            form.plugins[pluginName][controllerName][actionName].properties.enabled = true;
+            form.plugins[pluginName][controllerName][
+              actionName
+            ].properties.enabled = true;
           }
         }
       }
@@ -140,7 +161,9 @@ export function apiToFormState(
 /**
  * Transform form state to API format for saving.
  */
-export function formStateToApi(form: PermissionsFormState): ApiPermissionsFormat {
+export function formStateToApi(
+  form: PermissionsFormState,
+): ApiPermissionsFormat {
   const api: ApiPermissionsFormat = {};
 
   for (const [ctUid, actions] of Object.entries(form.collectionTypes)) {
@@ -151,7 +174,8 @@ export function formStateToApi(form: PermissionsFormState): ApiPermissionsFormat
     const apiKey = `api::${parts[0] ?? ""}`;
     const controllerName = parts[1] ?? parts[0] ?? "";
     if (!api[apiKey]) api[apiKey] = { controllers: {} };
-    if (!api[apiKey].controllers[controllerName]) api[apiKey].controllers[controllerName] = {};
+    if (!api[apiKey].controllers[controllerName])
+      api[apiKey].controllers[controllerName] = {};
     for (const [actionId, data] of Object.entries(actions)) {
       if (data?.properties?.enabled) {
         api[apiKey].controllers[controllerName][actionId] = { enabled: true };
@@ -167,7 +191,8 @@ export function formStateToApi(form: PermissionsFormState): ApiPermissionsFormat
     const apiKey = `api::${parts[0] ?? ""}`;
     const controllerName = parts[1] ?? parts[0] ?? "";
     if (!api[apiKey]) api[apiKey] = { controllers: {} };
-    if (!api[apiKey].controllers[controllerName]) api[apiKey].controllers[controllerName] = {};
+    if (!api[apiKey].controllers[controllerName])
+      api[apiKey].controllers[controllerName] = {};
     for (const [actionId, data] of Object.entries(actions)) {
       if (data?.properties?.enabled) {
         api[apiKey].controllers[controllerName][actionId] = { enabled: true };
@@ -180,7 +205,8 @@ export function formStateToApi(form: PermissionsFormState): ApiPermissionsFormat
     const pluginKey = `plugin::${pluginName}`;
     if (!api[pluginKey]) api[pluginKey] = { controllers: {} };
     for (const [subCategory, actions] of Object.entries(subCategories)) {
-      if (!api[pluginKey].controllers[subCategory]) api[pluginKey].controllers[subCategory] = {};
+      if (!api[pluginKey].controllers[subCategory])
+        api[pluginKey].controllers[subCategory] = {};
       for (const [actionId, data] of Object.entries(actions)) {
         if (data?.properties?.enabled) {
           api[pluginKey].controllers[subCategory][actionId] = { enabled: true };
