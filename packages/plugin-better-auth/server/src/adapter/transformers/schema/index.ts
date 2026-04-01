@@ -44,8 +44,11 @@ export async function updateStrapiSchema(
       .map((attr) => attr.name);
 
     if (orphanedFields.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rawSchema = (strapi.contentTypes[uid] as any)?.__schema__;
+      const rawSchema = (
+        strapi.contentTypes[uid] as {
+          __schema__?: { attributes?: Record<string, unknown> };
+        }
+      )?.__schema__;
       if (rawSchema?.attributes) {
         for (const field of orphanedFields) {
           delete rawSchema.attributes[field];

@@ -33,7 +33,7 @@ function coerceDateValues<T>(value: T): T {
   return coerced as T;
 }
 
-export function transformOutput<T>(record: any): T {
+export function transformOutput<T>(record: T): T {
   // For now, we only need to coerce date values, but this is where any future output transformations would go.
   return coerceDateValues(record);
 }
