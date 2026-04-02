@@ -1,0 +1,25 @@
+{
+  "id": "integration",
+  "title": "Using Both Plugins Together",
+  "description": "plugin-better-auth and plugin-api-permissions are designed to work together out of the box. When both are installed, plugin-better-auth automatically registers a session resolver with plugin-api-permissions — no manual wiring required.",
+  "source": "@site/docs/integration.md",
+  "sourceDirName": ".",
+  "slug": "/integration",
+  "permalink": "/plugin-better-auth/docs/integration",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/integration.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "integration",
+    "title": "Using Both Plugins Together",
+    "sidebar_position": 4
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "How It Works",
+    "permalink": "/plugin-better-auth/docs/plugin-api-permissions/how-it-works"
+  }
+}

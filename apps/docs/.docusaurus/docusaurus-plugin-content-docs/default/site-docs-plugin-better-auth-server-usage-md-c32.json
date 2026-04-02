@@ -1,0 +1,29 @@
+{
+  "id": "plugin-better-auth/server-usage",
+  "title": "Server Usage",
+  "description": "You can interact with the Better Auth instance directly from Strapi controllers, services, and middleware.",
+  "source": "@site/docs/plugin-better-auth/server-usage.md",
+  "sourceDirName": "plugin-better-auth",
+  "slug": "/plugin-better-auth/server-usage",
+  "permalink": "/plugin-better-auth/docs/plugin-better-auth/server-usage",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-better-auth/server-usage.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "server-usage",
+    "title": "Server Usage",
+    "sidebar_position": 5
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Client Setup",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/client-setup"
+  },
+  "next": {
+    "title": "Better Auth Plugins",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/better-auth-plugins"
+  }
+}

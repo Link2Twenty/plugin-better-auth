@@ -1,0 +1,93 @@
+{
+  "name": "@strapi-community/plugin-api-permissions",
+  "version": "1.0.0-alpha.1",
+  "description": "Content API RBAC for Strapi — auth-provider agnostic roles and permissions",
+  "keywords": [
+    "strapi",
+    "plugin",
+    "rbac",
+    "permissions",
+    "roles"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Boaz Poolman",
+    "email": "boaz@pluginpal.io",
+    "url": "https://github.com/boazpoolman"
+  },
+  "bugs": {
+    "url": "https://github.com/strapi-community/auth/issues"
+  },
+  "homepage": "https://github.com/strapi-community/auth",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strapi-community/auth.git",
+    "directory": "packages/plugin-api-permissions"
+  },
+  "type": "commonjs",
+  "exports": {
+    "./package.json": "./package.json",
+    "./strapi-admin": {
+      "source": "./admin/src/index.ts",
+      "import": "./dist/admin/index.mjs",
+      "require": "./dist/admin/index.js",
+      "default": "./dist/admin/index.js"
+    },
+    "./strapi-server": {
+      "source": "./server/src/index.ts",
+      "import": "./dist/server/index.mjs",
+      "require": "./dist/server/index.js",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "postinstall": "playwright install --with-deps",
+    "build": "strapi-plugin build",
+    "watch": "strapi-plugin watch",
+    "dev": "strapi-plugin watch",
+    "test:ts:server": "cd server && tsc --noEmit",
+    "test:ts:admin": "cd admin && tsc --noEmit",
+    "check-types": "pnpm run test:ts:server && pnpm run test:ts:admin",
+    "lint": "biome check --fix",
+    "test:integration": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "vitest": "^4.1.0",
+    "@playwright/test": "^1.49.0",
+    "@strapi/sdk-plugin": "^6.0.0",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/typescript-utils": "catalog:strapi",
+    "@types/koa": "^3.0.1",
+    "@types/lodash": "^4.17.21",
+    "@types/node": "^22",
+    "@types/styled-components": "^5.1.0",
+    "@types/supertest": "^6.0.0",
+    "supertest": "^7.0.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@strapi/design-system": "catalog:strapi-design-system",
+    "@strapi/icons": "catalog:strapi-design-system",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/utils": "catalog:strapi",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-query": "^3.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-intl": "^6.0.0 || ^7.0.0",
+    "styled-components": "^5.0.0 || ^6.0.0"
+  },
+  "strapi": {
+    "kind": "plugin",
+    "name": "api-permissions",
+    "displayName": "API Permissions",
+    "description": "Content API RBAC for Strapi"
+  }
+}

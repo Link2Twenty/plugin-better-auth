@@ -1,0 +1,333 @@
+{
+  "entrypoints": [
+    "main"
+  ],
+  "origins": {
+    "344": [
+      344
+    ],
+    "17896441": [
+      869,
+      401
+    ],
+    "main": [
+      354,
+      869,
+      411
+    ],
+    "runtime~main": [
+      411,
+      869,
+      354
+    ],
+    "0e384e19": [
+      976
+    ],
+    "1df93b7f": [
+      869,
+      583
+    ],
+    "22f920ff": [
+      794
+    ],
+    "24e712dc": [
+      39
+    ],
+    "32a6d4c1": [
+      421
+    ],
+    "5e95c892": [
+      647
+    ],
+    "8ef82481": [
+      587
+    ],
+    "947564b4": [
+      404
+    ],
+    "98ed0ac8": [
+      707
+    ],
+    "a5a601a2": [
+      484
+    ],
+    "a7456010": [
+      235
+    ],
+    "a7bd4aaa": [
+      98
+    ],
+    "a94703ab": [
+      869,
+      48
+    ],
+    "aba21aa0": [
+      742
+    ],
+    "b8065110": [
+      834
+    ],
+    "c329fd7a": [
+      792
+    ],
+    "c9f04c89": [
+      883
+    ],
+    "ce5e4edd": [
+      884
+    ],
+    "d333fece": [
+      913
+    ],
+    "d3daafdc": [
+      163
+    ],
+    "d5050d1e": [
+      521
+    ],
+    "styles": [
+      48,
+      354,
+      401,
+      411,
+      583,
+      869
+    ]
+  },
+  "assets": {
+    "39": {
+      "js": [
+        {
+          "file": "assets/js/24e712dc.92caf063.js",
+          "hash": "f9dc457fb822d520",
+          "publicPath": "/plugin-better-auth/assets/js/24e712dc.92caf063.js"
+        }
+      ]
+    },
+    "48": {
+      "js": [
+        {
+          "file": "assets/js/a94703ab.d46651d1.js",
+          "hash": "bca7bb1a41a8ed36",
+          "publicPath": "/plugin-better-auth/assets/js/a94703ab.d46651d1.js"
+        }
+      ]
+    },
+    "98": {
+      "js": [
+        {
+          "file": "assets/js/a7bd4aaa.a1a28aa9.js",
+          "hash": "d0c7edd529114c6b",
+          "publicPath": "/plugin-better-auth/assets/js/a7bd4aaa.a1a28aa9.js"
+        }
+      ]
+    },
+    "163": {
+      "js": [
+        {
+          "file": "assets/js/d3daafdc.14cdba4a.js",
+          "hash": "9079a03d811ace18",
+          "publicPath": "/plugin-better-auth/assets/js/d3daafdc.14cdba4a.js"
+        }
+      ]
+    },
+    "235": {
+      "js": [
+        {
+          "file": "assets/js/a7456010.0c87bb65.js",
+          "hash": "5149409e5c191b3c",
+          "publicPath": "/plugin-better-auth/assets/js/a7456010.0c87bb65.js"
+        }
+      ]
+    },
+    "344": {
+      "js": [
+        {
+          "file": "assets/js/344.04cd6e03.js",
+          "hash": "2817207e9d864eb1",
+          "publicPath": "/plugin-better-auth/assets/js/344.04cd6e03.js"
+        }
+      ]
+    },
+    "354": {
+      "js": [
+        {
+          "file": "assets/js/runtime~main.ed778308.js",
+          "hash": "bd11e55a6fe90fa7",
+          "publicPath": "/plugin-better-auth/assets/js/runtime~main.ed778308.js"
+        }
+      ]
+    },
+    "401": {
+      "js": [
+        {
+          "file": "assets/js/17896441.ee420563.js",
+          "hash": "8ac3272132a73004",
+          "publicPath": "/plugin-better-auth/assets/js/17896441.ee420563.js"
+        }
+      ]
+    },
+    "404": {
+      "js": [
+        {
+          "file": "assets/js/947564b4.17884fa0.js",
+          "hash": "e794e1e4a1ebff03",
+          "publicPath": "/plugin-better-auth/assets/js/947564b4.17884fa0.js"
+        }
+      ]
+    },
+    "411": {
+      "js": [
+        {
+          "file": "assets/js/main.b81de30f.js",
+          "hash": "d942e4e09001b4be",
+          "publicPath": "/plugin-better-auth/assets/js/main.b81de30f.js"
+        }
+      ]
+    },
+    "421": {
+      "js": [
+        {
+          "file": "assets/js/32a6d4c1.08111fc1.js",
+          "hash": "5aa19d9d474f6bf0",
+          "publicPath": "/plugin-better-auth/assets/js/32a6d4c1.08111fc1.js"
+        }
+      ]
+    },
+    "484": {
+      "js": [
+        {
+          "file": "assets/js/a5a601a2.9fc590d4.js",
+          "hash": "95b7bde7769f55a3",
+          "publicPath": "/plugin-better-auth/assets/js/a5a601a2.9fc590d4.js"
+        }
+      ]
+    },
+    "521": {
+      "js": [
+        {
+          "file": "assets/js/d5050d1e.359d699b.js",
+          "hash": "c0c8ac1b22989fb7",
+          "publicPath": "/plugin-better-auth/assets/js/d5050d1e.359d699b.js"
+        }
+      ]
+    },
+    "583": {
+      "js": [
+        {
+          "file": "assets/js/1df93b7f.aa21401d.js",
+          "hash": "0735cbec3e740c7e",
+          "publicPath": "/plugin-better-auth/assets/js/1df93b7f.aa21401d.js"
+        }
+      ]
+    },
+    "587": {
+      "js": [
+        {
+          "file": "assets/js/8ef82481.a5f85d04.js",
+          "hash": "7a6a45194f2e88d1",
+          "publicPath": "/plugin-better-auth/assets/js/8ef82481.a5f85d04.js"
+        }
+      ]
+    },
+    "647": {
+      "js": [
+        {
+          "file": "assets/js/5e95c892.faa5f77b.js",
+          "hash": "53df9717a387968a",
+          "publicPath": "/plugin-better-auth/assets/js/5e95c892.faa5f77b.js"
+        }
+      ]
+    },
+    "707": {
+      "js": [
+        {
+          "file": "assets/js/98ed0ac8.fad4de4a.js",
+          "hash": "eba720aacb5652a3",
+          "publicPath": "/plugin-better-auth/assets/js/98ed0ac8.fad4de4a.js"
+        }
+      ]
+    },
+    "742": {
+      "js": [
+        {
+          "file": "assets/js/aba21aa0.db338441.js",
+          "hash": "4dd68dcc6cce8d81",
+          "publicPath": "/plugin-better-auth/assets/js/aba21aa0.db338441.js"
+        }
+      ]
+    },
+    "792": {
+      "js": [
+        {
+          "file": "assets/js/c329fd7a.88fff916.js",
+          "hash": "9852b75492522204",
+          "publicPath": "/plugin-better-auth/assets/js/c329fd7a.88fff916.js"
+        }
+      ]
+    },
+    "794": {
+      "js": [
+        {
+          "file": "assets/js/22f920ff.32724b92.js",
+          "hash": "294bf6961c3cf218",
+          "publicPath": "/plugin-better-auth/assets/js/22f920ff.32724b92.js"
+        }
+      ]
+    },
+    "834": {
+      "js": [
+        {
+          "file": "assets/js/b8065110.99552cdb.js",
+          "hash": "24ac01413d1355c5",
+          "publicPath": "/plugin-better-auth/assets/js/b8065110.99552cdb.js"
+        }
+      ]
+    },
+    "869": {
+      "css": [
+        {
+          "file": "assets/css/styles.171e26cc.css",
+          "hash": "3cabbabd7c34a201",
+          "publicPath": "/plugin-better-auth/assets/css/styles.171e26cc.css"
+        }
+      ]
+    },
+    "883": {
+      "js": [
+        {
+          "file": "assets/js/c9f04c89.c504b1e0.js",
+          "hash": "68bc84eafda1b51b",
+          "publicPath": "/plugin-better-auth/assets/js/c9f04c89.c504b1e0.js"
+        }
+      ]
+    },
+    "884": {
+      "js": [
+        {
+          "file": "assets/js/ce5e4edd.f685c10e.js",
+          "hash": "a4b1ee66b7934e7b",
+          "publicPath": "/plugin-better-auth/assets/js/ce5e4edd.f685c10e.js"
+        }
+      ]
+    },
+    "913": {
+      "js": [
+        {
+          "file": "assets/js/d333fece.fd85c666.js",
+          "hash": "7c73b5f3252f3474",
+          "publicPath": "/plugin-better-auth/assets/js/d333fece.fd85c666.js"
+        }
+      ]
+    },
+    "976": {
+      "js": [
+        {
+          "file": "assets/js/0e384e19.a1a74b7c.js",
+          "hash": "875861c08d921941",
+          "publicPath": "/plugin-better-auth/assets/js/0e384e19.a1a74b7c.js"
+        }
+      ]
+    }
+  }
+}

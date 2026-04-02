@@ -5,7 +5,8 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "test": "turbo test",
+    "test:integration": "turbo test:integration",
+    "test:e2e": "turbo test:e2e",
     "check-types": "turbo check-types",
     "update-dependencies": "pnpm --recursive --interactive --latest update",
     "prepare": "husky"

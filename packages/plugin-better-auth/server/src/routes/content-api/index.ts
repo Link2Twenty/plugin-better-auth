@@ -8,7 +8,7 @@ export default () => ({
       config: {
         policies: [],
         prefix: "",
-        auth: false, // Allow unauthenticated access for auth endpoints
+        auth: false,
       },
     },
     {

@@ -1,0 +1,179 @@
+.main {
+  flex: 1;
+}
+
+.container {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  padding-block: 5rem;
+}
+
+.heroText {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  color: var(--ifm-heading-color);
+}
+
+.heroTitleAccent {
+  color: var(--ifm-color-primary);
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+
+.heroActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.btnPrimary:hover {
+  color: #fff;
+  opacity: 0.88;
+  text-decoration: none;
+}
+
+.btnSecondary {
+  background: transparent;
+  color: var(--ifm-heading-color);
+  border: 1.5px solid var(--ifm-color-emphasis-300);
+}
+
+.btnSecondary:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-heading-color);
+  text-decoration: none;
+}
+
+/* Hero visual */
+.heroVisual {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+}
+
+.heroGlyph {
+  font-size: 9rem;
+  line-height: 1;
+  filter: drop-shadow(0 8px 32px rgba(142, 108, 239, 0.35));
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── Feature cards ─────────────────────────────────────────────────────────── */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  padding-bottom: 5rem;
+}
+
+.card {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 12px;
+  padding: 1.75rem;
+}
+
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.cardDescription {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column-reverse;
+    padding-block: 3rem;
+    text-align: center;
+  }
+
+  .heroSubtitle {
+    max-width: 100%;
+  }
+
+  .heroActions {
+    justify-content: center;
+  }
+
+  .heroVisual {
+    width: 140px;
+    height: 140px;
+  }
+
+  .heroGlyph {
+    font-size: 6rem;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+}

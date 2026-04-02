@@ -1,0 +1,29 @@
+{
+  "id": "plugin-better-auth/configuration",
+  "title": "Configuration",
+  "description": "Better Auth config",
+  "source": "@site/docs/plugin-better-auth/configuration.md",
+  "sourceDirName": "plugin-better-auth",
+  "slug": "/plugin-better-auth/configuration",
+  "permalink": "/plugin-better-auth/docs/plugin-better-auth/configuration",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-better-auth/configuration.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "configuration",
+    "title": "Configuration",
+    "sidebar_position": 3
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Installation",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/installation"
+  },
+  "next": {
+    "title": "Client Setup",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/client-setup"
+  }
+}

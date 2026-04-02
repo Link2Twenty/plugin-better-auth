@@ -1,0 +1,30 @@
+{
+  "id": "plugin-better-auth/plugin-better-auth",
+  "title": "plugin-better-auth",
+  "description": "@strapi-community/plugin-better-auth is a Better Auth database adapter that uses Strapi as the database backend. It integrates Better Auth's authentication system with your Strapi application by:",
+  "source": "@site/docs/plugin-better-auth/index.md",
+  "sourceDirName": "plugin-better-auth",
+  "slug": "/plugin-better-auth/",
+  "permalink": "/plugin-better-auth/docs/plugin-better-auth/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-better-auth/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "plugin-better-auth",
+    "title": "plugin-better-auth",
+    "sidebar_label": "Overview",
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/plugin-better-auth/docs/intro"
+  },
+  "next": {
+    "title": "Installation",
+    "permalink": "/plugin-better-auth/docs/plugin-better-auth/installation"
+  }
+}

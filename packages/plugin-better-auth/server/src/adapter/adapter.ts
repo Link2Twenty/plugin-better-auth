@@ -55,7 +55,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
        */
       const getModelUid = (model: string): UID.ContentType => {
         const modelName = getModelName(model);
-        return `plugin::better-auth.${kebabCase(modelName)}`;
+        return `plugin::better-auth.${kebabCase(modelName)}` as UID.ContentType;
       };
 
       /**
@@ -81,6 +81,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const result = await strapi.documents(uid).create({
             data,
+            // @ts-expect-error
             fields,
           });
 
@@ -108,10 +109,16 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const result = await strapi.documents(uid).update({
             documentId: record.documentId,
+            // @ts-expect-error
             data: update,
           });
 
-          return transformStrapiOutput(result);
+          if (!result) {
+            throw new Error(`Failed to update record for model ${model}`);
+          }
+
+          const output = await transformStrapiOutput(result);
+          return output;
         },
 
         /**
@@ -207,6 +214,7 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const record = await strapi.documents(uid).findFirst({
             filters,
+            // @ts-expect-error
             fields,
             limit: 1,
           });
@@ -225,7 +233,9 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("findMany", { model, where, limit, offset, sortBy });
 
           const uid = getModelUid(model);
-          const filters = transformFilters(where, model, getFieldName);
+          const filters = where
+            ? transformFilters(where, model, getFieldName)
+            : {};
           const fields = mapSelectFields(model, select);
 
           const queryOptions: { [key: string]: unknown } = {
@@ -266,7 +276,9 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           debugLog("count", { model, where });
 
           const uid = getModelUid(model);
-          const filters = transformFilters(where, model, getFieldName);
+          const filters = where
+            ? transformFilters(where, model, getFieldName)
+            : undefined;
 
           const records = await strapi.documents(uid).findMany({
             filters,

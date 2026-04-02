@@ -8,18 +8,18 @@
   ],
   "type": "commonjs",
   "exports": {
+    ".": {
+      "source": "./server/src/adapter/index.ts",
+      "types": "./dist/adapter/index.d.ts",
+      "require": "./dist/adapter/index.js",
+      "default": "./dist/adapter/index.js"
+    },
     "./package.json": "./package.json",
     "./strapi-server": {
       "source": "./server/src/index.ts",
       "import": "./dist/server/index.mjs",
       "require": "./dist/server/index.js",
       "default": "./dist/server/index.js"
-    },
-    "./adapter": {
-      "source": "./server/src/adapter/index.ts",
-      "types": "./dist/adapter/index.d.ts",
-      "require": "./dist/adapter/index.js",
-      "default": "./dist/adapter/index.js"
     }
   },
   "files": [
@@ -31,7 +31,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
-    "test": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
+    "test:integration": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -49,11 +49,16 @@
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
-    "@strapi/design-system": "^2.0.0",
-    "@strapi/icons": "^2.0.0",
+    "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi/strapi": "catalog:strapi",
+    "@strapi/types": "catalog:strapi",
     "@strapi/utils": "catalog:strapi",
-    "better-auth": "catalog:better-auth"
+    "better-auth": ">=1.4.0 <2"
+  },
+  "peerDependenciesMeta": {
+    "@strapi-community/plugin-api-permissions": {
+      "optional": true
+    }
   },
   "strapi": {
     "kind": "plugin",
@@ -77,11 +82,12 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/strapi-community/plugin-better-auth/issues"
+    "url": "https://github.com/strapi-community/auth/issues"
   },
-  "homepage": "https://github.com/strapi-community/plugin-better-auth",
+  "homepage": "https://github.com/strapi-community/auth",
   "repository": {
     "type": "git",
-    "url": "git://github.com/strapi-community/plugin-better-auth.git"
+    "url": "git+https://github.com/strapi-community/auth.git",
+    "directory": "packages/plugin-better-auth"
   }
 }

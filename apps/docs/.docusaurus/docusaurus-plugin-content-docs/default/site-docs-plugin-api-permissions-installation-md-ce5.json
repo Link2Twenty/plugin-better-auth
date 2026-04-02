@@ -1,0 +1,29 @@
+{
+  "id": "plugin-api-permissions/installation",
+  "title": "Installation",
+  "description": "1. Install the package",
+  "source": "@site/docs/plugin-api-permissions/installation.md",
+  "sourceDirName": "plugin-api-permissions",
+  "slug": "/plugin-api-permissions/installation",
+  "permalink": "/plugin-better-auth/docs/plugin-api-permissions/installation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/strapi-community/plugin-better-auth/tree/main/apps/docs/docs/plugin-api-permissions/installation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "installation",
+    "title": "Installation",
+    "sidebar_position": 2
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/plugin-better-auth/docs/plugin-api-permissions/"
+  },
+  "next": {
+    "title": "Configuration",
+    "permalink": "/plugin-better-auth/docs/plugin-api-permissions/configuration"
+  }
+}

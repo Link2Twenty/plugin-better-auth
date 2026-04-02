@@ -6,6 +6,8 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 > [!CAUTION]  
 > This plugin is in ALPHA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
 
+**Full flow documentation (API, Content Manager, config, troubleshooting):** [docs/AUTHENTICATION_FLOWS.md](./docs/AUTHENTICATION_FLOWS.md)
+
 ## Features
 
 - ✅ Full Better Auth database adapter implementation
@@ -33,7 +35,7 @@ Create the Better Auth config file and add the following content.
 ```typescript
 // config/better-auth.ts
 import { betterAuth } from "better-auth";
-import { strapiAdapter } from '@strapi-community/plugin-better-auth/adapter';
+import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
 const auth = () => betterAuth({
   database: strapiAdapter(),
@@ -76,8 +78,7 @@ Use the Better Auth session to authenticate your users in custom Strapi controll
 export default {
   async customMethod(ctx) {
     // Access the Better Auth instance
-    // @ts-expect-error - Accessing custom property
-    const auth = strapi.internal_config['better-auth'];;
+    const auth = strapi.internal_config['better-auth'];
     
     // Use Better Auth API methods
     const session = await auth.api.getSession({
@@ -94,12 +95,11 @@ export default {
 
 ## Supported plugins
 
-Any Better Auth plugin may be used with Strapi + Better Auth. Some plugins require you to run the `generate` CLI in order to make the required schema changes. In order to do that you have to manually specify the location of the Better Auth config file.
+Any Better Auth plugin may be used with Strapi + Better Auth. Some plugins require you to run the `generate` CLI in order to make the required schema changes. To do that you have to manually specify the location of the Better Auth config file.
 
 ```bash
 npx auth@latest generate --config config/better-auth.ts
 ```
-
 
 ## Resources
 
@@ -111,6 +111,7 @@ npx auth@latest generate --config config/better-auth.ts
 ## Authors
 
 - [Boaz Poolman](https://github.com/boazpoolman)
+- [Marco Autiero](https://github.com/maccomaccomaccomacco)
 
 ## License
 
