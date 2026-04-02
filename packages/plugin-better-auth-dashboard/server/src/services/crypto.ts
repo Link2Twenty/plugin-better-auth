@@ -1,6 +1,6 @@
+import { ApplicationError } from "@strapi/utils/dist/errors";
 import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import type { KeyPair } from "../types";
-import { ApplicationError } from "@strapi/utils/dist/errors";
 
 export default () => {
   let keyPair: KeyPair | null = null;

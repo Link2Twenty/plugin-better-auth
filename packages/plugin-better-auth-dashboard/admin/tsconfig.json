@@ -2,6 +2,7 @@
   "extends": "@strapi/typescript-utils/tsconfigs/admin",
   "include": ["./src"],
   "compilerOptions": {
-    "rootDir": "../"
+    "rootDir": "../",
+    "strict": true
   }
 }

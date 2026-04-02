@@ -6,6 +6,16 @@ import { getPluginService } from "../utils";
 export const DASHBOARD_API_KEY =
   process.env.BETTER_AUTH_DASHBOARD_SECRET || "strapi-internal-dashboard-key";
 
+/**
+ * Header name used to pass dash() JWT context fields separately from the HTTP payload.
+ *
+ * The admin client encodes the context as base64(JSON) in this header.
+ * The auth-controller reads it here and injects the fields into the signed JWT
+ * so the dash() jwtMiddleware can validate them — without ever mixing them
+ * with the actual request body.
+ */
+export const DASH_CONTEXT_HEADER = "x-dash-context";
+
 const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
   async handleAuthRequest(ctx: Context) {
     const auth = strapi.internal_config["better-auth"];
@@ -14,34 +24,24 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     const keyPair = await getPluginService("crypto").getKeyPair();
 
-    // Extract operation-specific payload fields from the request body and query
-    // so they can be included in the JWT for dash() middleware validation.
-    // The dash() plugin endpoints use jwtMiddleware to read userId, sessionId,
-    // organizationId etc. from the JWT payload rather than from the request body.
-    const hasBody =
-      ctx.request.method !== "GET" && ctx.request.method !== "HEAD";
-    const bodyData = hasBody
-      ? ((ctx.request.body as Record<string, unknown>) ?? {})
-      : {};
-    const queryData = (ctx.request.query as Record<string, unknown>) ?? {};
-
-    const PAYLOAD_KEYS = [
-      "userId",
-      "sessionId",
-      "organizationId",
-      "invitationId",
-      "invitedBy",
-      "memberId",
-      "skipDefaultTeam",
-    ] as const;
-
-    const extra: Record<string, unknown> = {};
-    for (const key of PAYLOAD_KEYS) {
-      const value = bodyData[key] ?? queryData[key];
-      if (value !== undefined) extra[key] = value;
+    // Read JWT context from the dedicated X-Dash-Context header.
+    // The admin client base64-encodes the context JSON and sets this header,
+    // keeping context fields cleanly separated from the HTTP payload.
+    const contextHeader = ctx.request.headers[DASH_CONTEXT_HEADER];
+    let extra: Record<string, unknown> = {};
+    if (typeof contextHeader === "string" && contextHeader.length > 0) {
+      try {
+        const decoded = Buffer.from(contextHeader, "base64").toString("utf8");
+        const parsed = JSON.parse(decoded);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          extra = parsed as Record<string, unknown>;
+        }
+      } catch {
+        // Malformed context header — proceed without extra context
+      }
     }
 
-    // Mint a JWT for the dashboard API key with the extracted payload fields.
+    // Mint a JWT for the dashboard API key with the context fields.
     const jwt = await getPluginService("crypto").mintInternalJwt(
       keyPair,
       DASHBOARD_API_KEY,
@@ -69,6 +69,9 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
     // Set the Authorization header with the minted JWT
     headers.set("Authorization", `Bearer ${jwt}`);
 
+    const hasBody =
+      ctx.request.method !== "GET" && ctx.request.method !== "HEAD";
+
     // Create the Request object
     const request = new Request(url.toString(), {
       method: ctx.request.method,
@@ -78,8 +81,6 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Call Better Auth handler
     const response = await auth.handler(request);
-
-    console.log(response);
 
     // Set response status
     ctx.status = response.status;

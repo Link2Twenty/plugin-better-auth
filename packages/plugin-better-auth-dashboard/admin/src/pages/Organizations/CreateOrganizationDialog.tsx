@@ -1,171 +1,176 @@
-import { Button, Dialog, Field, Flex, TextInput } from "@strapi/design-system";
-import { useNotification } from "@strapi/strapi/admin";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Field,
+  Flex,
+  Modal,
+  TextInput,
+  Typography,
+} from "@strapi/design-system";
+import type React from "react";
 import { useState } from "react";
-import { useIntl } from "react-intl";
 import { useMutation, useQueryClient } from "react-query";
 import { client } from "../../client";
-
-const PLUGIN_ID = "better-auth-dashboard";
+import { UserCombobox } from "../../components/UserCombobox";
+import { withContext } from "../../utils/dashContext";
 
 interface Props {
+  teamsEnabled: boolean;
   onClose: () => void;
 }
 
-function slugify(value: string): string {
-  return value
+export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
+  const qc = useQueryClient();
+
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [logo, setLogo] = useState("");
+  const [ownerId, setOwnerId] = useState("");
+  const [skipDefaultTeam, setSkipDefaultTeam] = useState(false);
+  const [defaultTeamName, setDefaultTeamName] = useState("");
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.organization.create(
+        {
+          name,
+          slug,
+          ...(logo ? { logo } : {}),
+          ...(teamsEnabled && !skipDefaultTeam && defaultTeamName
+            ? { defaultTeamName }
+            : {}),
+        },
+        withContext({ userId: ownerId, skipDefaultTeam }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Create failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      onClose();
+    },
+  });
+
+  // Auto-generate slug from name
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setName(val);
+    if (!slug || slug === slugify(name)) {
+      setSlug(slugify(val));
+    }
+  };
+
+  return (
+    <Modal.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
+      <Modal.Content>
+        <Modal.Header>
+          <Typography variant="beta" tag="h2">
+            Create Organization
+          </Typography>
+        </Modal.Header>
+        <Modal.Body>
+          <Flex direction="column" gap={4}>
+            <Field.Root>
+              <Field.Label>Name</Field.Label>
+              <TextInput
+                name="name"
+                value={name}
+                onChange={handleNameChange}
+                required
+              />
+            </Field.Root>
+            <Field.Root hint="URL-safe identifier for the organization">
+              <Field.Label>Slug</Field.Label>
+              <TextInput
+                name="slug"
+                value={slug}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSlug(e.target.value)
+                }
+                required
+              />
+              <Field.Hint />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Logo URL</Field.Label>
+              <TextInput
+                name="logo"
+                type="url"
+                value={logo}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setLogo(e.target.value)
+                }
+              />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Owner</Field.Label>
+              <UserCombobox
+                hint="The user who will own this organization"
+                value={ownerId}
+                onChange={setOwnerId}
+                required
+              />
+            </Field.Root>
+
+            {teamsEnabled && (
+              <>
+                <Checkbox
+                  name="skipDefaultTeam"
+                  checked={skipDefaultTeam}
+                  onCheckedChange={(checked: boolean) =>
+                    setSkipDefaultTeam(checked)
+                  }
+                >
+                  Skip creating a default team
+                </Checkbox>
+                {!skipDefaultTeam && (
+                  <Field.Root hint="Leave blank to use the default team name">
+                    <Field.Label>Default team name</Field.Label>
+                    <TextInput
+                      name="defaultTeamName"
+                      value={defaultTeamName}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setDefaultTeamName(e.target.value)
+                      }
+                    />
+                    <Field.Hint />
+                  </Field.Root>
+                )}
+              </>
+            )}
+
+            {createMutation.isError && (
+              <Typography textColor="danger600" variant="pi">
+                {createMutation.error instanceof Error
+                  ? createMutation.error.message
+                  : "Create failed"}
+              </Typography>
+            )}
+          </Flex>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="tertiary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            loading={createMutation.isLoading}
+            disabled={!name || !slug || !ownerId}
+            onClick={() => createMutation.mutate()}
+          >
+            Create
+          </Button>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal.Root>
+  );
+}
+
+function slugify(str: string): string {
+  return str
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
-export const CreateOrganizationDialog = ({ onClose }: Props) => {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
-
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugTouched, setSlugTouched] = useState(false);
-  const [ownerId, setOwnerId] = useState("");
-
-  const mutation = useMutation(
-    async ({ name, slug, userId }: { name: string; slug: string; userId: string }) => {
-      // userId is the better-auth user who becomes the organization owner.
-      // It is passed in the body so the Strapi proxy includes it in the JWT;
-      // the createDashOrganization middleware reads userId from the JWT payload.
-      // createDashOrganization uses $loose body, so extra fields (userId) pass through.
-      const createBody = { name, slug, userId };
-      const result = await client.dash.organization.create(createBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to create organization");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "organizations"]);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.organizations.create.success`,
-            defaultMessage: "Organization created successfully",
-          }),
-        });
-        onClose();
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.organizations.create.error`,
-            defaultMessage: "Failed to create organization",
-          }),
-        });
-      },
-    },
-  );
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
-    if (!slugTouched) setSlug(slugify(e.target.value));
-  };
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSlugTouched(true);
-    setSlug(e.target.value);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate({ name, slug, userId: ownerId });
-  };
-
-  const isValid = name.trim() && slug.trim() && ownerId.trim();
-
-  return (
-    <Dialog.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Content>
-        <Dialog.Header>
-          {formatMessage({
-            id: `${PLUGIN_ID}.organizations.create.title`,
-            defaultMessage: "Create organization",
-          })}
-        </Dialog.Header>
-        <Dialog.Body>
-          <form id="create-org-form" onSubmit={handleSubmit}>
-            <Flex direction="column" gap={4}>
-              <Field.Root required>
-                <Field.Label>
-                  {formatMessage({ id: "global.name", defaultMessage: "Name" })}
-                </Field.Label>
-                <TextInput
-                  placeholder={formatMessage({
-                    id: `${PLUGIN_ID}.organizations.create.name.placeholder`,
-                    defaultMessage: "Acme Inc.",
-                  })}
-                  value={name}
-                  onChange={handleNameChange}
-                />
-              </Field.Root>
-
-              <Field.Root
-                required
-                hint={formatMessage({
-                  id: `${PLUGIN_ID}.organizations.create.slug.hint`,
-                  defaultMessage: "Unique URL-safe identifier",
-                })}
-              >
-                <Field.Label>Slug</Field.Label>
-                <TextInput
-                  placeholder="acme-inc"
-                  value={slug}
-                  onChange={handleSlugChange}
-                />
-                <Field.Hint />
-              </Field.Root>
-
-              <Field.Root
-                required
-                hint={formatMessage({
-                  id: `${PLUGIN_ID}.organizations.create.ownerId.hint`,
-                  defaultMessage: "The better-auth user ID who will own this organization",
-                })}
-              >
-                <Field.Label>
-                  {formatMessage({
-                    id: `${PLUGIN_ID}.organizations.create.ownerId`,
-                    defaultMessage: "Owner user ID",
-                  })}
-                </Field.Label>
-                <TextInput
-                  placeholder="usr_..."
-                  value={ownerId}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOwnerId(e.target.value)}
-                />
-                <Field.Hint />
-              </Field.Root>
-            </Flex>
-          </form>
-        </Dialog.Body>
-        <Dialog.Footer>
-          <Button variant="tertiary" onClick={onClose}>
-            {formatMessage({
-              id: "app.components.Button.cancel",
-              defaultMessage: "Cancel",
-            })}
-          </Button>
-          <Button
-            type="submit"
-            form="create-org-form"
-            loading={mutation.isLoading}
-            disabled={!isValid || mutation.isLoading}
-          >
-            {formatMessage({
-              id: `${PLUGIN_ID}.organizations.create.submit`,
-              defaultMessage: "Create",
-            })}
-          </Button>
-        </Dialog.Footer>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};

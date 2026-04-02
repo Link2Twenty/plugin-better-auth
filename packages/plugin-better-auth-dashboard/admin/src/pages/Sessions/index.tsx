@@ -1,316 +1,252 @@
 import {
+  Alert,
+  Badge,
   Box,
   Button,
-  Dialog,
-  EmptyStateLayout,
+  Checkbox,
   Flex,
   IconButton,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
+  Loader,
   Typography,
 } from "@strapi/design-system";
 import { Trash } from "@strapi/icons";
-import { Layouts, Page, useNotification } from "@strapi/strapi/admin";
-import { useState } from "react";
-import { useIntl } from "react-intl";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { withContext } from "../../utils/dashContext";
 
-const PLUGIN_ID = "better-auth-dashboard";
-const LIMIT = 20;
+const PAGE_SIZE = 25;
 
-export const SessionsPage = () => {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
+export function SessionsPage() {
+  const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [offset, setOffset] = useState(0);
-  const [confirmRevokeAll, setConfirmRevokeAll] = useState<string | null>(null);
+  const offset = (page - 1) * PAGE_SIZE;
 
-  const { data, isLoading, error } = useQuery(
-    [PLUGIN_ID, "sessions", offset],
-    async () => {
-      const result = await client.dash.listAllSessions({ query: { limit: LIMIT, offset } });
-      if (result.error) throw new Error(result.error.message ?? "Failed to load sessions");
+  const sessionsQuery = useQuery({
+    queryKey: ["dash-all-sessions", page],
+    queryFn: async () => {
+      const result = await client.dash.listAllSessions({
+        // query: { limit: PAGE_SIZE, offset },
+      });
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to load sessions");
+      return result.data ?? [];
+    },
+    keepPreviousData: true,
+  });
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const result = await client.dash.sessions.revoke({
+        query: {},
+        fetchOptions: {
+          headers: { "Content-Type": "application/json" },
+        },
+      });
+      if (result.error)
+        throw new Error(result.error.message ?? "Revoke failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-all-sessions"] });
+    },
+  });
+
+  const revokeManyMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const result = await client.dash.sessions.revokeMany(
+        {},
+        withContext({ userIds } as never),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Revoke failed");
       return result.data;
     },
-  );
-
-  const revokeSessionMutation = useMutation(
-    async ({ sessionId, userId }: { sessionId: string; userId: string }) => {
-      // sessionId and userId are passed so the Strapi proxy can include them in the JWT.
-      // The revokeSession handler reads { sessionId, userId } from ctx.context.payload (JWT).
-      const revokeBody = { sessionId, userId };
-      const result = await client.dash.sessions.revoke(revokeBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to revoke session");
-      return result.data;
+    onSuccess: () => {
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["dash-all-sessions"] });
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "sessions"]);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.sessions.revoke.success`,
-            defaultMessage: "Session revoked",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.sessions.revoke.error`,
-            defaultMessage: "Failed to revoke session",
-          }),
-        });
-      },
-    },
-  );
+  });
 
-  const revokeAllMutation = useMutation(
-    async (userId: string) => {
-      const result = await client.dash.sessions.revokeAll({ userId });
-      if (result.error) throw new Error(result.error.message ?? "Failed to revoke sessions");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "sessions"]);
-        setConfirmRevokeAll(null);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.sessions.revokeAll.success`,
-            defaultMessage: "All sessions revoked",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.sessions.revokeAll.error`,
-            defaultMessage: "Failed to revoke sessions",
-          }),
-        });
-      },
-    },
-  );
+  const usersWithSessions = sessionsQuery.data ?? [];
 
-  if (isLoading) return <Page.Loading />;
-  if (error) return <Page.Error />;
+  // Flatten for selection — selecting by userId
+  const allUserIds = usersWithSessions.map((u) => u.id);
+  const allSelected =
+    allUserIds.length > 0 && allUserIds.every((id) => selected.has(id));
+  const someSelected = selected.size > 0;
 
-  const usersWithSessions = data ?? [];
-  const totalSessions = usersWithSessions.reduce((sum, u) => sum + u.sessions.length, 0);
-  const hasPrev = offset > 0;
-  const hasNext = usersWithSessions.length === LIMIT;
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(allUserIds));
+    }
+  };
 
   return (
-    <Page.Main>
-      <Page.Title>
-        {formatMessage({
-          id: `${PLUGIN_ID}.Settings.sessions`,
-          defaultMessage: "Sessions - Better Auth",
-        })}
-      </Page.Title>
-      <Layouts.Header
-        title={formatMessage({ id: `${PLUGIN_ID}.Settings.sessions`, defaultMessage: "Sessions" })}
-        subtitle={formatMessage(
-          {
-            id: `${PLUGIN_ID}.sessions.subtitle`,
-            defaultMessage: "{total} active sessions",
-          },
-          { total: totalSessions },
+    <Box padding={6}>
+      <Flex
+        justifyContent="space-between"
+        alignItems="flex-start"
+        paddingBottom={4}
+      >
+        <Typography variant="beta" textColor="neutral800">
+          Sessions
+        </Typography>
+        {someSelected && (
+          <Button
+            variant="danger-light"
+            size="S"
+            loading={revokeManyMutation.isLoading}
+            onClick={() => revokeManyMutation.mutate([...selected])}
+          >
+            Revoke sessions for {selected.size} user
+            {selected.size !== 1 ? "s" : ""}
+          </Button>
         )}
-      />
-      <Layouts.Content>
-        {usersWithSessions.length > 0 ? (
-          <>
-            {usersWithSessions.map((userWithSessions) => (
-              <Box key={userWithSessions.id} marginBottom={6}>
-                <Box
-                  background="neutral100"
-                  padding={4}
-                  borderRadius="4px 4px 0 0"
-                  style={{ borderBottom: "1px solid #DCDCE4" }}
-                >
-                  <Flex justifyContent="space-between" alignItems="center">
-                    <Flex direction="column" gap={1}>
-                      <Typography variant="omega" fontWeight="semiBold" textColor="neutral800">
-                        {userWithSessions.name}
-                      </Typography>
-                      <Typography variant="pi" textColor="neutral500">
-                        {userWithSessions.email}
-                      </Typography>
-                    </Flex>
-                    <Flex gap={2} alignItems="center">
-                      <Typography variant="pi" textColor="neutral500">
-                        {userWithSessions.sessions.length}{" "}
-                        {userWithSessions.sessions.length === 1 ? "session" : "sessions"}
-                      </Typography>
-                      <Button
-                        variant="danger-light"
-                        size="S"
-                        onClick={() => setConfirmRevokeAll(userWithSessions.id)}
-                      >
-                        {formatMessage({
-                          id: `${PLUGIN_ID}.sessions.revokeAll`,
-                          defaultMessage: "Revoke all",
-                        })}
-                      </Button>
-                    </Flex>
-                  </Flex>
-                </Box>
+      </Flex>
 
-                <Table colCount={4} rowCount={userWithSessions.sessions.length + 1}>
-                  <Thead>
-                    <Tr>
-                      <Th>
-                        <Typography variant="sigma" textColor="neutral600">
-                          IP Address
-                        </Typography>
-                      </Th>
-                      <Th>
-                        <Typography variant="sigma" textColor="neutral600">
-                          User Agent
-                        </Typography>
-                      </Th>
-                      <Th>
-                        <Typography variant="sigma" textColor="neutral600">
-                          Expires
-                        </Typography>
-                      </Th>
-                      <Th>
-                        <Typography variant="sigma" textColor="neutral600">
-                          {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
-                        </Typography>
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {userWithSessions.sessions.map((session) => (
-                      <Tr key={session.id}>
-                        <Td>
-                          <Typography textColor="neutral800">
-                            {session.ipAddress ?? "—"}
-                          </Typography>
-                        </Td>
-                        <Td>
-                          <Typography
-                            textColor="neutral800"
-                            style={{
-                              maxWidth: 280,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              display: "block",
-                            }}
-                            title={session.userAgent ?? undefined}
-                          >
-                            {session.userAgent ?? "—"}
-                          </Typography>
-                        </Td>
-                        <Td>
-                          <Typography textColor="neutral800">
-                            {new Date(session.expiresAt).toLocaleString()}
-                          </Typography>
-                        </Td>
-                        <Td>
-                          <IconButton
-                            label={formatMessage({
-                              id: `${PLUGIN_ID}.sessions.revoke`,
-                              defaultMessage: "Revoke session",
-                            })}
-                            onClick={() => revokeSessionMutation.mutate({ sessionId: session.id, userId: userWithSessions.id })}
-                          >
-                            <Trash />
-                          </IconButton>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
-            ))}
-
-            {(hasPrev || hasNext) && (
-              <Flex justifyContent="flex-end" gap={2} marginTop={4}>
-                <Button
-                  variant="tertiary"
-                  disabled={!hasPrev}
-                  onClick={() => setOffset((o) => Math.max(0, o - LIMIT))}
-                >
-                  {formatMessage({
-                    id: "components.pagination.go-to-previous",
-                    defaultMessage: "Previous",
-                  })}
-                </Button>
-                <Button
-                  variant="tertiary"
-                  disabled={!hasNext}
-                  onClick={() => setOffset((o) => o + LIMIT)}
-                >
-                  {formatMessage({
-                    id: "components.pagination.go-to-next",
-                    defaultMessage: "Next",
-                  })}
-                </Button>
-              </Flex>
-            )}
-          </>
-        ) : (
-          <EmptyStateLayout
-            content={formatMessage({
-              id: `${PLUGIN_ID}.sessions.empty`,
-              defaultMessage: "No active sessions found.",
-            })}
-          />
-        )}
-      </Layouts.Content>
-
-      {confirmRevokeAll && (
-        <Dialog.Root defaultOpen onOpenChange={(open) => !open && setConfirmRevokeAll(null)}>
-          <Dialog.Content>
-            <Dialog.Header>
-              {formatMessage({
-                id: `${PLUGIN_ID}.sessions.revokeAll.confirm.title`,
-                defaultMessage: "Revoke all sessions",
-              })}
-            </Dialog.Header>
-            <Dialog.Body>
-              <Typography>
-                {formatMessage({
-                  id: `${PLUGIN_ID}.sessions.revokeAll.confirm.message`,
-                  defaultMessage:
-                    "Are you sure you want to revoke all sessions for this user? They will be signed out of all devices.",
-                })}
-              </Typography>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="tertiary" onClick={() => setConfirmRevokeAll(null)}>
-                {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
-              </Button>
-              <Button
-                variant="danger"
-                loading={revokeAllMutation.isLoading}
-                onClick={() => revokeAllMutation.mutate(confirmRevokeAll)}
-              >
-                {formatMessage({
-                  id: `${PLUGIN_ID}.sessions.revokeAll.confirm.submit`,
-                  defaultMessage: "Revoke all",
-                })}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
+      {sessionsQuery.isError && (
+        <Alert closeLabel="Close" title="Error" variant="danger">
+          {sessionsQuery.error instanceof Error
+            ? sessionsQuery.error.message
+            : "An error occurred"}
+        </Alert>
       )}
-    </Page.Main>
-  );
-};
 
-export default SessionsPage;
+      <Box
+        background="neutral0"
+        shadow="filterShadow"
+        hasRadius
+        borderColor="neutral150"
+        borderStyle="solid"
+        borderWidth="1px"
+      >
+        {sessionsQuery.isLoading ? (
+          <Flex justifyContent="center" padding={8}>
+            <Loader>Loading sessions…</Loader>
+          </Flex>
+        ) : usersWithSessions.length === 0 ? (
+          <Flex justifyContent="center" padding={8}>
+            <Typography textColor="neutral500">No active sessions</Typography>
+          </Flex>
+        ) : (
+          usersWithSessions.map((userRow) => (
+            <Box
+              key={userRow.id}
+              borderColor="neutral150"
+              borderStyle="solid"
+              borderWidth="1px"
+            >
+              <Flex
+                padding={4}
+                alignItems="center"
+                gap={3}
+                background="neutral50"
+              >
+                <Checkbox
+                  checked={selected.has(userRow.id)}
+                  onCheckedChange={() => toggleSelect(userRow.id)}
+                  aria-label={`Select ${userRow.name}`}
+                />
+                <Flex direction="column">
+                  <Typography variant="omega" fontWeight="semiBold">
+                    {userRow.name}
+                  </Typography>
+                  <Typography variant="pi" textColor="neutral500">
+                    {userRow.email}
+                  </Typography>
+                </Flex>
+                <Badge backgroundColor="neutral100" textColor="neutral600">
+                  {userRow.sessions.length} session
+                  {userRow.sessions.length !== 1 ? "s" : ""}
+                </Badge>
+              </Flex>
+
+              {userRow.sessions.map((session) => (
+                <Flex
+                  key={session.id}
+                  paddingLeft={10}
+                  paddingRight={4}
+                  paddingTop={3}
+                  paddingBottom={3}
+                  alignItems="center"
+                  gap={3}
+                  borderColor="neutral100"
+                  borderStyle="solid"
+                  borderWidth="1px"
+                >
+                  <Flex direction="column" gap={1}>
+                    {session.ipAddress && (
+                      <Typography variant="pi" textColor="neutral700">
+                        IP: {session.ipAddress}
+                      </Typography>
+                    )}
+                    {session.userAgent && (
+                      <Typography
+                        variant="pi"
+                        textColor="neutral500"
+                        style={{
+                          maxWidth: 400,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {session.userAgent}
+                      </Typography>
+                    )}
+                    <Typography variant="pi" textColor="neutral400">
+                      Created: {new Date(session.createdAt).toLocaleString()}
+                      {" · "}
+                      Expires: {new Date(session.expiresAt).toLocaleString()}
+                    </Typography>
+                  </Flex>
+                  <IconButton
+                    label="Revoke session"
+                    onClick={() => revokeSessionMutation.mutate(session.id)}
+                  >
+                    <Trash />
+                  </IconButton>
+                </Flex>
+              ))}
+            </Box>
+          ))
+        )}
+      </Box>
+
+      {usersWithSessions.length === PAGE_SIZE && (
+        <Flex justifyContent="flex-end" paddingTop={4}>
+          <Flex gap={2}>
+            <Button
+              variant="tertiary"
+              size="S"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="tertiary"
+              size="S"
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
+      )}
+    </Box>
+  );
+}

@@ -1,376 +1,383 @@
 import {
+  Alert,
+  Badge,
   Box,
   Button,
-  Dialog,
-  EmptyStateLayout,
+  Checkbox,
   Flex,
   IconButton,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
+  Loader,
+  Pagination,
+  Searchbar,
+  SearchForm,
   Typography,
 } from "@strapi/design-system";
-import { Plus, Trash } from "@strapi/icons";
-import { Layouts, Page, useNotification } from "@strapi/strapi/admin";
+import { Eye, Pencil, Plus, Trash } from "@strapi/icons";
+import type React from "react";
 import { useState } from "react";
-import { useIntl } from "react-intl";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { client } from "../../client";
+import type { DashConfig } from "../../hooks/useDashConfig";
+import { hasPlugin } from "../../hooks/useDashConfig";
+import { useUsers } from "../../hooks/useUsers";
+import { withContext } from "../../utils/dashContext";
 import { CreateUserDialog } from "./CreateUserDialog";
+import { UserDetailDrawer } from "./UserDetailDrawer";
 
-const PLUGIN_ID = "better-auth-dashboard";
-const LIMIT = 20;
+const PAGE_SIZE = 25;
 
-function BannedBadge({ banned }: { banned: boolean }) {
-  if (!banned) return null;
-  return (
-    <Box
-      background="danger100"
-      padding="2px 8px"
-      borderRadius="4px"
-      style={{ display: "inline-block" }}
-    >
-      <Typography variant="pi" textColor="danger600">
-        Banned
-      </Typography>
-    </Box>
-  );
+interface Props {
+  config: DashConfig;
 }
 
-function VerifiedBadge({ verified }: { verified: boolean }) {
-  return (
-    <Box
-      background={verified ? "success100" : "neutral100"}
-      padding="2px 8px"
-      borderRadius="4px"
-      style={{ display: "inline-block" }}
-    >
-      <Typography variant="pi" textColor={verified ? "success600" : "neutral500"}>
-        {verified ? "Verified" : "Unverified"}
-      </Typography>
-    </Box>
-  );
-}
+export function UsersPage({ config }: Props) {
+  const qc = useQueryClient();
+  const banEnabled = hasPlugin(config, "admin");
+  const emailVerificationEnabled =
+    config.emailVerification.sendVerificationEmailEnabled;
 
-function Avatar({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  return (
-    <Box
-      background="primary100"
-      borderRadius="50%"
-      style={{
-        width: 32,
-        height: 32,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <Typography variant="pi" textColor="primary600" fontWeight="bold">
-        {initials}
-      </Typography>
-    </Box>
-  );
-}
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showCreate, setShowCreate] = useState(false);
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
 
-export const UsersPage = () => {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
-
-  const [offset, setOffset] = useState(0);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
-  const { data, isLoading, error } = useQuery(
-    [PLUGIN_ID, "users", offset],
-    async () => {
-      const result = await client.dash.listUsers({ query: { limit: LIMIT, offset } });
-      if (result.error) throw new Error(result.error.message ?? "Failed to load users");
-      return result.data;
-    },
-  );
-
-  const banMutation = useMutation(
-    async ({ userId, banned }: { userId: string; banned: boolean }) => {
-      // userId is passed in the body so the Strapi proxy can include it in the JWT.
-      // The dash() middleware validates userId from the JWT payload, not from the body.
-      // Using a variable avoids TypeScript's excess property check on object literals.
-      const userIdBody = { userId };
-      const result = banned
-        ? await client.dash.unbanUser(userIdBody)
-        : await client.dash.banUser(userIdBody);
-      if (result.error) throw new Error(result.error.message ?? "Action failed");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "users"]);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.users.ban.success`,
-            defaultMessage: "User updated successfully",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.users.ban.error`,
-            defaultMessage: "Failed to update user",
-          }),
-        });
-      },
-    },
-  );
-
-  const deleteMutation = useMutation(
-    async (userId: string) => {
-      const userIdBody = { userId };
-      const result = await client.dash.deleteUser(userIdBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to delete user");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "users"]);
-        queryClient.invalidateQueries([PLUGIN_ID, "user-stats"]);
-        setConfirmDelete(null);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.users.delete.success`,
-            defaultMessage: "User deleted",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.users.delete.error`,
-            defaultMessage: "Failed to delete user",
-          }),
-        });
-      },
-    },
-  );
-
-  if (isLoading) return <Page.Loading />;
-  if (error) return <Page.Error />;
+  const offset = (page - 1) * PAGE_SIZE;
+  const { data, isLoading, isError, error } = useUsers({
+    limit: PAGE_SIZE,
+    offset,
+    search: search || undefined,
+  });
 
   const users = data?.users ?? [];
   const total = data?.total ?? 0;
-  const hasPrev = offset > 0;
-  const hasNext = offset + LIMIT < total;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const result = await client.dash.deleteUser({}, withContext({ userId }));
+      if (result.error)
+        throw new Error(result.error.message ?? "Delete failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-users"] });
+      qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
+    },
+  });
+
+  const deleteManyMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const result = await client.dash.deleteManyUsers(
+        {},
+        withContext({ userIds } as never),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Delete failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["dash-users"] });
+      qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
+    },
+  });
+
+  const banManyMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const result = await client.dash.banManyUsers(
+        {},
+        withContext({ userIds } as never),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Ban failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["dash-users"] });
+    },
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allSelected =
+    users.length > 0 && users.every((u) => selected.has(u.id));
+  const someSelected = selected.size > 0;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(users.map((u) => u.id)));
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(1);
+  };
 
   return (
-    <Page.Main>
-      <Page.Title>
-        {formatMessage({ id: `${PLUGIN_ID}.Settings.users`, defaultMessage: "Users - Better Auth" })}
-      </Page.Title>
-      <Layouts.Header
-        title={formatMessage({ id: `${PLUGIN_ID}.Settings.users`, defaultMessage: "Users" })}
-        subtitle={formatMessage(
-          { id: `${PLUGIN_ID}.users.subtitle`, defaultMessage: "{total} users in total" },
-          { total },
+    <Box padding={6}>
+      <Flex
+        justifyContent="space-between"
+        alignItems="flex-start"
+        paddingBottom={4}
+      >
+        <Box>
+          <Typography variant="beta" textColor="neutral800">
+            Users
+          </Typography>
+          <Typography variant="pi" textColor="neutral500" paddingTop={1}>
+            {total} total
+            {data?.onlineUsers ? ` · ${data.onlineUsers} online` : ""}
+          </Typography>
+        </Box>
+        <Button startIcon={<Plus />} onClick={() => setShowCreate(true)}>
+          Create user
+        </Button>
+      </Flex>
+
+      <Flex gap={3} paddingBottom={4} alignItems="flex-end">
+        <Box>
+          <SearchForm onSubmit={handleSearch}>
+            <Searchbar
+              clearLabel="Clear"
+              name="search"
+              placeholder="Search by email…"
+              value={searchInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchInput(e.target.value)
+              }
+              onClear={() => {
+                setSearchInput("");
+                setSearch("");
+                setPage(1);
+              }}
+            >
+              Search users
+            </Searchbar>
+          </SearchForm>
+        </Box>
+
+        {someSelected && (
+          <Flex gap={2}>
+            <Button
+              variant="danger-light"
+              size="S"
+              loading={deleteManyMutation.isLoading}
+              onClick={() => deleteManyMutation.mutate([...selected])}
+            >
+              Delete {selected.size} selected
+            </Button>
+            {banEnabled && (
+              <Button
+                variant="secondary"
+                size="S"
+                loading={banManyMutation.isLoading}
+                onClick={() => banManyMutation.mutate([...selected])}
+              >
+                Ban {selected.size} selected
+              </Button>
+            )}
+          </Flex>
         )}
-        primaryAction={
-          <Button startIcon={<Plus />} onClick={() => setShowCreateDialog(true)} size="S">
-            {formatMessage({
-              id: `${PLUGIN_ID}.users.create.button`,
-              defaultMessage: "Create user",
-            })}
-          </Button>
-        }
-      />
-      <Layouts.Content>
-        {users.length > 0 ? (
-          <>
-            <Table colCount={6} rowCount={users.length + 1}>
-              <Thead>
-                <Tr>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">
-                      {formatMessage({ id: "global.name", defaultMessage: "Name" })}
-                    </Typography>
-                  </Th>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">
-                      {formatMessage({ id: "global.email", defaultMessage: "Email" })}
-                    </Typography>
-                  </Th>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">Email</Typography>
-                  </Th>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">Status</Typography>
-                  </Th>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">
-                      {formatMessage({
-                        id: "app.components.ListViewTable.createdAt",
-                        defaultMessage: "Created At",
-                      })}
-                    </Typography>
-                  </Th>
-                  <Th>
-                    <Typography variant="sigma" textColor="neutral600">
-                      {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
-                    </Typography>
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {users.map((user) => (
-                  <Tr key={user.id}>
-                    <Td>
-                      <Flex gap={3} alignItems="center">
-                        <Avatar name={user.name} />
-                        <Typography textColor="neutral800" fontWeight="semiBold">
+      </Flex>
+
+      {isError && (
+        <Alert closeLabel="Close" title="Error" variant="danger">
+          {(error as Error)?.message}
+        </Alert>
+      )}
+
+      <Box
+        background="neutral0"
+        shadow="filterShadow"
+        hasRadius
+        borderColor="neutral150"
+        borderStyle="solid"
+        borderWidth="1px"
+      >
+        {isLoading ? (
+          <Flex justifyContent="center" padding={8}>
+            <Loader>Loading users…</Loader>
+          </Flex>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: "1px solid #dcdce4",
+                    width: 40,
+                  }}
+                >
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                  />
+                </th>
+                {["Name", "Email", "Status", "Created", ""].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: "left",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid #dcdce4",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#666687",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {users.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{
+                      textAlign: "center",
+                      padding: "32px",
+                      color: "#666687",
+                    }}
+                  >
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    style={{
+                      background: selected.has(user.id) ? "#f0f0ff" : "inherit",
+                    }}
+                  >
+                    <td style={{ padding: "12px 16px" }}>
+                      <Checkbox
+                        checked={selected.has(user.id)}
+                        onCheckedChange={() => toggleSelect(user.id)}
+                        aria-label={`Select ${user.name}`}
+                      />
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Flex alignItems="center" gap={2}>
+                        {user.image && (
+                          <img
+                            src={user.image}
+                            alt=""
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        )}
+                        <Typography variant="omega" fontWeight="semiBold">
                           {user.name}
                         </Typography>
                       </Flex>
-                    </Td>
-                    <Td>
-                      <Typography textColor="neutral800">{user.email}</Typography>
-                    </Td>
-                    <Td>
-                      <VerifiedBadge verified={user.emailVerified} />
-                    </Td>
-                    <Td>
-                      <BannedBadge banned={user.banned} />
-                    </Td>
-                    <Td>
-                      <Typography textColor="neutral800">
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Typography variant="omega">{user.email}</Typography>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Flex gap={1}>
+                        {user.emailVerified ? (
+                          <Badge
+                            backgroundColor="success100"
+                            textColor="success600"
+                          >
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Badge
+                            backgroundColor="warning100"
+                            textColor="warning600"
+                          >
+                            Unverified
+                          </Badge>
+                        )}
+                        {user.banned && (
+                          <Badge
+                            backgroundColor="danger100"
+                            textColor="danger600"
+                          >
+                            Banned
+                          </Badge>
+                        )}
+                      </Flex>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Typography variant="omega" textColor="neutral500">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </Typography>
-                    </Td>
-                    <Td>
-                      <Flex gap={2}>
-                        <Button
-                          variant={user.banned ? "secondary" : "danger-light"}
-                          size="S"
-                          onClick={() =>
-                            banMutation.mutate({ userId: user.id, banned: user.banned })
-                          }
-                        >
-                          {user.banned
-                            ? formatMessage({
-                                id: `${PLUGIN_ID}.users.unban`,
-                                defaultMessage: "Unban",
-                              })
-                            : formatMessage({
-                                id: `${PLUGIN_ID}.users.ban`,
-                                defaultMessage: "Ban",
-                              })}
-                        </Button>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Flex gap={1} justifyContent="flex-end">
                         <IconButton
-                          label={formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
-                          onClick={() => setConfirmDelete(user.id)}
+                          label="View user"
+                          onClick={() => setDetailUserId(user.id)}
+                        >
+                          <Pencil />
+                        </IconButton>
+                        <IconButton
+                          label="Delete user"
+                          onClick={() => deleteMutation.mutate(user.id)}
                         >
                           <Trash />
                         </IconButton>
                       </Flex>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-
-            {(hasPrev || hasNext) && (
-              <Flex justifyContent="flex-end" gap={2} marginTop={4}>
-                <Button
-                  variant="tertiary"
-                  disabled={!hasPrev}
-                  onClick={() => setOffset((o) => Math.max(0, o - LIMIT))}
-                >
-                  {formatMessage({ id: "components.pagination.go-to-previous", defaultMessage: "Previous" })}
-                </Button>
-                <Typography textColor="neutral600" paddingTop={2}>
-                  {offset + 1}–{Math.min(offset + LIMIT, total)} of {total}
-                </Typography>
-                <Button
-                  variant="tertiary"
-                  disabled={!hasNext}
-                  onClick={() => setOffset((o) => o + LIMIT)}
-                >
-                  {formatMessage({ id: "components.pagination.go-to-next", defaultMessage: "Next" })}
-                </Button>
-              </Flex>
-            )}
-          </>
-        ) : (
-          <EmptyStateLayout
-            content={formatMessage({
-              id: `${PLUGIN_ID}.users.empty`,
-              defaultMessage: "No users found.",
-            })}
-            action={
-              <Button
-                variant="secondary"
-                startIcon={<Plus />}
-                onClick={() => setShowCreateDialog(true)}
-              >
-                {formatMessage({
-                  id: `${PLUGIN_ID}.users.create.button`,
-                  defaultMessage: "Create user",
-                })}
-              </Button>
-            }
-          />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         )}
-      </Layouts.Content>
+      </Box>
 
-      {showCreateDialog && (
-        <CreateUserDialog onClose={() => setShowCreateDialog(false)} />
+      {pageCount > 1 && (
+        <Flex justifyContent="flex-end" paddingTop={4}>
+          <Pagination
+            activePage={page}
+            pageCount={pageCount}
+            // @ts-expect-error
+            onChangePage={setPage}
+          />
+        </Flex>
       )}
 
-      {confirmDelete && (
-        <Dialog.Root defaultOpen onOpenChange={(open) => !open && setConfirmDelete(null)}>
-          <Dialog.Content>
-            <Dialog.Header>
-              {formatMessage({
-                id: `${PLUGIN_ID}.users.delete.confirm.title`,
-                defaultMessage: "Delete user",
-              })}
-            </Dialog.Header>
-            <Dialog.Body>
-              <Typography>
-                {formatMessage({
-                  id: `${PLUGIN_ID}.users.delete.confirm.message`,
-                  defaultMessage: "Are you sure you want to delete this user? This action cannot be undone.",
-                })}
-              </Typography>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
-                {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
-              </Button>
-              <Button
-                variant="danger"
-                loading={deleteMutation.isLoading}
-                onClick={() => deleteMutation.mutate(confirmDelete)}
-              >
-                {formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
+      {showCreate && (
+        <CreateUserDialog
+          onClose={() => setShowCreate(false)}
+          orgEnabled={hasPlugin(config, "organization")}
+        />
       )}
-    </Page.Main>
+
+      {detailUserId && (
+        <UserDetailDrawer
+          userId={detailUserId}
+          banEnabled={banEnabled}
+          emailVerificationEnabled={emailVerificationEnabled}
+          onClose={() => setDetailUserId(null)}
+        />
+      )}
+    </Box>
   );
-};
-
-export default UsersPage;
+}

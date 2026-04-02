@@ -9,9 +9,6 @@ const STORAGE_KEYS = {
 
 /**
  * Retrieves the value of a specified cookie.
- *
- * @param name - The name of the cookie to retrieve.
- * @returns The decoded cookie value if found, otherwise null.
  */
 export const getCookieValue = (name: string): string | null => {
   let result = null;
@@ -25,30 +22,36 @@ export const getCookieValue = (name: string): string | null => {
   return result;
 };
 
-const getToken = (): string | null | undefined => {
+export const getToken = (): string | null | undefined => {
   const fromLocalStorage = localStorage.getItem(STORAGE_KEYS.TOKEN);
   if (fromLocalStorage) {
-    return JSON.parse(fromLocalStorage);
+    return JSON.parse(fromLocalStorage) as string;
   }
 
   const fromCookie = getCookieValue(STORAGE_KEYS.TOKEN);
   return fromCookie ?? null;
 };
 
+function getAuthHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 /**
- * Returns a stable Better Auth client pointed at the admin proxy.
- * Auth is handled at the route level (admin route type); no token plumbing needed.
+ * Better Auth client pointed at the admin proxy (/better-auth).
  *
+ * Auth is handled at the route level (Strapi JWT in Authorization header).
  * InferPlugin<ReturnType<typeof dash>> exposes all server-side dash() endpoints
- * on the client type (e.g. client.dash.listUsers, client.dash.organization.members).
+ * with full TypeScript type inference.
+ *
+ * For endpoints that need JWT context (userId, organizationId, etc.), use the
+ * withContext() helper from utils/dashContext.ts as the second argument.
  */
 export const client = createAuthClient({
   baseURL: window.location.origin,
   basePath: "/better-auth",
   plugins: [dashClient(), InferPlugin<ReturnType<typeof dash>>()],
   fetchOptions: {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
+    headers: getAuthHeaders(),
   },
 });

@@ -1,273 +1,356 @@
 import {
+  Alert,
+  Badge,
+  Box,
   Button,
-  Dialog,
-  EmptyStateLayout,
+  Checkbox,
   Flex,
   IconButton,
+  Loader,
+  Searchbar,
+  SearchForm,
   Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
   Typography,
 } from "@strapi/design-system";
-import { Eye, Plus, Trash } from "@strapi/icons";
-import { Layouts, Page, useNotification } from "@strapi/strapi/admin";
+import { Pencil, Plus, Trash } from "@strapi/icons";
+import type React from "react";
 import { useState } from "react";
-import { useIntl } from "react-intl";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { withContext } from "../../utils/dashContext";
 import { CreateOrganizationDialog } from "./CreateOrganizationDialog";
 import { OrganizationDetail } from "./OrganizationDetail";
 
-const PLUGIN_ID = "better-auth-dashboard";
+const PAGE_SIZE = 25;
 
-export const OrganizationsPage = () => {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
+interface Props {
+  teamsEnabled: boolean;
+}
 
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedOrgName, setSelectedOrgName] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+export function OrganizationsPage({ teamsEnabled }: Props) {
+  const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showCreate, setShowCreate] = useState(false);
+  const [detailOrgId, setDetailOrgId] = useState<string | null>(null);
 
-  const { data, isLoading, error } = useQuery(
-    [PLUGIN_ID, "organizations"],
-    async () => {
-      const result = await client.dash.listOrganizations({ query: {} });
-      if (result.error) throw new Error(result.error.message ?? "Failed to load organizations");
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const orgsQuery = useQuery({
+    queryKey: ["dash-organizations", page, search],
+    queryFn: async () => {
+      const result = await client.dash.listOrganizations({
+        query: {
+          limit: PAGE_SIZE,
+          offset,
+          sortBy: "createdAt",
+          sortOrder: "desc",
+          ...(search ? { search } : {}),
+        },
+      });
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to load organizations");
       return result.data;
     },
-  );
+    keepPreviousData: true,
+  });
 
-  const deleteMutation = useMutation(
-    async (organizationId: string) => {
-      const result = await client.dash.organization.delete({ organizationId });
-      if (result.error) throw new Error(result.error.message ?? "Failed to delete organization");
+  const deleteMutation = useMutation({
+    mutationFn: async (organizationId: string) => {
+      const result = await client.dash.organization.delete(
+        { organizationId },
+        withContext({ organizationId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Delete failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+    },
+  });
+
+  const deleteManyMutation = useMutation({
+    mutationFn: async (organizationIds: string[]) => {
+      const result = await client.dash.organization.deleteMany(
+        {},
+        withContext({ organizationIds } as never),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Delete failed");
       return result.data;
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "organizations"]);
-        setConfirmDelete(null);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.organizations.delete.success`,
-            defaultMessage: "Organization deleted",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.organizations.delete.error`,
-            defaultMessage: "Failed to delete organization",
-          }),
-        });
-      },
+    onSuccess: () => {
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["dash-organizations"] });
     },
-  );
+  });
 
-  if (isLoading) return <Page.Loading />;
-  if (error) return <Page.Error />;
+  const orgs =
+    orgsQuery.data && "organizations" in orgsQuery.data
+      ? orgsQuery.data.organizations
+      : [];
+  const total =
+    orgsQuery.data && "total" in orgsQuery.data ? orgsQuery.data.total : 0;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
 
-  if (selectedOrgId) {
-    return (
-      <Page.Main>
-        <Page.Title>{selectedOrgName}</Page.Title>
-        <Layouts.Header
-          title={selectedOrgName}
-          subtitle={formatMessage({
-            id: `${PLUGIN_ID}.Settings.organizations`,
-            defaultMessage: "Organizations",
-          })}
-        />
-        <Layouts.Content>
-          <OrganizationDetail
-            orgId={selectedOrgId}
-            onBack={() => {
-              setSelectedOrgId(null);
-              setSelectedOrgName("");
-            }}
-          />
-        </Layouts.Content>
-      </Page.Main>
-    );
-  }
+  const allSelected = orgs.length > 0 && orgs.every((o) => selected.has(o.id));
+  const someSelected = selected.size > 0;
 
-  const organizations = data?.organizations ?? [];
-  const total = data?.total ?? 0;
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(orgs.map((o) => o.id)));
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(1);
+  };
 
   return (
-    <Page.Main>
-      <Page.Title>
-        {formatMessage({
-          id: `${PLUGIN_ID}.Settings.organizations`,
-          defaultMessage: "Organizations - Better Auth",
-        })}
-      </Page.Title>
-      <Layouts.Header
-        title={formatMessage({
-          id: `${PLUGIN_ID}.Settings.organizations`,
-          defaultMessage: "Organizations",
-        })}
-        subtitle={formatMessage(
-          {
-            id: `${PLUGIN_ID}.Settings.organizations.subtitle`,
-            defaultMessage: "{total} organizations in total",
-          },
-          { total },
-        )}
-        primaryAction={
-          <Button startIcon={<Plus />} onClick={() => setShowCreateDialog(true)} size="S">
-            {formatMessage({
-              id: `${PLUGIN_ID}.organizations.create.button`,
-              defaultMessage: "Create organization",
-            })}
+    <Box padding={6}>
+      <Flex
+        justifyContent="space-between"
+        alignItems="flex-start"
+        paddingBottom={4}
+      >
+        <Box>
+          <Typography variant="beta" textColor="neutral800">
+            Organizations
+          </Typography>
+          <Typography variant="pi" textColor="neutral500" paddingTop={1}>
+            {total} total
+          </Typography>
+        </Box>
+        <Button startIcon={<Plus />} onClick={() => setShowCreate(true)}>
+          Create organization
+        </Button>
+      </Flex>
+
+      <Flex gap={3} paddingBottom={4} alignItems="flex-end">
+        <Box>
+          <SearchForm onSubmit={handleSearch}>
+            <Searchbar
+              clearLabel="Clear"
+              name="search"
+              placeholder="Search organizations…"
+              value={searchInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchInput(e.target.value)
+              }
+              onClear={() => {
+                setSearchInput("");
+                setSearch("");
+                setPage(1);
+              }}
+            >
+              Search organizations
+            </Searchbar>
+          </SearchForm>
+        </Box>
+        {someSelected && (
+          <Button
+            variant="danger-light"
+            size="S"
+            loading={deleteManyMutation.isLoading}
+            onClick={() => deleteManyMutation.mutate([...selected])}
+          >
+            Delete {selected.size} selected
           </Button>
-        }
-      />
-      <Layouts.Content>
-        {organizations.length > 0 ? (
-          <Table colCount={5} rowCount={organizations.length + 1}>
-            <Thead>
-              <Tr>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({ id: "global.name", defaultMessage: "Name" })}
-                  </Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">Slug</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">Members</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({
-                      id: "app.components.ListViewTable.createdAt",
-                      defaultMessage: "Created At",
-                    })}
-                  </Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
-                  </Typography>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {organizations.map((org) => (
-                <Tr key={org.id}>
-                  <Td>
-                    <Typography textColor="neutral800" fontWeight="semiBold">
-                      {org.name}
-                    </Typography>
-                  </Td>
-                  <Td>
-                    <Typography textColor="neutral800">{org.slug}</Typography>
-                  </Td>
-                  <Td>
-                    <Typography textColor="neutral800">{org.memberCount}</Typography>
-                  </Td>
-                  <Td>
-                    <Typography textColor="neutral800">
-                      {new Date(org.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </Td>
-                  <Td>
-                    <Flex gap={2}>
-                      <IconButton
-                        label={formatMessage({
-                          id: `${PLUGIN_ID}.organizations.view`,
-                          defaultMessage: "View",
-                        })}
-                        onClick={() => {
-                          setSelectedOrgId(org.id);
-                          setSelectedOrgName(org.name);
-                        }}
-                      >
-                        <Eye />
-                      </IconButton>
-                      <IconButton
-                        label={formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
-                        onClick={() => setConfirmDelete(org.id)}
-                      >
-                        <Trash />
-                      </IconButton>
-                    </Flex>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        ) : (
-          <EmptyStateLayout
-            content={formatMessage({
-              id: `${PLUGIN_ID}.organizations.empty`,
-              defaultMessage: "No organizations found.",
-            })}
-            action={
-              <Button
-                variant="secondary"
-                startIcon={<Plus />}
-                onClick={() => setShowCreateDialog(true)}
-              >
-                {formatMessage({
-                  id: `${PLUGIN_ID}.organizations.create.button`,
-                  defaultMessage: "Create organization",
-                })}
-              </Button>
-            }
-          />
         )}
-      </Layouts.Content>
+      </Flex>
 
-      {showCreateDialog && (
-        <CreateOrganizationDialog onClose={() => setShowCreateDialog(false)} />
+      {orgsQuery.isError && (
+        <Alert closeLabel="Close" title="Error" variant="danger">
+          {orgsQuery.error instanceof Error
+            ? orgsQuery.error.message
+            : "An error occurred"}
+        </Alert>
       )}
 
-      {confirmDelete && (
-        <Dialog.Root defaultOpen onOpenChange={(open) => !open && setConfirmDelete(null)}>
-          <Dialog.Content>
-            <Dialog.Header>
-              {formatMessage({
-                id: `${PLUGIN_ID}.organizations.delete.confirm.title`,
-                defaultMessage: "Delete organization",
-              })}
-            </Dialog.Header>
-            <Dialog.Body>
-              <Typography>
-                {formatMessage({
-                  id: `${PLUGIN_ID}.organizations.delete.confirm.message`,
-                  defaultMessage:
-                    "Are you sure you want to delete this organization? This action cannot be undone.",
-                })}
-              </Typography>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
-                {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
-              </Button>
-              <Button
-                variant="danger"
-                loading={deleteMutation.isLoading}
-                onClick={() => deleteMutation.mutate(confirmDelete)}
-              >
-                {formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
+      <Box
+        background="neutral0"
+        shadow="filterShadow"
+        hasRadius
+        borderColor="neutral150"
+        borderStyle="solid"
+        borderWidth="1px"
+      >
+        {orgsQuery.isLoading ? (
+          <Flex justifyContent="center" padding={8}>
+            <Loader>Loading organizations…</Loader>
+          </Flex>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: "1px solid #dcdce4",
+                    width: 40,
+                  }}
+                >
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                  />
+                </th>
+                {["Name", "Slug", "Members", "Created", ""].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: "left",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid #dcdce4",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#666687",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {orgs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{
+                      textAlign: "center",
+                      padding: "32px",
+                      color: "#666687",
+                    }}
+                  >
+                    No organizations found
+                  </td>
+                </tr>
+              ) : (
+                orgs.map((org) => (
+                  <tr
+                    key={org.id}
+                    style={{
+                      background: selected.has(org.id) ? "#f0f0ff" : "inherit",
+                    }}
+                  >
+                    <td style={{ padding: "12px 16px" }}>
+                      <Checkbox
+                        checked={selected.has(org.id)}
+                        onCheckedChange={() => toggleSelect(org.id)}
+                        aria-label={`Select ${org.name}`}
+                      />
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Flex alignItems="center" gap={2}>
+                        {org.logo && (
+                          <img
+                            src={org.logo}
+                            alt=""
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 4,
+                              objectFit: "cover",
+                            }}
+                          />
+                        )}
+                        <Typography variant="omega" fontWeight="semiBold">
+                          {org.name}
+                        </Typography>
+                      </Flex>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Badge
+                        backgroundColor="neutral100"
+                        textColor="neutral600"
+                      >
+                        {org.slug}
+                      </Badge>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Typography variant="omega">{org.memberCount}</Typography>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Typography variant="omega" textColor="neutral500">
+                        {new Date(org.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <Flex gap={1} justifyContent="flex-end">
+                        <IconButton
+                          label="View organization"
+                          onClick={() => setDetailOrgId(org.id)}
+                        >
+                          <Pencil />
+                        </IconButton>
+                        <IconButton
+                          label="Delete organization"
+                          onClick={() => deleteMutation.mutate(org.id)}
+                        >
+                          <Trash />
+                        </IconButton>
+                      </Flex>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
+      </Box>
+
+      {pageCount > 1 && (
+        <Flex justifyContent="flex-end" paddingTop={4}>
+          <Flex gap={2}>
+            <Button
+              variant="tertiary"
+              size="S"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="tertiary"
+              size="S"
+              disabled={page >= pageCount}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       )}
-    </Page.Main>
+
+      {showCreate && (
+        <CreateOrganizationDialog
+          teamsEnabled={teamsEnabled}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
+
+      {detailOrgId && (
+        <OrganizationDetail
+          organizationId={detailOrgId}
+          teamsEnabled={teamsEnabled}
+          onClose={() => setDetailOrgId(null)}
+        />
+      )}
+    </Box>
   );
-};
-
-export default OrganizationsPage;
+}

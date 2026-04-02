@@ -1,77 +1,35 @@
-const pluginId = "better-auth-dashboard";
+import { PLUGIN_ID } from "./pluginId";
 
 export default {
   register(app: {
-    createSettingSection: (
-      section: {
-        id: string;
-        intlLabel: { id: string; defaultMessage: string };
-      },
-      links: Array<{
-        id: string;
-        intlLabel: { id: string; defaultMessage: string };
-        to: string;
+    addMenuLink: (config: {
+      to: string;
+      icon: React.ComponentType;
+      intlLabel: { id: string; defaultMessage: string };
+      Component: () => Promise<{ default: React.ComponentType }>;
+    }) => void;
+    router: {
+      addRoute: (config: {
+        path: string;
         Component: () => Promise<{ default: React.ComponentType }>;
-        permissions?: Array<{ action: string; subject: null }>;
-      }>,
-    ) => void;
-    registerPlugin: (config: { id: string; name: string }) => void;
+      }) => void;
+    };
   }) {
-    app.createSettingSection(
-      {
-        id: pluginId,
-        intlLabel: {
-          id: `${pluginId}.Settings.section-label`,
-          defaultMessage: "Better Auth",
-        },
+    app.addMenuLink({
+      to: `/plugins/${PLUGIN_ID}`,
+      icon: () => null,
+      intlLabel: {
+        id: `${PLUGIN_ID}.plugin.name`,
+        defaultMessage: "Auth Dashboard",
       },
-      [
-        {
-          id: "overview",
-          intlLabel: {
-            id: `${pluginId}.Settings.overview`,
-            defaultMessage: "Overview",
-          },
-          to: `${pluginId}`,
-          Component: () =>
-            import("./pages/Overview").then((mod) => ({ default: mod.default })),
-        },
-        {
-          id: "users",
-          intlLabel: {
-            id: `${pluginId}.Settings.users`,
-            defaultMessage: "Users",
-          },
-          to: `${pluginId}/users`,
-          Component: () =>
-            import("./pages/Users").then((mod) => ({ default: mod.default })),
-        },
-        {
-          id: "organizations",
-          intlLabel: {
-            id: `${pluginId}.Settings.organizations`,
-            defaultMessage: "Organizations",
-          },
-          to: `${pluginId}/organizations`,
-          Component: () =>
-            import("./pages/Organizations").then((mod) => ({ default: mod.default })),
-        },
-        {
-          id: "sessions",
-          intlLabel: {
-            id: `${pluginId}.Settings.sessions`,
-            defaultMessage: "Sessions",
-          },
-          to: `${pluginId}/sessions`,
-          Component: () =>
-            import("./pages/Sessions").then((mod) => ({ default: mod.default })),
-        },
-      ],
-    );
-
-    app.registerPlugin({
-      id: pluginId,
-      name: "Better Auth Dashboard",
+      Component: async () => import("./pages/Root"),
     });
+
+    // app.router.addRoute({
+    //   path: `/plugins/${PLUGIN_ID}`,
+    //   Component: async () => import("./pages/Root"),
+    // });
   },
+
+  bootstrap() {},
 };

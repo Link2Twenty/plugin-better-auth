@@ -1,643 +1,727 @@
 import {
+  Badge,
   Box,
   Button,
-  Dialog,
-  EmptyStateLayout,
   Field,
   Flex,
   IconButton,
-  SingleSelect,
-  SingleSelectOption,
-  Table,
+  Modal,
   Tabs,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  Typography,
   TextInput,
+  Typography,
 } from "@strapi/design-system";
-import { ArrowLeft, Plus, Trash } from "@strapi/icons";
-import { useNotification } from "@strapi/strapi/admin";
+import { Plus, Trash } from "@strapi/icons";
+import type React from "react";
 import { useState } from "react";
-import { useIntl } from "react-intl";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
-
-const PLUGIN_ID = "better-auth-dashboard";
+import { UserCombobox } from "../../components/UserCombobox";
+import { withContext } from "../../utils/dashContext";
 
 interface Props {
-  orgId: string;
-  onBack: () => void;
-}
-
-function InviteMemberDialog({
-  orgId,
-  onClose,
-}: {
-  orgId: string;
+  organizationId: string;
+  teamsEnabled: boolean;
   onClose: () => void;
-}) {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
+}
 
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("member");
+export function OrganizationDetail({
+  organizationId,
+  teamsEnabled,
+  onClose,
+}: Props) {
+  const qc = useQueryClient();
 
-  const mutation = useMutation(
-    async () => {
-      // organizationId is included so the Strapi proxy can add it to the JWT.
-      // The inviteMember middleware reads organizationId from the JWT payload.
-      const inviteBody = { email, role, invitedBy: "admin", organizationId: orgId };
-      const result = await client.dash.organization.inviteMember(inviteBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to send invitation");
+  const orgQuery = useQuery({
+    queryKey: ["dash-org", organizationId],
+    queryFn: async () => {
+      const result = await client.dash.organization[organizationId as ":id"](
+        {},
+        withContext({ organizationId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to load org");
       return result.data;
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "org-invitations", orgId]);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invite.success`,
-            defaultMessage: "Invitation sent",
-          }),
-        });
-        onClose();
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invite.error`,
-            defaultMessage: "Failed to send invitation",
-          }),
-        });
-      },
+  });
+
+  const membersQuery = useQuery({
+    queryKey: ["dash-org-members", organizationId],
+    queryFn: async () => {
+      const result = await client.dash.organization[
+        organizationId as ":id"
+      ].members({}, withContext({ organizationId }));
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return result.data ?? [];
     },
-  );
+  });
+
+  const teamsQuery = useQuery({
+    queryKey: ["dash-org-teams", organizationId],
+    queryFn: async () => {
+      if (!teamsEnabled) return [];
+      const result = await client.dash.organization[
+        organizationId as ":id"
+      ].teams({}, withContext({ organizationId }));
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return (result.data ?? []) as Array<{
+        id: string;
+        name: string;
+        organizationId: string;
+        createdAt: Date;
+        updatedAt?: Date;
+      }>;
+    },
+    enabled: teamsEnabled,
+  });
+
+  const ssoQuery = useQuery({
+    queryKey: ["dash-org-sso", organizationId],
+    queryFn: async () => {
+      const result = await client.dash.organization[
+        organizationId as ":id"
+      ].ssoProviders({}, withContext({ organizationId }));
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return result.data ?? [];
+    },
+  });
+
+  // Edit org state
+  const [editName, setEditName] = useState<string | undefined>(undefined);
+  const [editSlug, setEditSlug] = useState<string | undefined>(undefined);
+
+  const updateOrgMutation = useMutation({
+    mutationFn: async () => {
+      const body: { name?: string; slug?: string } = {};
+      if (editName !== undefined) body.name = editName;
+      if (editSlug !== undefined) body.slug = editSlug;
+      const result = await client.dash.organization.update(
+        body,
+        withContext({ organizationId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Update failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org", organizationId] });
+      qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      setEditName(undefined);
+      setEditSlug(undefined);
+    },
+  });
+
+  // Add member state
+  const [addUserId, setAddUserId] = useState("");
+  const [addRole, setAddRole] = useState("member");
+
+  const addMemberMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.organization.addMember(
+        { userId: addUserId, role: addRole },
+        withContext({ organizationId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Add member failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
+      setAddUserId("");
+      setAddRole("member");
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      const result = await client.dash.organization.removeMember(
+        { memberId },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
+    },
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({
+      memberId,
+      role,
+    }: {
+      memberId: string;
+      role: string;
+    }) => {
+      const result = await client.dash.organization.updateMemberRole(
+        { memberId, role },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
+    },
+  });
+
+  // Teams
+  const [newTeamName, setNewTeamName] = useState("");
+
+  const createTeamMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.organization.createTeam(
+        { name: newTeamName },
+        withContext({ organizationId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Create team failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-teams", organizationId] });
+      setNewTeamName("");
+    },
+  });
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: async (teamId: string) => {
+      const result = await client.dash.organization.deleteTeam(
+        { teamId },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-teams", organizationId] });
+    },
+  });
+
+  // SSO
+  const deleteSsoMutation = useMutation({
+    mutationFn: async (providerId: string) => {
+      const result = await client.dash.organization[
+        organizationId as ":id"
+      ].ssoProvider.delete({ providerId }, withContext({ organizationId }));
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-org-sso", organizationId] });
+    },
+  });
+
+  const org = orgQuery.data;
+  const members = membersQuery.data ?? [];
+  const teams = teamsQuery.data ?? [];
+  const ssoProviders = ssoQuery.data ?? [];
+
+  const hasOrgEdits = editName !== undefined || editSlug !== undefined;
 
   return (
-    <Dialog.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Content>
-        <Dialog.Header>
-          {formatMessage({
-            id: `${PLUGIN_ID}.org.invite.title`,
-            defaultMessage: "Invite member",
-          })}
-        </Dialog.Header>
-        <Dialog.Body>
-          <form
-            id="invite-member-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              mutation.mutate();
-            }}
-          >
-            <Flex direction="column" gap={4}>
-              <Field.Root required>
-                <Field.Label>
-                  {formatMessage({ id: "global.email", defaultMessage: "Email" })}
-                </Field.Label>
-                <TextInput
-                  type="email"
-                  placeholder="member@example.com"
-                  value={email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                />
-              </Field.Root>
-              <Field.Root required>
-                <Field.Label>
-                  {formatMessage({ id: `${PLUGIN_ID}.org.member.role`, defaultMessage: "Role" })}
-                </Field.Label>
-                <SingleSelect value={role} onChange={(val: string | number) => setRole(String(val))}>
-                  <SingleSelectOption value="owner">Owner</SingleSelectOption>
-                  <SingleSelectOption value="admin">Admin</SingleSelectOption>
-                  <SingleSelectOption value="member">Member</SingleSelectOption>
-                </SingleSelect>
-              </Field.Root>
-            </Flex>
-          </form>
-        </Dialog.Body>
-        <Dialog.Footer>
+    <Modal.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
+      <Modal.Content>
+        <Modal.Header>
+          <Typography variant="beta" tag="h2">
+            {org?.name ?? "Organization"}
+          </Typography>
+        </Modal.Header>
+
+        <Modal.Body>
+          {orgQuery.isLoading ? (
+            <Typography>Loading…</Typography>
+          ) : orgQuery.isError ? (
+            <Typography textColor="danger600">
+              {orgQuery.error instanceof Error
+                ? orgQuery.error.message
+                : "An error occurred"}
+            </Typography>
+          ) : (
+            <Tabs.Root defaultValue="details">
+              <Tabs.List>
+                <Tabs.Trigger value="details">Details</Tabs.Trigger>
+                <Tabs.Trigger value="members">
+                  Members ({members.length})
+                </Tabs.Trigger>
+                {teamsEnabled && (
+                  <Tabs.Trigger value="teams">
+                    Teams ({teams.length})
+                  </Tabs.Trigger>
+                )}
+                <Tabs.Trigger value="sso">
+                  SSO ({ssoProviders.length})
+                </Tabs.Trigger>
+              </Tabs.List>
+
+              {/* Details tab */}
+              <Tabs.Content value="details">
+                <Box paddingTop={4}>
+                  <Flex direction="column" gap={4}>
+                    <Field.Root>
+                      <Field.Label>Name</Field.Label>
+                      <TextInput
+                        value={editName ?? org?.name ?? ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setEditName(e.target.value)
+                        }
+                      />
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label>Slug</Field.Label>
+                      <TextInput
+                        value={editSlug ?? org?.slug ?? ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setEditSlug(e.target.value)
+                        }
+                      />
+                    </Field.Root>
+                    <Flex gap={2}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Members:
+                      </Typography>
+                      <Typography variant="pi">
+                        {org?.memberCount ?? 0}
+                      </Typography>
+                    </Flex>
+                    <Flex gap={2}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Created:
+                      </Typography>
+                      <Typography variant="pi">
+                        {org?.createdAt
+                          ? new Date(org.createdAt).toLocaleDateString()
+                          : "—"}
+                      </Typography>
+                    </Flex>
+
+                    {updateOrgMutation.isError && (
+                      <Typography textColor="danger600" variant="pi">
+                        {updateOrgMutation.error instanceof Error
+                          ? updateOrgMutation.error.message
+                          : "An error occurred"}
+                      </Typography>
+                    )}
+
+                    <Flex gap={2}>
+                      <Button
+                        disabled={!hasOrgEdits}
+                        loading={updateOrgMutation.isLoading}
+                        onClick={() => updateOrgMutation.mutate()}
+                      >
+                        Save changes
+                      </Button>
+                      {hasOrgEdits && (
+                        <Button
+                          variant="tertiary"
+                          onClick={() => {
+                            setEditName(undefined);
+                            setEditSlug(undefined);
+                          }}
+                        >
+                          Discard
+                        </Button>
+                      )}
+                    </Flex>
+                  </Flex>
+                </Box>
+              </Tabs.Content>
+
+              {/* Members tab */}
+              <Tabs.Content value="members">
+                <Box paddingTop={4}>
+                  <Flex direction="column" gap={4}>
+                    {/* Add member */}
+                    <Box
+                      background="neutral50"
+                      padding={4}
+                      hasRadius
+                      borderColor="neutral150"
+                      borderStyle="solid"
+                      borderWidth="1px"
+                    >
+                      <Typography
+                        variant="sigma"
+                        textColor="neutral600"
+                        paddingBottom={3}
+                      >
+                        Add member
+                      </Typography>
+                      <Flex direction="column" gap={3}>
+                        <UserCombobox
+                          label="User"
+                          value={addUserId}
+                          onChange={setAddUserId}
+                        />
+                        <Field.Root hint="e.g. member, admin, owner">
+                          <Field.Label>Role</Field.Label>
+                          <TextInput
+                            value={addRole}
+                            onChange={(
+                              e: React.ChangeEvent<HTMLInputElement>,
+                            ) => setAddRole(e.target.value)}
+                          />
+                          <Field.Hint />
+                        </Field.Root>
+                        {addMemberMutation.isError && (
+                          <Typography textColor="danger600" variant="pi">
+                            {addMemberMutation.error instanceof Error
+                              ? addMemberMutation.error.message
+                              : "An error occurred"}
+                          </Typography>
+                        )}
+                        <Button
+                          size="S"
+                          startIcon={<Plus />}
+                          disabled={!addUserId}
+                          loading={addMemberMutation.isLoading}
+                          onClick={() => addMemberMutation.mutate()}
+                        >
+                          Add
+                        </Button>
+                      </Flex>
+                    </Box>
+
+                    {/* Members list */}
+                    {membersQuery.isLoading ? (
+                      <Typography>Loading…</Typography>
+                    ) : members.length === 0 ? (
+                      <Typography textColor="neutral500">
+                        No members yet
+                      </Typography>
+                    ) : (
+                      members.map((member) => (
+                        <Box
+                          key={member.id}
+                          padding={3}
+                          background="neutral0"
+                          hasRadius
+                          borderColor="neutral150"
+                          borderStyle="solid"
+                          borderWidth="1px"
+                        >
+                          <Flex
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Flex direction="column" gap={1}>
+                              <Typography variant="omega" fontWeight="semiBold">
+                                {member.user?.name ?? "Unknown"}
+                              </Typography>
+                              <Typography variant="pi" textColor="neutral500">
+                                {member.user?.email}
+                              </Typography>
+                            </Flex>
+                            <Flex gap={2} alignItems="center">
+                              <Badge
+                                backgroundColor="neutral100"
+                                textColor="neutral600"
+                              >
+                                {member.role}
+                              </Badge>
+                              <IconButton
+                                label="Remove member"
+                                onClick={() =>
+                                  removeMemberMutation.mutate(member.id)
+                                }
+                              >
+                                <Trash />
+                              </IconButton>
+                            </Flex>
+                          </Flex>
+                        </Box>
+                      ))
+                    )}
+                  </Flex>
+                </Box>
+              </Tabs.Content>
+
+              {/* Teams tab */}
+              {teamsEnabled && (
+                <Tabs.Content value="teams">
+                  <Box paddingTop={4}>
+                    <Flex direction="column" gap={4}>
+                      <Box
+                        background="neutral50"
+                        padding={4}
+                        hasRadius
+                        borderColor="neutral150"
+                        borderStyle="solid"
+                        borderWidth="1px"
+                      >
+                        <Typography
+                          variant="sigma"
+                          textColor="neutral600"
+                          paddingBottom={3}
+                        >
+                          Create team
+                        </Typography>
+                        <Flex gap={2} alignItems="flex-end">
+                          <Box>
+                            <Field.Root>
+                              <Field.Label>Team name</Field.Label>
+                              <TextInput
+                                value={newTeamName}
+                                onChange={(
+                                  e: React.ChangeEvent<HTMLInputElement>,
+                                ) => setNewTeamName(e.target.value)}
+                              />
+                            </Field.Root>
+                          </Box>
+                          <Button
+                            startIcon={<Plus />}
+                            disabled={!newTeamName}
+                            loading={createTeamMutation.isLoading}
+                            onClick={() => createTeamMutation.mutate()}
+                          >
+                            Create
+                          </Button>
+                        </Flex>
+                      </Box>
+
+                      {teamsQuery.isLoading ? (
+                        <Typography>Loading…</Typography>
+                      ) : teams.length === 0 ? (
+                        <Typography textColor="neutral500">
+                          No teams yet
+                        </Typography>
+                      ) : (
+                        teams.map((team) => (
+                          <TeamRow
+                            key={team.id}
+                            team={team}
+                            organizationId={organizationId}
+                            members={members}
+                            onDelete={() => deleteTeamMutation.mutate(team.id)}
+                          />
+                        ))
+                      )}
+                    </Flex>
+                  </Box>
+                </Tabs.Content>
+              )}
+
+              {/* SSO tab */}
+              <Tabs.Content value="sso">
+                <Box paddingTop={4}>
+                  <Flex direction="column" gap={4}>
+                    {ssoQuery.isLoading ? (
+                      <Typography>Loading…</Typography>
+                    ) : ssoProviders.length === 0 ? (
+                      <Typography textColor="neutral500">
+                        No SSO providers configured.
+                      </Typography>
+                    ) : (
+                      ssoProviders.map((provider) => (
+                        <Box
+                          key={provider.id}
+                          padding={3}
+                          background="neutral0"
+                          hasRadius
+                          borderColor="neutral150"
+                          borderStyle="solid"
+                          borderWidth="1px"
+                        >
+                          <Flex
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Flex direction="column" gap={1}>
+                              <Typography variant="omega" fontWeight="semiBold">
+                                {provider.providerId}
+                              </Typography>
+                              <Typography variant="pi" textColor="neutral500">
+                                {provider.domain}
+                              </Typography>
+                              <Typography variant="pi" textColor="neutral500">
+                                Issuer: {provider.issuer}
+                              </Typography>
+                            </Flex>
+                            <IconButton
+                              label="Delete SSO provider"
+                              onClick={() =>
+                                deleteSsoMutation.mutate(provider.providerId)
+                              }
+                            >
+                              <Trash />
+                            </IconButton>
+                          </Flex>
+                        </Box>
+                      ))
+                    )}
+                  </Flex>
+                </Box>
+              </Tabs.Content>
+            </Tabs.Root>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
           <Button variant="tertiary" onClick={onClose}>
-            {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
+            Close
           </Button>
-          <Button
-            type="submit"
-            form="invite-member-form"
-            loading={mutation.isLoading}
-            disabled={!email.trim() || mutation.isLoading}
-          >
-            {formatMessage({
-              id: `${PLUGIN_ID}.org.invite.submit`,
-              defaultMessage: "Send invitation",
-            })}
-          </Button>
-        </Dialog.Footer>
-      </Dialog.Content>
-    </Dialog.Root>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal.Root>
   );
 }
 
-export const OrganizationDetail = ({ orgId, onBack }: Props) => {
-  const { formatMessage } = useIntl();
-  const { toggleNotification } = useNotification();
-  const queryClient = useQueryClient();
-
-  const [showInviteDialog, setShowInviteDialog] = useState(false);
-  const [confirmRemoveMember, setConfirmRemoveMember] = useState<string | null>(null);
-  const [editingMemberRole, setEditingMemberRole] = useState<{
-    memberId: string;
+function TeamRow({
+  team,
+  organizationId,
+  members,
+  onDelete,
+}: {
+  team: { id: string; name: string; organizationId: string; createdAt: Date };
+  organizationId: string;
+  members: Array<{
+    id: string;
+    userId: string;
     role: string;
-  } | null>(null);
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      image: string | null;
+    } | null;
+  }>;
+  onDelete: () => void;
+}) {
+  const qc = useQueryClient();
+  const [expanded, setExpanded] = useState(false);
 
-  const { data: members, isLoading: membersLoading } = useQuery(
-    [PLUGIN_ID, "org-members", orgId],
-    async () => {
-      const result = await client.dash.organization[orgId as ':id'].members();
-      if (result.error) throw new Error(result.error.message ?? "Failed to load members");
+  const teamMembersQuery = useQuery({
+    queryKey: ["dash-team-members", organizationId, team.id],
+    queryFn: async () => {
+      const result = await client.dash.organization[
+        // @ts-expect-error
+        organizationId as ":orgId"
+      ].teams[team.id as ":teamId"].members(
+        { params: { orgId: organizationId, teamId: team.id } },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return result.data ?? [];
+    },
+    enabled: expanded,
+  });
+
+  const [addUserId, setAddUserId] = useState("");
+
+  const addTeamMemberMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.organization.addTeamMember(
+        { teamId: team.id, userId: addUserId },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
       return result.data;
     },
-  );
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ["dash-team-members", organizationId, team.id],
+      });
+      setAddUserId("");
+    },
+  });
 
-  const { data: invitations, isLoading: invitationsLoading } = useQuery(
-    [PLUGIN_ID, "org-invitations", orgId],
-    async () => {
-      const result = await client.dash.organization[orgId as ':id'].invitations();
-      if (result.error) throw new Error(result.error.message ?? "Failed to load invitations");
-      return result.data;
+  const removeTeamMemberMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const result = await client.dash.organization.removeTeamMember(
+        { teamId: team.id, userId },
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
     },
-  );
-
-  const removeMemberMutation = useMutation(
-    async (memberId: string) => {
-      // organizationId is passed for the proxy to include in the JWT;
-      // the removeMember middleware reads organizationId from the JWT payload.
-      const removeBody = { memberId, organizationId: orgId };
-      const result = await client.dash.organization.removeMember(removeBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to remove member");
-      return result.data;
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ["dash-team-members", organizationId, team.id],
+      });
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "org-members", orgId]);
-        queryClient.invalidateQueries([PLUGIN_ID, "organizations"]);
-        setConfirmRemoveMember(null);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.member.remove.success`,
-            defaultMessage: "Member removed",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.member.remove.error`,
-            defaultMessage: "Failed to remove member",
-          }),
-        });
-      },
-    },
-  );
-
-  const updateRoleMutation = useMutation(
-    async ({ memberId, role }: { memberId: string; role: string }) => {
-      const updateBody = { memberId, role, organizationId: orgId };
-      const result = await client.dash.organization.updateMemberRole(updateBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to update role");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "org-members", orgId]);
-        setEditingMemberRole(null);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.member.role.success`,
-            defaultMessage: "Role updated",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.member.role.error`,
-            defaultMessage: "Failed to update role",
-          }),
-        });
-      },
-    },
-  );
-
-  const cancelInvitationMutation = useMutation(
-    async (invitationId: string) => {
-      const cancelBody = { invitationId, organizationId: orgId };
-      const result = await client.dash.organization.cancelInvitation(cancelBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to cancel invitation");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([PLUGIN_ID, "org-invitations", orgId]);
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invitation.cancel.success`,
-            defaultMessage: "Invitation cancelled",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invitation.cancel.error`,
-            defaultMessage: "Failed to cancel invitation",
-          }),
-        });
-      },
-    },
-  );
-
-  const resendInvitationMutation = useMutation(
-    async (invitationId: string) => {
-      const resendBody = { invitationId, organizationId: orgId };
-      const result = await client.dash.organization.resendInvitation(resendBody);
-      if (result.error) throw new Error(result.error.message ?? "Failed to resend invitation");
-      return result.data;
-    },
-    {
-      onSuccess: () => {
-        toggleNotification({
-          type: "success",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invitation.resend.success`,
-            defaultMessage: "Invitation resent",
-          }),
-        });
-      },
-      onError: () => {
-        toggleNotification({
-          type: "danger",
-          message: formatMessage({
-            id: `${PLUGIN_ID}.org.invitation.resend.error`,
-            defaultMessage: "Failed to resend invitation",
-          }),
-        });
-      },
-    },
-  );
+  });
 
   return (
-    <>
-      <Box marginBottom={4}>
-        <Button
-          variant="tertiary"
-          startIcon={<ArrowLeft />}
-          onClick={onBack}
-          size="S"
-        >
-          {formatMessage({
-            id: `${PLUGIN_ID}.org.detail.back`,
-            defaultMessage: "Back to organizations",
-          })}
-        </Button>
-      </Box>
+    <Box
+      background="neutral0"
+      hasRadius
+      borderColor="neutral150"
+      borderStyle="solid"
+      borderWidth="1px"
+    >
+      <Flex
+        padding={3}
+        justifyContent="space-between"
+        alignItems="center"
+        style={{ cursor: "pointer" }}
+        onClick={() => setExpanded((e) => !e)}
+      >
+        <Typography variant="omega" fontWeight="semiBold">
+          {team.name}
+        </Typography>
+        <Flex gap={2} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <IconButton label="Delete team" onClick={onDelete}>
+            <Trash />
+          </IconButton>
+        </Flex>
+      </Flex>
 
-      <Tabs.Root defaultValue="members">
-        <Tabs.List
-          aria-label={formatMessage({
-            id: `${PLUGIN_ID}.org.detail.tabs`,
-            defaultMessage: "Organization sections",
-          })}
+      {expanded && (
+        <Box
+          padding={3}
+          borderColor="neutral150"
+          borderStyle="solid"
+          borderWidth="1px"
         >
-          <Tabs.Trigger value="members">
-            {formatMessage({
-              id: `${PLUGIN_ID}.org.detail.members`,
-              defaultMessage: "Members",
-            })}
-            {members && ` (${members.length})`}
-          </Tabs.Trigger>
-          <Tabs.Trigger value="invitations">
-            {formatMessage({
-              id: `${PLUGIN_ID}.org.detail.invitations`,
-              defaultMessage: "Invitations",
-            })}
-            {invitations && ` (${invitations.length})`}
-          </Tabs.Trigger>
-        </Tabs.List>
-
-        <Box paddingTop={4}>
-          <Tabs.Content value="members">
-            <Box marginBottom={4}>
+          <Flex direction="column" gap={3}>
+            {/* Add team member */}
+            <Flex gap={2} alignItems="flex-end">
+              <Box>
+                <UserCombobox
+                  label="Add member to team"
+                  value={addUserId}
+                  onChange={setAddUserId}
+                />
+              </Box>
               <Button
-                startIcon={<Plus />}
-                onClick={() => setShowInviteDialog(true)}
                 size="S"
+                startIcon={<Plus />}
+                disabled={!addUserId}
+                loading={addTeamMemberMutation.isLoading}
+                onClick={() => addTeamMemberMutation.mutate()}
               >
-                {formatMessage({
-                  id: `${PLUGIN_ID}.org.invite.button`,
-                  defaultMessage: "Invite member",
-                })}
+                Add
               </Button>
-            </Box>
+            </Flex>
 
-            {membersLoading ? (
-              <Typography>Loading...</Typography>
-            ) : members && members.length > 0 ? (
-              <Table colCount={4} rowCount={members.length + 1}>
-                <Thead>
-                  <Tr>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({ id: "global.name", defaultMessage: "Name" })}
-                      </Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({ id: "global.email", defaultMessage: "Email" })}
-                      </Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({
-                          id: `${PLUGIN_ID}.org.member.role`,
-                          defaultMessage: "Role",
-                        })}
-                      </Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
-                      </Typography>
-                    </Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {members.map((member) => (
-                    <Tr key={member.id}>
-                      <Td>
-                        <Typography textColor="neutral800" fontWeight="semiBold">
-                          {member.user?.name ?? "—"}
-                        </Typography>
-                      </Td>
-                      <Td>
-                        <Typography textColor="neutral800">{member.user?.email ?? "—"}</Typography>
-                      </Td>
-                      <Td>
-                        {editingMemberRole?.memberId === member.id ? (
-                          <Flex gap={2}>
-                            <SingleSelect
-                              value={editingMemberRole?.role}
-                              onChange={(val: string | number) =>
-                                setEditingMemberRole({ memberId: member.id, role: String(val) })
-                              }
-                            >
-                              <SingleSelectOption value="owner">Owner</SingleSelectOption>
-                              <SingleSelectOption value="admin">Admin</SingleSelectOption>
-                              <SingleSelectOption value="member">Member</SingleSelectOption>
-                            </SingleSelect>
-                            <Button
-                              size="S"
-                              loading={updateRoleMutation.isLoading}
-                              onClick={() => editingMemberRole && updateRoleMutation.mutate(editingMemberRole)}
-                            >
-                              {formatMessage({ id: "global.save", defaultMessage: "Save" })}
-                            </Button>
-                            <Button
-                              size="S"
-                              variant="tertiary"
-                              onClick={() => setEditingMemberRole(null)}
-                            >
-                              {formatMessage({
-                                id: "app.components.Button.cancel",
-                                defaultMessage: "Cancel",
-                              })}
-                            </Button>
-                          </Flex>
-                        ) : (
-                          <Flex gap={2} alignItems="center">
-                            <Typography textColor="neutral800">{member.role}</Typography>
-                            <Button
-                              size="S"
-                              variant="ghost"
-                              onClick={() =>
-                                setEditingMemberRole({ memberId: member.id, role: member.role })
-                              }
-                            >
-                              {formatMessage({
-                                id: `${PLUGIN_ID}.org.member.role.change`,
-                                defaultMessage: "Change",
-                              })}
-                            </Button>
-                          </Flex>
-                        )}
-                      </Td>
-                      <Td>
-                        <IconButton
-                          label={formatMessage({
-                            id: `${PLUGIN_ID}.org.member.remove`,
-                            defaultMessage: "Remove member",
-                          })}
-                          onClick={() => setConfirmRemoveMember(member.id)}
-                        >
-                          <Trash />
-                        </IconButton>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            ) : (
-              <EmptyStateLayout
-                content={formatMessage({
-                  id: `${PLUGIN_ID}.org.members.empty`,
-                  defaultMessage: "No members yet.",
-                })}
-                action={
-                  <Button
-                    variant="secondary"
-                    startIcon={<Plus />}
-                    onClick={() => setShowInviteDialog(true)}
-                  >
-                    {formatMessage({
-                      id: `${PLUGIN_ID}.org.invite.button`,
-                      defaultMessage: "Invite member",
-                    })}
-                  </Button>
-                }
-              />
-            )}
-          </Tabs.Content>
-
-          <Tabs.Content value="invitations">
-            {invitationsLoading ? (
-              <Typography>Loading...</Typography>
-            ) : invitations && invitations.length > 0 ? (
-              <Table colCount={5} rowCount={invitations.length + 1}>
-                <Thead>
-                  <Tr>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({ id: "global.email", defaultMessage: "Email" })}
-                      </Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({
-                          id: `${PLUGIN_ID}.org.member.role`,
-                          defaultMessage: "Role",
-                        })}
-                      </Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">Status</Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">Expires</Typography>
-                    </Th>
-                    <Th>
-                      <Typography variant="sigma" textColor="neutral600">
-                        {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
-                      </Typography>
-                    </Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {invitations.map((inv) => (
-                    <Tr key={inv.id}>
-                      <Td>
-                        <Typography textColor="neutral800">{inv.email}</Typography>
-                      </Td>
-                      <Td>
-                        <Typography textColor="neutral800">{inv.role}</Typography>
-                      </Td>
-                      <Td>
-                        <Box
-                          background={inv.status === "pending" ? "warning100" : "neutral100"}
-                          padding="2px 8px"
-                          borderRadius="4px"
-                          style={{ display: "inline-block" }}
-                        >
-                          <Typography
-                            variant="pi"
-                            textColor={inv.status === "pending" ? "warning600" : "neutral500"}
-                          >
-                            {inv.status}
-                          </Typography>
-                        </Box>
-                      </Td>
-                      <Td>
-                        <Typography textColor="neutral800">
-                          {new Date(inv.expiresAt).toLocaleDateString()}
-                        </Typography>
-                      </Td>
-                      <Td>
-                        <Flex gap={2}>
-                          {inv.status === "pending" && (
-                            <>
-                              <Button
-                                size="S"
-                                variant="secondary"
-                                loading={resendInvitationMutation.isLoading}
-                                onClick={() => resendInvitationMutation.mutate(inv.id)}
-                              >
-                                {formatMessage({
-                                  id: `${PLUGIN_ID}.org.invitation.resend`,
-                                  defaultMessage: "Resend",
-                                })}
-                              </Button>
-                              <Button
-                                size="S"
-                                variant="danger-light"
-                                loading={cancelInvitationMutation.isLoading}
-                                onClick={() => cancelInvitationMutation.mutate(inv.id)}
-                              >
-                                {formatMessage({
-                                  id: `${PLUGIN_ID}.org.invitation.cancel`,
-                                  defaultMessage: "Cancel",
-                                })}
-                              </Button>
-                            </>
-                          )}
-                        </Flex>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            ) : (
-              <EmptyStateLayout
-                content={formatMessage({
-                  id: `${PLUGIN_ID}.org.invitations.empty`,
-                  defaultMessage: "No pending invitations.",
-                })}
-                action={
-                  <Button
-                    variant="secondary"
-                    startIcon={<Plus />}
-                    onClick={() => setShowInviteDialog(true)}
-                  >
-                    {formatMessage({
-                      id: `${PLUGIN_ID}.org.invite.button`,
-                      defaultMessage: "Invite member",
-                    })}
-                  </Button>
-                }
-              />
-            )}
-          </Tabs.Content>
-        </Box>
-      </Tabs.Root>
-
-      {showInviteDialog && (
-        <InviteMemberDialog orgId={orgId} onClose={() => setShowInviteDialog(false)} />
-      )}
-
-      {confirmRemoveMember && (
-        <Dialog.Root defaultOpen onOpenChange={(open) => !open && setConfirmRemoveMember(null)}>
-          <Dialog.Content>
-            <Dialog.Header>
-              {formatMessage({
-                id: `${PLUGIN_ID}.org.member.remove.confirm.title`,
-                defaultMessage: "Remove member",
-              })}
-            </Dialog.Header>
-            <Dialog.Body>
-              <Typography>
-                {formatMessage({
-                  id: `${PLUGIN_ID}.org.member.remove.confirm.message`,
-                  defaultMessage:
-                    "Are you sure you want to remove this member from the organization?",
-                })}
+            {/* Team members list */}
+            {teamMembersQuery.isLoading ? (
+              <Typography variant="pi" textColor="neutral500">
+                Loading…
               </Typography>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="tertiary" onClick={() => setConfirmRemoveMember(null)}>
-                {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
-              </Button>
-              <Button
-                variant="danger"
-                loading={removeMemberMutation.isLoading}
-                onClick={() => removeMemberMutation.mutate(confirmRemoveMember)}
-              >
-                {formatMessage({
-                  id: `${PLUGIN_ID}.org.member.remove`,
-                  defaultMessage: "Remove",
-                })}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
+            ) : (teamMembersQuery.data ?? []).length === 0 ? (
+              <Typography variant="pi" textColor="neutral500">
+                No members in this team
+              </Typography>
+            ) : (
+              (teamMembersQuery.data ?? []).map((tm: any) => (
+                <Flex
+                  key={tm.id}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="pi">
+                    {tm.user?.name ?? tm.userId}
+                    {tm.user?.email ? ` — ${tm.user.email}` : ""}
+                  </Typography>
+                  <IconButton
+                    label="Remove from team"
+                    onClick={() => removeTeamMemberMutation.mutate(tm.userId)}
+                  >
+                    <Trash />
+                  </IconButton>
+                </Flex>
+              ))
+            )}
+          </Flex>
+        </Box>
       )}
-    </>
+    </Box>
   );
-};
+}
