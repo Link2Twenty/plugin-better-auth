@@ -27,16 +27,17 @@ export const CreateOrganizationDialog = ({ onClose }: Props) => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [ownerId, setOwnerId] = useState("");
 
   const mutation = useMutation(
-    async ({ name, slug }: { name: string; slug: string }) => {
-      const result = await (client as any).createDashOrganization({
-        body: { name, slug },
-      });
-      if (result.error)
-        throw new Error(
-          result.error.message ?? "Failed to create organization",
-        );
+    async ({ name, slug, userId }: { name: string; slug: string; userId: string }) => {
+      // userId is the better-auth user who becomes the organization owner.
+      // It is passed in the body so the Strapi proxy includes it in the JWT;
+      // the createDashOrganization middleware reads userId from the JWT payload.
+      // createDashOrganization uses $loose body, so extra fields (userId) pass through.
+      const createBody = { name, slug, userId };
+      const result = await client.dash.organization.create(createBody);
+      if (result.error) throw new Error(result.error.message ?? "Failed to create organization");
       return result.data;
     },
     {
@@ -75,10 +76,10 @@ export const CreateOrganizationDialog = ({ onClose }: Props) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ name, slug });
+    mutation.mutate({ name, slug, userId: ownerId });
   };
 
-  const isValid = name.trim() && slug.trim();
+  const isValid = name.trim() && slug.trim() && ownerId.trim();
 
   return (
     <Dialog.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
@@ -118,6 +119,27 @@ export const CreateOrganizationDialog = ({ onClose }: Props) => {
                   placeholder="acme-inc"
                   value={slug}
                   onChange={handleSlugChange}
+                />
+                <Field.Hint />
+              </Field.Root>
+
+              <Field.Root
+                required
+                hint={formatMessage({
+                  id: `${PLUGIN_ID}.organizations.create.ownerId.hint`,
+                  defaultMessage: "The better-auth user ID who will own this organization",
+                })}
+              >
+                <Field.Label>
+                  {formatMessage({
+                    id: `${PLUGIN_ID}.organizations.create.ownerId`,
+                    defaultMessage: "Owner user ID",
+                  })}
+                </Field.Label>
+                <TextInput
+                  placeholder="usr_..."
+                  value={ownerId}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOwnerId(e.target.value)}
                 />
                 <Field.Hint />
               </Field.Root>

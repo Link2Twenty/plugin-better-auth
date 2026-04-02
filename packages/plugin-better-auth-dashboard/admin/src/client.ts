@@ -1,6 +1,6 @@
 import type { dash } from "@better-auth/infra";
 import { dashClient } from "@better-auth/infra/client";
-import { createAuthClient } from "better-auth/client";
+import { createAuthClient, InferPlugin } from "better-auth/client";
 
 const STORAGE_KEYS = {
   TOKEN: "jwtToken",
@@ -35,23 +35,19 @@ const getToken = (): string | null | undefined => {
   return fromCookie ?? null;
 };
 
-const dashServerInference = () => ({
-  id: "dash-server-inference" as const,
-  $InferServerPlugin: {} as ReturnType<typeof dash>,
-});
-
 /**
  * Returns a stable Better Auth client pointed at the admin proxy.
  * Auth is handled at the route level (admin route type); no token plumbing needed.
+ *
+ * InferPlugin<ReturnType<typeof dash>> exposes all server-side dash() endpoints
+ * on the client type (e.g. client.dash.listUsers, client.dash.organization.members).
  */
 export const client = createAuthClient({
   baseURL: window.location.origin,
   basePath: "/better-auth",
-  plugins: [dashClient(), dashServerInference()],
+  plugins: [dashClient(), InferPlugin<ReturnType<typeof dash>>()],
   fetchOptions: {
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
       Authorization: `Bearer ${getToken()}`,
     },
   },

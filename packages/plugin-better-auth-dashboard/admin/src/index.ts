@@ -27,6 +27,26 @@ export default {
       },
       [
         {
+          id: "overview",
+          intlLabel: {
+            id: `${pluginId}.Settings.overview`,
+            defaultMessage: "Overview",
+          },
+          to: `${pluginId}`,
+          Component: () =>
+            import("./pages/Overview").then((mod) => ({ default: mod.default })),
+        },
+        {
+          id: "users",
+          intlLabel: {
+            id: `${pluginId}.Settings.users`,
+            defaultMessage: "Users",
+          },
+          to: `${pluginId}/users`,
+          Component: () =>
+            import("./pages/Users").then((mod) => ({ default: mod.default })),
+        },
+        {
           id: "organizations",
           intlLabel: {
             id: `${pluginId}.Settings.organizations`,
@@ -34,9 +54,17 @@ export default {
           },
           to: `${pluginId}/organizations`,
           Component: () =>
-            import("./pages/Organizations").then((mod) => ({
-              default: mod.default,
-            })),
+            import("./pages/Organizations").then((mod) => ({ default: mod.default })),
+        },
+        {
+          id: "sessions",
+          intlLabel: {
+            id: `${pluginId}.Settings.sessions`,
+            defaultMessage: "Sessions",
+          },
+          to: `${pluginId}/sessions`,
+          Component: () =>
+            import("./pages/Sessions").then((mod) => ({ default: mod.default })),
         },
       ],
     );

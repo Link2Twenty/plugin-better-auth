@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_sessions",
+  "collectionName": "better_auth_invitations",
   "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions",
-    "description": "Better Auth session"
+    "singularName": "invitation",
+    "pluralName": "invitations",
+    "displayName": "Invitations"
   },
   "options": {
     "draftAndPublish": false
@@ -19,6 +18,46 @@
     }
   },
   "attributes": {
+    "organizationId": {
+      "type": "integer",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true
+    },
+    "role": {
+      "type": "string",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "default": "pending"
+    },
     "expiresAt": {
       "type": "datetime",
       "configurable": false,
@@ -29,36 +68,7 @@
       },
       "required": true
     },
-    "token": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      },
-      "required": true,
-      "unique": true
-    },
-    "ipAddress": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userAgent": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userId": {
+    "inviterId": {
       "type": "integer",
       "configurable": false,
       "pluginOptions": {
@@ -67,15 +77,6 @@
         }
       },
       "required": true
-    },
-    "activeOrganizationId": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
     }
   }
 }

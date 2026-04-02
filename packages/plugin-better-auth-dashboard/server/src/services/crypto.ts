@@ -1,5 +1,6 @@
 import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import type { KeyPair } from "../types";
+import { ApplicationError } from "@strapi/utils/dist/errors";
 
 export default () => {
   let keyPair: KeyPair | null = null;
@@ -27,9 +28,7 @@ export default () => {
         .sign(keyPair.privateKey);
     },
 
-    async getKeyPair(): Promise<KeyPair> {
-      if (keyPair) return keyPair;
-
+    async setKeyPair(): Promise<void> {
       const { privateKey, publicKey } = await generateKeyPair("RS256");
       const kid = crypto.randomUUID();
       const publicJwk = {
@@ -40,6 +39,12 @@ export default () => {
       };
 
       keyPair = { privateKey, publicJwk, kid };
+    },
+
+    async getKeyPair(): Promise<KeyPair> {
+      if (!keyPair) {
+        throw new ApplicationError("Key pair not initialized");
+      }
 
       return keyPair;
     },

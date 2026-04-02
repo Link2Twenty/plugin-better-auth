@@ -1,0 +1,69 @@
+{
+  "cookies": [
+    {
+      "name": "strapi_admin_refresh",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiZGNhNTU2OGRjNTE1OWNhNmI5ZjNlYWUxMDVlMjBmM2UiLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NTE1NjM1Nn0.s-yDybsdhm4K8iLCsTSTI8WnUdzo0wXEOyLZeB-VQRw",
+      "domain": "localhost",
+      "path": "/admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "strapi_admin_refresh.sig",
+      "value": "Rmbf_nPRC1jlhdyjRI7zK5pT_9k",
+      "domain": "localhost",
+      "path": "/admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "jwtToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiZGNhNTU2OGRjNTE1OWNhNmI5ZjNlYWUxMDVlMjBmM2UiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc1MTQ5MTU2LCJleHAiOjE3NzUxNTA5NTZ9.ZwqoVGip6PBVVVDZo8HGJBGAHSNCZ0KaJdFws0olzZI",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:1337",
+      "localStorage": [
+        {
+          "name": "isLoggedIn",
+          "value": "true"
+        },
+        {
+          "name": "strapi.admin.deviceId",
+          "value": "5415ea23-b745-4154-a2e1-0dbdb384f906"
+        },
+        {
+          "name": "STRAPI_FREE_TRIAL_ENDS_AT:23af2388-24b4-4e7f-974d-cb0aaa908364",
+          "value": "undefined"
+        },
+        {
+          "name": "STRAPI_FREE_TRIAL_ENDED_MODAL:23af2388-24b4-4e7f-974d-cb0aaa908364",
+          "value": "false"
+        },
+        {
+          "name": "STRAPI_FREE_TRIAL_WELCOME_MODAL:23af2388-24b4-4e7f-974d-cb0aaa908364",
+          "value": "false"
+        },
+        {
+          "name": "STRAPI_GUIDED_TOUR",
+          "value": "{\"tours\":{\"contentTypeBuilder\":{\"currentStep\":0,\"isCompleted\":false},\"contentManager\":{\"currentStep\":0,\"isCompleted\":false},\"apiTokens\":{\"currentStep\":0,\"isCompleted\":false},\"strapiCloud\":{\"currentStep\":0,\"isCompleted\":false}},\"enabled\":true,\"hidden\":false,\"completedActions\":[\"didCreateContentTypeSchema\"]}"
+        },
+        {
+          "name": "STRAPI_NPS_SURVEY_SETTINGS",
+          "value": "{\"enabled\":true,\"lastResponseDate\":null,\"firstDismissalDate\":null,\"lastDismissalDate\":null}"
+        }
+      ]
+    }
+  ]
+}

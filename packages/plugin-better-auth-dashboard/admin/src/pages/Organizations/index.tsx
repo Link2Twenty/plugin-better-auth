@@ -1,6 +1,9 @@
 import {
   Button,
+  Dialog,
   EmptyStateLayout,
+  Flex,
+  IconButton,
   Table,
   Tbody,
   Td,
@@ -9,45 +12,102 @@ import {
   Tr,
   Typography,
 } from "@strapi/design-system";
-import { Plus } from "@strapi/icons";
-import { Layouts, Page } from "@strapi/strapi/admin";
+import { Eye, Plus, Trash } from "@strapi/icons";
+import { Layouts, Page, useNotification } from "@strapi/strapi/admin";
 import { useState } from "react";
 import { useIntl } from "react-intl";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
 import { CreateOrganizationDialog } from "./CreateOrganizationDialog";
+import { OrganizationDetail } from "./OrganizationDetail";
 
 const PLUGIN_ID = "better-auth-dashboard";
 
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  createdAt: string;
-  logo?: string | null;
-  memberCount: number;
-}
-
 export const OrganizationsPage = () => {
   const { formatMessage } = useIntl();
+  const { toggleNotification } = useNotification();
+  const queryClient = useQueryClient();
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [selectedOrgName, setSelectedOrgName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery(
     [PLUGIN_ID, "organizations"],
-    async () => client.dash.listOrganizations({ query: {} }),
+    async () => {
+      const result = await client.dash.listOrganizations({ query: {} });
+      if (result.error) throw new Error(result.error.message ?? "Failed to load organizations");
+      return result.data;
+    },
+  );
+
+  const deleteMutation = useMutation(
+    async (organizationId: string) => {
+      const result = await client.dash.organization.delete({ organizationId });
+      if (result.error) throw new Error(result.error.message ?? "Failed to delete organization");
+      return result.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([PLUGIN_ID, "organizations"]);
+        setConfirmDelete(null);
+        toggleNotification({
+          type: "success",
+          message: formatMessage({
+            id: `${PLUGIN_ID}.organizations.delete.success`,
+            defaultMessage: "Organization deleted",
+          }),
+        });
+      },
+      onError: () => {
+        toggleNotification({
+          type: "danger",
+          message: formatMessage({
+            id: `${PLUGIN_ID}.organizations.delete.error`,
+            defaultMessage: "Failed to delete organization",
+          }),
+        });
+      },
+    },
   );
 
   if (isLoading) return <Page.Loading />;
   if (error) return <Page.Error />;
 
-  const organizations = data?.data?.organizations ?? [];
+  if (selectedOrgId) {
+    return (
+      <Page.Main>
+        <Page.Title>{selectedOrgName}</Page.Title>
+        <Layouts.Header
+          title={selectedOrgName}
+          subtitle={formatMessage({
+            id: `${PLUGIN_ID}.Settings.organizations`,
+            defaultMessage: "Organizations",
+          })}
+        />
+        <Layouts.Content>
+          <OrganizationDetail
+            orgId={selectedOrgId}
+            onBack={() => {
+              setSelectedOrgId(null);
+              setSelectedOrgName("");
+            }}
+          />
+        </Layouts.Content>
+      </Page.Main>
+    );
+  }
+
+  const organizations = data?.organizations ?? [];
+  const total = data?.total ?? 0;
 
   return (
     <Page.Main>
       <Page.Title>
         {formatMessage({
           id: `${PLUGIN_ID}.Settings.organizations`,
-          defaultMessage: "Settings - Organizations",
+          defaultMessage: "Organizations - Better Auth",
         })}
       </Page.Title>
       <Layouts.Header
@@ -60,14 +120,10 @@ export const OrganizationsPage = () => {
             id: `${PLUGIN_ID}.Settings.organizations.subtitle`,
             defaultMessage: "{total} organizations in total",
           },
-          { total: data?.data?.total ?? 0 },
+          { total },
         )}
         primaryAction={
-          <Button
-            startIcon={<Plus />}
-            onClick={() => setShowCreateDialog(true)}
-            size="S"
-          >
+          <Button startIcon={<Plus />} onClick={() => setShowCreateDialog(true)} size="S">
             {formatMessage({
               id: `${PLUGIN_ID}.organizations.create.button`,
               defaultMessage: "Create organization",
@@ -82,26 +138,14 @@ export const OrganizationsPage = () => {
               <Tr>
                 <Th>
                   <Typography variant="sigma" textColor="neutral600">
-                    ID
+                    {formatMessage({ id: "global.name", defaultMessage: "Name" })}
                   </Typography>
                 </Th>
                 <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    {formatMessage({
-                      id: "global.name",
-                      defaultMessage: "Name",
-                    })}
-                  </Typography>
+                  <Typography variant="sigma" textColor="neutral600">Slug</Typography>
                 </Th>
                 <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    Slug
-                  </Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma" textColor="neutral600">
-                    Members
-                  </Typography>
+                  <Typography variant="sigma" textColor="neutral600">Members</Typography>
                 </Th>
                 <Th>
                   <Typography variant="sigma" textColor="neutral600">
@@ -111,14 +155,16 @@ export const OrganizationsPage = () => {
                     })}
                   </Typography>
                 </Th>
+                <Th>
+                  <Typography variant="sigma" textColor="neutral600">
+                    {formatMessage({ id: "global.actions", defaultMessage: "Actions" })}
+                  </Typography>
+                </Th>
               </Tr>
             </Thead>
             <Tbody>
               {organizations.map((org) => (
                 <Tr key={org.id}>
-                  <Td>
-                    <Typography textColor="neutral800">{org.id}</Typography>
-                  </Td>
                   <Td>
                     <Typography textColor="neutral800" fontWeight="semiBold">
                       {org.name}
@@ -128,14 +174,34 @@ export const OrganizationsPage = () => {
                     <Typography textColor="neutral800">{org.slug}</Typography>
                   </Td>
                   <Td>
-                    <Typography textColor="neutral800">
-                      {org.memberCount}
-                    </Typography>
+                    <Typography textColor="neutral800">{org.memberCount}</Typography>
                   </Td>
                   <Td>
                     <Typography textColor="neutral800">
                       {new Date(org.createdAt).toLocaleDateString()}
                     </Typography>
+                  </Td>
+                  <Td>
+                    <Flex gap={2}>
+                      <IconButton
+                        label={formatMessage({
+                          id: `${PLUGIN_ID}.organizations.view`,
+                          defaultMessage: "View",
+                        })}
+                        onClick={() => {
+                          setSelectedOrgId(org.id);
+                          setSelectedOrgName(org.name);
+                        }}
+                      >
+                        <Eye />
+                      </IconButton>
+                      <IconButton
+                        label={formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
+                        onClick={() => setConfirmDelete(org.id)}
+                      >
+                        <Trash />
+                      </IconButton>
+                    </Flex>
                   </Td>
                 </Tr>
               ))}
@@ -165,6 +231,40 @@ export const OrganizationsPage = () => {
 
       {showCreateDialog && (
         <CreateOrganizationDialog onClose={() => setShowCreateDialog(false)} />
+      )}
+
+      {confirmDelete && (
+        <Dialog.Root defaultOpen onOpenChange={(open) => !open && setConfirmDelete(null)}>
+          <Dialog.Content>
+            <Dialog.Header>
+              {formatMessage({
+                id: `${PLUGIN_ID}.organizations.delete.confirm.title`,
+                defaultMessage: "Delete organization",
+              })}
+            </Dialog.Header>
+            <Dialog.Body>
+              <Typography>
+                {formatMessage({
+                  id: `${PLUGIN_ID}.organizations.delete.confirm.message`,
+                  defaultMessage:
+                    "Are you sure you want to delete this organization? This action cannot be undone.",
+                })}
+              </Typography>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
+                {formatMessage({ id: "app.components.Button.cancel", defaultMessage: "Cancel" })}
+              </Button>
+              <Button
+                variant="danger"
+                loading={deleteMutation.isLoading}
+                onClick={() => deleteMutation.mutate(confirmDelete)}
+              >
+                {formatMessage({ id: "global.delete", defaultMessage: "Delete" })}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Root>
       )}
     </Page.Main>
   );

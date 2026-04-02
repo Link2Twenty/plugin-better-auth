@@ -1,0 +1,340 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - region "Notifications alt+T"
+    - generic:
+      - link:
+        - /url: "#main-content"
+        - text: Skip to content
+      - generic:
+        - navigation:
+          - generic:
+            - generic:
+              - generic:
+                - img
+                - generic: Strapi DashboardWorkplace
+          - separator
+          - generic:
+            - list:
+              - listitem:
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /admin
+                      - img
+                      - generic: Home
+              - listitem:
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /admin/content-manager
+                      - img
+                      - generic: Content Manager
+              - listitem:
+                - generic:
+                  - link:
+                    - /url: /admin/plugins/upload
+                    - img
+                    - generic: Media Library
+              - listitem:
+                - generic:
+                  - link:
+                    - /url: /admin/plugins/content-type-builder
+                    - img
+                    - generic: Content-Type Builder
+              - listitem:
+                - generic:
+                  - link:
+                    - /url: https://market.strapi.io
+                    - img
+                    - generic: Marketplace
+              - listitem:
+                - generic:
+                  - generic:
+                    - link:
+                      - /url: /admin/settings
+                      - img
+                      - generic: Settings
+                      - generic:
+                        - generic: "1"
+            - generic:
+              - generic:
+                - button:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: J
+                      - generic: John
+        - generic:
+          - generic:
+            - generic:
+              - navigation:
+                - generic:
+                  - heading [level=2]: Settings
+                - separator
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - list:
+                          - listitem:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Global Settings
+                              - list:
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/application-infos
+                                    - generic:
+                                      - generic:
+                                        - generic: Overview
+                                        - generic:
+                                          - generic:
+                                            - generic: "1"
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/api-tokens?sort=name:ASC
+                                    - generic:
+                                      - generic:
+                                        - generic: API Tokens
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/purchase-content-history
+                                    - generic:
+                                      - generic:
+                                        - generic: Content History
+                                        - generic:
+                                          - img
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/plugins/purchase-content-releases
+                                    - generic:
+                                      - generic:
+                                        - generic: Releases
+                                        - generic:
+                                          - img
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/internationalization
+                                    - generic:
+                                      - generic:
+                                        - generic: Internationalization
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/media-library
+                                    - generic:
+                                      - generic:
+                                        - generic: Media Library
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/list-plugins
+                                    - generic:
+                                      - generic:
+                                        - generic: Plugins
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/purchase-review-workflows
+                                    - generic:
+                                      - generic:
+                                        - generic: Review Workflows
+                                        - generic:
+                                          - img
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/purchase-single-sign-on
+                                    - generic:
+                                      - generic:
+                                        - generic: Single Sign-On
+                                        - generic:
+                                          - img
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/transfer-tokens?sort=name:ASC
+                                    - generic:
+                                      - generic:
+                                        - generic: Transfer Tokens
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/webhooks
+                                    - generic:
+                                      - generic:
+                                        - generic: Webhooks
+                          - listitem:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Administration panel
+                              - list:
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/roles
+                                    - generic:
+                                      - generic:
+                                        - generic: Roles
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/users?pageSize=10&page=1&sort=firstname
+                                    - generic:
+                                      - generic:
+                                        - generic: Users
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/purchase-audit-logs
+                                    - generic:
+                                      - generic:
+                                        - generic: Audit Logs
+                                        - generic:
+                                          - img
+                          - listitem:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Email plugin
+                              - list:
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/email
+                                    - generic:
+                                      - generic:
+                                        - generic: Configuration
+                          - listitem:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: API Permissions
+                              - list:
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/api-permissions/roles
+                                    - generic:
+                                      - generic:
+                                        - generic: Roles
+                          - listitem:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Better Auth
+                              - list:
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/better-auth-dashboard
+                                    - generic:
+                                      - generic:
+                                        - generic: Overview
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/better-auth-dashboard/users
+                                    - generic:
+                                      - generic:
+                                        - generic: Users
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/better-auth-dashboard/organizations
+                                    - generic:
+                                      - generic:
+                                        - generic: Organizations
+                                - listitem:
+                                  - link:
+                                    - /url: /admin/settings/better-auth-dashboard/sessions
+                                    - generic:
+                                      - generic:
+                                        - generic: Sessions
+            - generic:
+              - main:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - heading [level=1]: Users
+                          - generic:
+                            - button:
+                              - generic:
+                                - img
+                              - generic: Create user
+                        - paragraph: 2 users in total
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - grid:
+                          - rowgroup:
+                            - row:
+                              - gridcell:
+                                - generic:
+                                  - generic: Name
+                              - gridcell:
+                                - generic:
+                                  - generic: Email
+                              - gridcell:
+                                - generic:
+                                  - generic: Email
+                              - gridcell:
+                                - generic:
+                                  - generic: Status
+                              - gridcell:
+                                - generic:
+                                  - generic: Created At
+                              - gridcell:
+                                - generic:
+                                  - generic: Actions
+                          - rowgroup:
+                            - row:
+                              - gridcell:
+                                - generic:
+                                  - generic:
+                                    - generic: EU
+                                  - generic: E2E User 1775149153862
+                              - gridcell: e2e-user-1775149153862@example.com
+                              - gridcell:
+                                - generic: Unverified
+                              - gridcell
+                              - gridcell: 4/2/2026
+                              - gridcell:
+                                - generic:
+                                  - button:
+                                    - generic: Ban
+                                  - button:
+                                    - img
+                                    - generic: Delete
+                            - row:
+                              - gridcell:
+                                - generic:
+                                  - generic:
+                                    - generic: OO
+                                  - generic: Org Owner
+                              - gridcell: org-owner-1775149153855@example.com
+                              - gridcell:
+                                - generic: Unverified
+                              - gridcell
+                              - gridcell: 4/2/2026
+                              - gridcell:
+                                - generic:
+                                  - button:
+                                    - generic: Ban
+                                  - button:
+                                    - img
+                                    - generic: Delete
+    - generic:
+      - log
+      - status
+      - alert
+  - alertdialog "Delete user" [active] [ref=e2]:
+    - heading "Delete user" [level=2] [ref=e3]
+    - generic [ref=e5]: Are you sure you want to delete this user? This action cannot be undone.
+    - contentinfo [ref=e6]:
+      - button "Cancel" [ref=e7] [cursor=pointer]:
+        - generic [ref=e8]: Cancel
+      - button "Delete" [ref=e9] [cursor=pointer]:
+        - generic [ref=e10]: Delete
+```

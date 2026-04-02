@@ -1,8 +1,8 @@
-// @ts-expect-error - An issue with the plugin SDK prevents types from being included in the build.
-
 import { dash } from "@better-auth/infra";
+// @ts-expect-error - An issue with the plugin SDK prevents types from being included in the build.
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
 
 const auth = () =>
   betterAuth({
@@ -17,6 +17,8 @@ const auth = () =>
           process.env.BETTER_AUTH_DASHBOARD_SECRET ||
           "strapi-internal-dashboard-key",
       }),
+      organization(),
+
     ],
     database: strapiAdapter(),
     account: {

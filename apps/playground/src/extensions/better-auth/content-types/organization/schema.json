@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_sessions",
+  "collectionName": "better_auth_organizations",
   "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions",
-    "description": "Better Auth session"
+    "singularName": "organization",
+    "pluralName": "organizations",
+    "displayName": "Organizations"
   },
   "options": {
     "draftAndPublish": false
@@ -19,8 +18,8 @@
     }
   },
   "attributes": {
-    "expiresAt": {
-      "type": "datetime",
+    "name": {
+      "type": "string",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -29,7 +28,7 @@
       },
       "required": true
     },
-    "token": {
+    "slug": {
       "type": "string",
       "configurable": false,
       "pluginOptions": {
@@ -40,7 +39,7 @@
       "required": true,
       "unique": true
     },
-    "ipAddress": {
+    "logo": {
       "type": "string",
       "configurable": false,
       "pluginOptions": {
@@ -49,26 +48,7 @@
         }
       }
     },
-    "userAgent": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userId": {
-      "type": "integer",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      },
-      "required": true
-    },
-    "activeOrganizationId": {
+    "metadata": {
       "type": "string",
       "configurable": false,
       "pluginOptions": {

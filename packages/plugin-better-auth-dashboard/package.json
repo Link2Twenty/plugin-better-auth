@@ -39,6 +39,7 @@
     "dist"
   ],
   "scripts": {
+    "postinstall": "playwright install --with-deps",
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
@@ -46,12 +47,14 @@
     "test:ts:server": "cd server && tsc --noEmit",
     "test:ts:admin": "cd admin && tsc --noEmit",
     "check-types": "pnpm run test:ts:server && pnpm run test:ts:admin",
-    "lint": "biome check --fix"
+    "lint": "biome check --fix",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "jose": "^6.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@strapi/sdk-plugin": "^6.0.0",
     "@biomejs/biome": "^2.3.11",
     "@strapi/strapi": "catalog:strapi",
