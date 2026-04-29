@@ -16,7 +16,7 @@ export function mapFieldType(field: DBFieldAttribute): string {
 
   switch (type) {
     case "string":
-      return "string";
+      return "text";
     case "number":
       return field.bigint ? "biginteger" : "integer";
     case "boolean":
@@ -28,7 +28,7 @@ export function mapFieldType(field: DBFieldAttribute): string {
     case "number[]":
       return "json";
     default:
-      return "string";
+      return "text";
   }
 }
 
