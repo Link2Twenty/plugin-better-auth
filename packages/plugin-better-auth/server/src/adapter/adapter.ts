@@ -5,7 +5,6 @@ import {
 } from "better-auth/adapters";
 import kebabCase from "lodash/kebabCase";
 import {
-  type SchemaTransformOptions,
   transformFilters,
   transformSort,
   transformOutput as transformStrapiOutput,
@@ -297,17 +296,13 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
         createSchema: async ({ tables }) => {
           debugLog("createSchema", { tables });
 
-          const schemaOptions: SchemaTransformOptions = {
-            pluginName: "better-auth",
-          };
-
           const { cleanupStrapiApp, getStrapiApp } = await import("./cli");
 
           // Bootstrap Strapi to access the content-type-builder service
           const { app: strapi, distDir } = await getStrapiApp();
 
           // Use Strapi's content-type-builder service to create/update schemas
-          await updateStrapiSchema(strapi, tables, schemaOptions);
+          await updateStrapiSchema(strapi, tables);
 
           // Clean up Strapi's dist directory and destroy the app instance
           cleanupStrapiApp(strapi, distDir);

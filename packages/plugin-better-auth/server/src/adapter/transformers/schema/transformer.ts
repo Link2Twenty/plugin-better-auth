@@ -2,11 +2,11 @@ import type { Core, UID } from "@strapi/strapi";
 import type { BetterAuthDBSchema } from "better-auth";
 import isEqual from "lodash/isEqual";
 import snakeCase from "lodash/snakeCase";
+import { PLUGIN_ID } from "../../../utils";
 import type {
   CTBAttribute,
   CTBAttributeProperties,
   CTBContentType,
-  SchemaTransformOptions,
   SchemaTransformResult,
   StrapiAttribute,
   TransformResult,
@@ -144,9 +144,8 @@ export function transformTable(
   strapi: Core.Strapi,
   modelKey: string,
   table: BetterAuthDBSchema[string],
-  options: SchemaTransformOptions = {},
 ): TransformResult {
-  const pluginName = options.pluginName ?? "better-auth";
+  const pluginName = PLUGIN_ID;
   const modelName = table.modelName || modelKey;
   const names = generateNames(modelName, pluginName);
   const uid = names.uid as UID.ContentType;
@@ -165,12 +164,10 @@ export function transformTable(
   );
   hasChanges = hasChanges || hasFieldChanges;
 
-  const visible = options.contentManagerVisible ?? isVisible(modelName);
+  const visible = isVisible(modelName);
   const defaultPluginOptions = {
     "content-manager": { visible },
-    "content-type-builder": {
-      visible: options.contentTypeBuilderVisible ?? visible,
-    },
+    "content-type-builder": { visible },
   };
   const pluginOptions = exists
     ? ((strapi.contentTypes[uid]?.pluginOptions as Record<string, unknown>) ??
@@ -241,9 +238,8 @@ function createDeleteContentType(
 export function transformSchema(
   strapi: Core.Strapi,
   tables: BetterAuthDBSchema,
-  options: SchemaTransformOptions = {},
 ): SchemaTransformResult {
-  const pluginName = options.pluginName ?? "better-auth";
+  const pluginName = PLUGIN_ID;
   const contentTypes: CTBContentType[] = [];
   const allChangeDetails: string[] = [];
   let hasChanges = false;
@@ -263,7 +259,7 @@ export function transformSchema(
   for (const [key, table] of Object.entries(tables)) {
     if (table.disableMigrations) continue;
 
-    const result = transformTable(strapi, key, table, options);
+    const result = transformTable(strapi, key, table);
     if (result.hasChanges) {
       hasChanges = true;
       contentTypes.push(result.contentType);

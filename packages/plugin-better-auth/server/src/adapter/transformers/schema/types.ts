@@ -85,15 +85,6 @@ export interface CTBSchema {
 }
 
 /**
- * Configuration options for schema transformation
- */
-export interface SchemaTransformOptions {
-  pluginName?: string;
-  contentManagerVisible?: boolean;
-  contentTypeBuilderVisible?: boolean;
-}
-
-/**
  * Result of transforming a table
  */
 export interface TransformResult {

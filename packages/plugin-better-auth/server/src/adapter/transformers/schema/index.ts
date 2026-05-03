@@ -1,7 +1,7 @@
 import type { Core } from "@strapi/strapi";
 import type { BetterAuthDBSchema } from "better-auth/db";
 import { transformSchema } from "./transformer";
-import type { SchemaTransformOptions, UpdateSchemaResult } from "./types";
+import type { UpdateSchemaResult } from "./types";
 
 export { transformSchema, transformTable } from "./transformer";
 export * from "./types";
@@ -19,12 +19,10 @@ export * from "./utils";
 export async function updateStrapiSchema(
   strapi: Core.Strapi,
   tables: BetterAuthDBSchema,
-  options: SchemaTransformOptions = {},
 ): Promise<UpdateSchemaResult> {
   const { schema, hasChanges, allChangeDetails } = transformSchema(
     strapi,
     tables,
-    options,
   );
 
   if (!hasChanges) {
