@@ -146,8 +146,11 @@ export function transformTable(
   table: BetterAuthDBSchema[string],
 ): TransformResult {
   const pluginName = PLUGIN_ID;
-  const modelName = table.modelName || modelKey;
-  const names = generateNames(modelName, pluginName);
+  const names = generateNames(
+    modelKey,
+    pluginName,
+    table.modelName || undefined,
+  );
   const uid = names.uid as UID.ContentType;
 
   const exists = contentTypeExists(strapi, uid);
@@ -164,7 +167,7 @@ export function transformTable(
   );
   hasChanges = hasChanges || hasFieldChanges;
 
-  const visible = isVisible(modelName);
+  const visible = isVisible(modelKey);
   const defaultPluginOptions = {
     "content-manager": { visible },
     "content-type-builder": { visible },
@@ -249,8 +252,8 @@ export function transformSchema(
     Object.entries(tables)
       .filter(([, t]) => !t.disableMigrations)
       .map(
-        ([k, t]) =>
-          `plugin::${pluginName}.${generateNames(t.modelName || k, pluginName).singularName}`,
+        ([k]) =>
+          `plugin::${pluginName}.${generateNames(k, pluginName).singularName}`,
       ),
   );
   const existingUIDs = getExistingBAContentTypes(strapi, pluginName);

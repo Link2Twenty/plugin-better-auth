@@ -48,13 +48,14 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
     // @ts-expect-error
     // Caused by returning true to opt-out of Better Auth's file writing logic in createSchema method
     // https://github.com/better-auth/better-auth/issues/8590
-    adapter: ({ getModelName, getFieldName, debugLog }) => {
+    adapter: ({ getFieldName, debugLog }) => {
       /**
-       * Get the Strapi UID for a model
+       * Get the Strapi UID for a model.
+       * Uses the raw model key (e.g. "user", "session") so the UID stays stable even when
+       * better-auth's modelName is configured to a different value.
        */
       const getModelUid = (model: string): UID.ContentType => {
-        const modelName = getModelName(model);
-        return `plugin::better-auth.${kebabCase(modelName)}` as UID.ContentType;
+        return `plugin::better-auth.${kebabCase(model)}` as UID.ContentType;
       };
 
       /**
