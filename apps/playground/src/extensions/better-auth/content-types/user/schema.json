@@ -28,17 +28,6 @@
       },
       "required": true
     },
-    "email": {
-      "type": "email",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      },
-      "required": true,
-      "unique": true
-    },
     "emailVerified": {
       "type": "boolean",
       "configurable": false,
@@ -58,6 +47,27 @@
           "managed": true
         }
       }
+    },
+    "roles": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::api-permissions.role",
+      "writable": true,
+      "configurable": false,
+      "editable": false,
+      "visible": true,
+      "default": null
+    },
+    "email": {
+      "type": "email",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "unique": true
     }
   }
 }
