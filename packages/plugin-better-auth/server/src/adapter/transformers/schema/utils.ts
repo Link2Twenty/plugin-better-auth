@@ -121,11 +121,15 @@ export function generateNames(modelName: string, pluginName: string) {
   const pluralName = singularName.endsWith("s")
     ? singularName
     : `${singularName}s`;
+  const tablePrefix = strapi.config.get(
+    `plugin::${pluginName}.table_prefix`,
+    "ba_",
+  );
 
   return {
     singularName,
     pluralName,
-    collectionName: `${snakeCase(pluginName)}_${snakeCase(pluralName)}`,
+    collectionName: `${tablePrefix}${snakeCase(pluralName)}`,
     uid: `plugin::${pluginName}.${singularName}`,
     globalId: modelName
       .split("-")
