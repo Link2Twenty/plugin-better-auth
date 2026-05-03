@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_sessions",
+  "collectionName": "ba_sessions",
   "info": {
     "singularName": "session",
     "pluralName": "sessions",
-    "displayName": "Sessions",
-    "description": "Better Auth session"
+    "displayName": "Sessions"
   },
   "options": {
     "draftAndPublish": false
@@ -30,7 +29,7 @@
       "required": true
     },
     "token": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -41,7 +40,7 @@
       "unique": true
     },
     "ipAddress": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -50,7 +49,7 @@
       }
     },
     "userAgent": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {

@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_users",
+  "collectionName": "ba_users",
   "info": {
     "singularName": "user",
     "pluralName": "users",
-    "displayName": "Users",
-    "description": "Better Auth user"
+    "displayName": "Users"
   },
   "options": {
     "draftAndPublish": false
@@ -19,18 +18,8 @@
     }
   },
   "attributes": {
-    "roles": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::api-permissions.role",
-      "writable": true,
-      "configurable": false,
-      "editable": false,
-      "visible": true,
-      "default": null
-    },
     "name": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -38,6 +27,17 @@
         }
       },
       "required": true
+    },
+    "email": {
+      "type": "email",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "required": true,
+      "unique": true
     },
     "emailVerified": {
       "type": "boolean",
@@ -51,24 +51,13 @@
       "default": false
     },
     "image": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
           "managed": true
         }
       }
-    },
-    "email": {
-      "type": "email",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      },
-      "required": true,
-      "unique": true
     }
   }
 }

@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_verifications",
+  "collectionName": "ba_verifications",
   "info": {
     "singularName": "verification",
     "pluralName": "verifications",
-    "displayName": "Verifications",
-    "description": "Better Auth verification"
+    "displayName": "Verifications"
   },
   "options": {
     "draftAndPublish": false
@@ -20,7 +19,7 @@
   },
   "attributes": {
     "identifier": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -30,7 +29,7 @@
       "required": true
     },
     "value": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
