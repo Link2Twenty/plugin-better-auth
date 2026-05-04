@@ -55,15 +55,15 @@ The resolver must return either:
 - `null` — the request is treated as unauthenticated and the **Public** role is applied.
 - `{ user, roles }` — the resolved user and their roles. The **Authenticated** role is applied at minimum.
 
-## Using with plugin-better-auth
+## Using with Better Auth
 
-When `plugin-better-auth` is installed, it automatically registers a session resolver that:
+When Better Auth is installed, it automatically registers a session resolver that:
 
 1. Reads the Better Auth session from the request headers.
 2. Loads the corresponding user document from `plugin::better-auth.user`.
 3. Returns the user and their associated roles.
 
-You do not need to register a resolver manually in this case. See [Using Both Plugins Together](../integration) for the combined setup.
+You do not need to register a resolver manually in this case.
 
 ## Multiple resolvers
 

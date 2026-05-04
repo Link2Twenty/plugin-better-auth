@@ -12,7 +12,7 @@ Thank you for your interest in contributing! This project is in early alpha, so 
 ### Setup
 
 ```bash
-git clone https://github.com/strapi-community/auth.git
+git clone https://github.com/strapi-community/plugin-better-auth.git
 cd auth
 pnpm install
 pnpm build
@@ -62,7 +62,7 @@ pnpm test:e2e
 
 ## Reporting issues
 
-Use the [GitHub issue tracker](https://github.com/strapi-community/auth/issues). Please search for an existing issue before opening a new one, and include:
+Use the [GitHub issue tracker](https://github.com/strapi-community/plugin-better-auth/issues). Please search for an existing issue before opening a new one, and include:
 
 - A clear description of the problem.
 - Steps to reproduce it.

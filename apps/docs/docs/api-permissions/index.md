@@ -1,11 +1,11 @@
 ---
-id: plugin-api-permissions
-title: plugin-api-permissions
+id: api-permissions
+title: API Permissions
 sidebar_label: Overview
 sidebar_position: 1
 ---
 
-# plugin-api-permissions
+# API Permissions
 
 `@strapi-community/plugin-api-permissions` provides Content API role-based access control (RBAC) for Strapi v5. It is **auth-provider agnostic** — it works with any authentication system through a pluggable session resolver interface.
 
@@ -17,7 +17,7 @@ sidebar_position: 1
 - Two default roles created on first run: **Public** and **Authenticated**
 - Pluggable session resolver — wire in any auth provider
 - Automatically extends your user content type with a `roles` manyToMany relation
-- Works standalone or paired with `plugin-better-auth`
+- Works standalone or paired with Better Auth
 - Works with Strapi v5+
 
 ## Content types created

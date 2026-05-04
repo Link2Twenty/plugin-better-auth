@@ -545,7 +545,7 @@ export interface PluginApiPermissionsRole extends Struct.CollectionTypeSchema {
 }
 
 export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
-  collectionName: "ba_accounts";
+  collectionName: "ba_account";
   info: {
     displayName: "Accounts";
     pluralName: "accounts";
@@ -643,7 +643,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
 }
 
 export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
-  collectionName: "ba_sessions";
+  collectionName: "ba_session";
   info: {
     displayName: "Sessions";
     pluralName: "sessions";
@@ -712,7 +712,7 @@ export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
 }
 
 export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
-  collectionName: "ba_users";
+  collectionName: "ba_user";
   info: {
     displayName: "Users";
     pluralName: "users";
@@ -781,7 +781,7 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
 
 export interface PluginBetterAuthVerification
   extends Struct.CollectionTypeSchema {
-  collectionName: "ba_verifications";
+  collectionName: "ba_verification";
   info: {
     displayName: "Verifications";
     pluralName: "verifications";

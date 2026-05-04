@@ -10,11 +10,11 @@ sidebar_position: 3
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `user_uid` | `string` | Resolved from `plugin-better-auth` | The UID of the content type that represents your users. Used to count role members and reassign users when a role is deleted. |
+| `user_uid` | `string` | Resolved from Better Auth | The UID of the content type that represents your users. Used to count role members and reassign users when a role is deleted. |
 
 ## Setting the user content type
 
-If you are **not** using `plugin-better-auth`, you need to tell the plugin which content type represents your users by setting `user_uid`.
+If you are **not** using Better Auth, you need to tell the plugin which content type represents your users by setting `user_uid`.
 
 ```typescript title="config/plugins.ts"
 export default {
@@ -35,9 +35,9 @@ Replace `'plugin::users-permissions.user'` with the UID of your actual user cont
 | Custom plugin | `plugin::my-auth.user` |
 | Custom API | `api::user.user` |
 
-## Using with plugin-better-auth
+## Using with Better Auth
 
-When [`plugin-better-auth`](../plugin-better-auth) is installed, `user_uid` is resolved automatically to `plugin::better-auth.user`. No `user_uid` configuration is needed.
+When [Better Auth](../better-auth) is installed, `user_uid` is resolved automatically to `plugin::better-auth.user`. No `user_uid` configuration is needed.
 
 ```typescript title="config/plugins.ts"
 export default {

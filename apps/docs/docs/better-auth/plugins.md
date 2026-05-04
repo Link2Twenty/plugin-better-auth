@@ -1,10 +1,10 @@
 ---
-id: better-auth-plugins
-title: Better Auth Plugins
-sidebar_position: 6
+id: plugins
+title: Plugins
+sidebar_position: 9
 ---
 
-# Better Auth Plugins
+# Plugins
 
 Better Auth has a rich plugin ecosystem. Any Better Auth plugin can be used with this Strapi adapter. Some plugins add new database tables that Strapi needs to know about — these require a schema generation step.
 
@@ -20,6 +20,8 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
+    basePath: '/api/better-auth',
+    trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
         generateId: 'serial',
@@ -38,7 +40,7 @@ export default auth;
 Plugins that introduce new tables (e.g. two-factor, passkey, organization) require you to run Better Auth's `generate` CLI so Strapi picks up the new content types.
 
 ```bash
-npx auth@latest generate --config config/better-auth.ts
+npx auth generate --config config/better-auth.ts
 ```
 
 :::note
@@ -51,20 +53,6 @@ After running the command, restart Strapi in development mode. The new content t
 pnpm develop
 ```
 
-## Popular plugins
-
-| Plugin | npm import | Extra schema |
-|---|---|---|
-| Two-factor auth | `better-auth/plugins` → `twoFactor` | Yes |
-| Magic link | `better-auth/plugins` → `magicLink` | No |
-| Passkey / WebAuthn | `better-auth/plugins` → `passkey` | Yes |
-| OAuth (social login) | Built-in via `socialProviders` | No |
-| Organization | `better-auth/plugins` → `organization` | Yes |
-| Admin | `better-auth/plugins` → `admin` | No |
-| Anonymous | `better-auth/plugins` → `anonymous` | No |
-
-Refer to the [Better Auth plugin documentation](https://better-auth.com/docs/plugins) for the full list.
-
 ## Example: OAuth (Google)
 
 ```typescript title="config/better-auth.ts"
@@ -74,6 +62,8 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
+    basePath: '/api/better-auth',
+    trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
         generateId: 'serial',

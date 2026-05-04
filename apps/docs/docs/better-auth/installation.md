@@ -41,6 +41,8 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
+    basePath: '/api/better-auth',
+    trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
         generateId: 'serial',
@@ -55,19 +57,24 @@ export default auth;
 The `generateId: "serial"` option tells Better Auth to use auto-incremented integer IDs, which aligns with Strapi's default document ID strategy.
 :::
 
-## 4. Verify the setup
+## 4. Generate the schema
 
-Start Strapi in development mode and confirm that the Better Auth content types are created:
+The plugin does not register any content types automatically. You must run the Better Auth CLI to generate the Strapi schema files:
+
+```bash
+npx auth generate --config config/better-auth.ts
+```
+
+:::note
+You must specify `--config config/better-auth.ts` because the CLI cannot auto-detect the config location in a Strapi project.
+:::
+
+## 5. Start Strapi
+
+Start Strapi in development mode. The generated content types will be picked up and registered:
 
 ```bash
 pnpm develop
 ```
-
-Navigate to **Content-Type Builder** in the Strapi admin. You should see the following new content types:
-
-- `Better Auth - User`
-- `Better Auth - Session`
-- `Better Auth - Account`
-- `Better Auth - Verification`
 
 The Better Auth API is now available at `http://localhost:1337/api/better-auth/`.

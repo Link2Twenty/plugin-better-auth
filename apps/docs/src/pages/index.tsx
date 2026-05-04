@@ -18,10 +18,10 @@ const features = [
       'Fine-grained role-based access control for Strapi\'s Content API. Create and manage roles directly from the admin panel.',
   },
   {
-    emoji: '⚡',
-    title: 'Auto-wired integration',
+    emoji: '🔄',
+    title: 'Migrate from Users & Permissions',
     description:
-      'Install both plugins and they connect automatically. No manual session resolver setup required — it just works.',
+      'Coming from Strapi\'s built-in auth? Find guidance on moving your users, roles, and auth flows to Better Auth.',
   },
 ];
 
@@ -37,7 +37,7 @@ export default function Home(): React.JSX.Element {
           <section className={styles.hero}>
             <div className={styles.heroText}>
               <h1 className={styles.heroTitle}>
-                <span className={styles.heroTitleAccent}>Strapi Auth</span>
+                <span className={styles.heroTitleAccent}>Strapi + Better Auth</span>
                 <br />
                 Adaptable end-user auth
               </h1>
@@ -63,13 +63,20 @@ export default function Home(): React.JSX.Element {
 
           {/* ── Feature cards ────────────────────────────────────── */}
           <section className={styles.features}>
-            {features.map((f) => (
-              <div key={f.title} className={styles.card}>
-                <div className={styles.cardIcon}>{f.emoji}</div>
-                <h3 className={styles.cardTitle}>{f.title}</h3>
-                <p className={styles.cardDescription}>{f.description}</p>
-              </div>
-            ))}
+            {features.map((f) => {
+              const card = (
+                <div key={f.title} className={styles.card}>
+                  <div className={styles.cardIcon}>{f.emoji}</div>
+                  <h3 className={styles.cardTitle}>{f.title}</h3>
+                  <p className={styles.cardDescription}>{f.description}</p>
+                </div>
+              );
+              return f.href ? (
+                <Link key={f.title} to={f.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {card}
+                </Link>
+              ) : card;
+            })}
           </section>
 
         </div>

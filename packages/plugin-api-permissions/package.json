@@ -16,12 +16,12 @@
     "url": "https://github.com/boazpoolman"
   },
   "bugs": {
-    "url": "https://github.com/strapi-community/auth/issues"
+    "url": "https://github.com/strapi-community/plugin-better-auth/issues"
   },
-  "homepage": "https://github.com/strapi-community/auth",
+  "homepage": "https://github.com/strapi-community/plugin-better-auth",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/strapi-community/auth.git",
+    "url": "git+https://github.com/strapi-community/plugin-better-auth.git",
     "directory": "packages/plugin-api-permissions"
   },
   "type": "commonjs",
