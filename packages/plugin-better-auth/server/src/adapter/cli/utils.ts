@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 import { type Core, compileStrapi, createStrapi } from "@strapi/strapi";
 
 // This method removes all non-admin build files from the dist directory
-const cleanupDistDirectory = async ({ distDir }: { distDir?: string }) => {
+export const cleanupDistDirectory = async ({
+  distDir,
+}: {
+  distDir?: string;
+}) => {
   if (
     !distDir || // we don't have a dist dir
     (await fs

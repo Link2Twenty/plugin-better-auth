@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_session",
+  "collectionName": "ba_verification",
   "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions"
+    "singularName": "verification",
+    "pluralName": "verifications",
+    "displayName": "Verifications"
   },
   "options": {
     "draftAndPublish": false
@@ -18,8 +18,8 @@
     }
   },
   "attributes": {
-    "expiresAt": {
-      "type": "datetime",
+    "identifier": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -28,7 +28,7 @@
       },
       "required": true
     },
-    "token": {
+    "value": {
       "type": "text",
       "configurable": false,
       "pluginOptions": {
@@ -36,29 +36,10 @@
           "managed": true
         }
       },
-      "required": true,
-      "unique": true
+      "required": true
     },
-    "ipAddress": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userAgent": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userId": {
-      "type": "integer",
+    "expiresAt": {
+      "type": "datetime",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {

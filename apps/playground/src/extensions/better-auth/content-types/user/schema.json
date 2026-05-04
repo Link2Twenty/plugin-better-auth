@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "better_auth_users",
+  "collectionName": "ba_user",
   "info": {
     "singularName": "user",
     "pluralName": "users",
-    "displayName": "Users",
-    "description": "Better Auth user"
+    "displayName": "Users"
   },
   "options": {
     "draftAndPublish": false
@@ -19,18 +18,8 @@
     }
   },
   "attributes": {
-    "roles": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::api-permissions.role",
-      "writable": true,
-      "configurable": false,
-      "editable": false,
-      "visible": true,
-      "default": null
-    },
     "name": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -51,13 +40,23 @@
       "default": false
     },
     "image": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
           "managed": true
         }
       }
+    },
+    "roles": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::api-permissions.role",
+      "writable": true,
+      "configurable": false,
+      "editable": false,
+      "visible": true,
+      "default": null
     },
     "email": {
       "type": "email",

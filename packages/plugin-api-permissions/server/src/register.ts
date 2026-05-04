@@ -9,15 +9,17 @@ const extendUserContentType = () => {
   const userContentType = strapi.contentTypes[userUID];
 
   if (!userContentType) {
-    throw new Error(
-      `The user content type with UID "${userUID}" does not exist. Please check your plugin configuration.`,
+    strapi.log.warn(
+      `[@strapi-community/plugin-api-permissions] The user content type with UID "${userUID}" does not exist. Please check your plugin configuration.`,
     );
+    return;
   }
 
   if (!userContentType.attributes) {
-    throw new Error(
-      `The user content type with UID "${userUID}" does not have any attributes. Please check your content type definition.`,
+    strapi.log.warn(
+      `[@strapi-community/plugin-api-permissions] The user content type with UID "${userUID}" does not have any attributes. Please check your content type definition.`,
     );
+    return;
   }
 
   // Add the 'role' relation to the user content type

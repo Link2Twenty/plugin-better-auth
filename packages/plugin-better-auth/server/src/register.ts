@@ -5,6 +5,7 @@ import type { ParameterizedContext } from "koa";
 export default ({ strapi }: { strapi: Core.Strapi }) => {
   const auth = strapi.internal_config["better-auth"];
   const apiPermissionsPlugin = strapi.plugin("api-permissions");
+  const usersPermissionsPlugin = strapi.plugin("users-permissions");
 
   /**
    * Throw an error if the better-auth config is missing, as the plugin cannot function without it.
@@ -13,6 +14,16 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
     throw new Error(
       "[@strapi-community/plugin-better-auth] No 'better-auth' config file found. " +
         "Please add a 'better-auth' file to the config folder of your Strapi project. ",
+    );
+  }
+
+  /**
+   * Throw an error if the users-permissions plugin is installed. Migration path will be provided later.
+   */
+  if (usersPermissionsPlugin) {
+    throw new Error(
+      "[@strapi-community/plugin-better-auth] The 'users-permissions' plugin is installed. " +
+        "Better Auth and users-permissions cannot be used together.",
     );
   }
 
