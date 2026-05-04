@@ -1,6 +1,6 @@
 # Contributing to Strapi Auth
 
-Thank you for your interest in contributing! This project is in early alpha, so contributions of all kinds — bug reports, feature ideas, documentation improvements, and code — are especially valuable.
+Thank you for your interest in contributing! This project is in early beta, so contributions of all kinds — bug reports, feature ideas, documentation improvements, and code — are especially valuable.
 
 ## Getting started
 

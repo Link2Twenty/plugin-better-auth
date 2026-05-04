@@ -1,7 +1,7 @@
 # 🔐 Strapi Auth
 
 > [!CAUTION]
-> These packages are in **alpha**. Do not use in production.
+> These packages are in **beta**. Do not use in production.
 
 A monorepo of Strapi v5 plugins for modern authentication and Content API authorization.
 

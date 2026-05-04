@@ -4,7 +4,7 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 
 
 > [!CAUTION]  
-> This plugin is in ALPHA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
+> This plugin is in BETA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
 
 **Full flow documentation (API, Content Manager, config, troubleshooting):** [docs/AUTHENTICATION_FLOWS.md](./docs/AUTHENTICATION_FLOWS.md)
 
