@@ -1,4 +1,4 @@
-# 🔐 Strapi Auth
+# 🔐 Strapi + Better Auth
 
 > [!CAUTION]
 > These packages are in **beta**. Do not use in production.
