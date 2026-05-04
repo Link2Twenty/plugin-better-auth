@@ -299,22 +299,12 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
         createSchema: async ({ tables }) => {
           debugLog("createSchema", { tables });
 
-          const {
-            cleanupStrapiApp,
-            cleanupContentTypesDir,
-            cleanupDistDirectory,
-            getStrapiApp,
-          } = await import("./cli");
-
-          const appDir = process.cwd();
-
-          // Wipe stale content-type JSON files so Strapi creates them fresh,
-          // ensuring collectionName reflects the current table_prefix.
-          await cleanupContentTypesDir({ appDir });
+          const { cleanupStrapiApp, cleanupDistDirectory, getStrapiApp } =
+            await import("./cli");
 
           // Wipe the compiled dist so the updated config/plugins.ts (which
           // carries the table_prefix) is recompiled from source.
-          await cleanupDistDirectory({ distDir: `${appDir}/dist` });
+          await cleanupDistDirectory({ distDir: `${process.cwd()}/dist` });
 
           // Bootstrap Strapi to access the content-type-builder service
           const { app: strapi, distDir } = await getStrapiApp();
