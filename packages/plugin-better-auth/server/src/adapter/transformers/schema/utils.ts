@@ -131,9 +131,7 @@ export function generateNames(
     ? singularName
     : `${singularName}s`;
 
-  // collectionName uses the configured table name when provided, otherwise falls back to modelKey
   const tableBase = tableName ? kebabCase(tableName) : singularName;
-  const tablePlural = tableBase.endsWith("s") ? tableBase : `${tableBase}s`;
 
   const tablePrefix = strapi.config.get(
     `plugin::${pluginName}.table_prefix`,
@@ -143,7 +141,7 @@ export function generateNames(
   return {
     singularName,
     pluralName,
-    collectionName: `${tablePrefix}${snakeCase(tablePlural)}`,
+    collectionName: `${tablePrefix}${snakeCase(tableBase)}`,
     uid: `plugin::${pluginName}.${singularName}`,
     globalId: modelKey
       .split("-")

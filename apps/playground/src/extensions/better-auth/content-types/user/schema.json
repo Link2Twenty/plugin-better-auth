@@ -1,6 +1,6 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_users",
+  "collectionName": "ba_user",
   "info": {
     "singularName": "user",
     "pluralName": "users",

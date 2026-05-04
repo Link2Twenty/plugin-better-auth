@@ -1,6 +1,6 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_verifications",
+  "collectionName": "ba_verification",
   "info": {
     "singularName": "verification",
     "pluralName": "verifications",
