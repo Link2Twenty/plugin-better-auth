@@ -1,9 +1,14 @@
 import fs from "node:fs/promises";
-import { resolve } from "node:path";
+import path, { resolve } from "node:path";
 import { type Core, compileStrapi, createStrapi } from "@strapi/strapi";
+import { PLUGIN_ID } from "../../utils";
 
 // This method removes all non-admin build files from the dist directory
-const cleanupDistDirectory = async ({ distDir }: { distDir?: string }) => {
+export const cleanupDistDirectory = async ({
+  distDir,
+}: {
+  distDir?: string;
+}) => {
   if (
     !distDir || // we don't have a dist dir
     (await fs
@@ -25,6 +30,26 @@ const cleanupDistDirectory = async ({ distDir }: { distDir?: string }) => {
   } catch {
     return;
   }
+};
+
+/**
+ * Removes the plugin's content-type JSON files so Strapi regenerates them
+ * from scratch on the next compile, picking up any collectionName changes
+ * (e.g. a new table_prefix).
+ */
+export const cleanupContentTypesDir = async ({
+  appDir,
+}: {
+  appDir: string;
+}) => {
+  const dir = path.join(
+    appDir,
+    "src",
+    "extensions",
+    PLUGIN_ID,
+    "content-types",
+  );
+  await fs.rm(dir, { recursive: true, force: true });
 };
 
 export const cleanupStrapiApp = async (
