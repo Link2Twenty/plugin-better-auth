@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_session",
+  "collectionName": "ba_account",
   "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions"
+    "singularName": "account",
+    "pluralName": "accounts",
+    "displayName": "Accounts"
   },
   "options": {
     "draftAndPublish": false
@@ -18,8 +18,8 @@
     }
   },
   "attributes": {
-    "expiresAt": {
-      "type": "datetime",
+    "accountId": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -28,7 +28,7 @@
       },
       "required": true
     },
-    "token": {
+    "providerId": {
       "type": "text",
       "configurable": false,
       "pluginOptions": {
@@ -36,26 +36,7 @@
           "managed": true
         }
       },
-      "required": true,
-      "unique": true
-    },
-    "ipAddress": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userAgent": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
+      "required": true
     },
     "userId": {
       "type": "integer",
@@ -67,8 +48,62 @@
       },
       "required": true
     },
-    "activeOrganizationId": {
-      "type": "string",
+    "accessToken": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "refreshToken": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "idToken": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "accessTokenExpiresAt": {
+      "type": "datetime",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "refreshTokenExpiresAt": {
+      "type": "datetime",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "scope": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "password": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {

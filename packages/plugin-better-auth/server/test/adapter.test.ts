@@ -6,10 +6,7 @@ import {
 } from "@better-auth/test-utils/adapter";
 import { getAuthTables } from "better-auth/db";
 import { strapiAdapter } from "../src/adapter";
-import {
-  type SchemaTransformOptions,
-  updateStrapiSchema,
-} from "../src/adapter/transformers";
+import { updateStrapiSchema } from "../src/adapter/transformers";
 import {
   cleanupDir,
   ensureExistingContentTypeDirs,
@@ -34,10 +31,6 @@ const { execute } = await testAdapter({
   }),
   runMigrations: async (opts) => {
     const authTables = getAuthTables(opts);
-    const schemaOptions: SchemaTransformOptions = {
-      pluginName: "better-auth",
-    };
-
     // Remove stale compiled extension artifacts so Strapi loads fresh schema JSON.
     await cleanupDir(path.join(playgroundDir, "dist"));
 
@@ -50,7 +43,7 @@ const { execute } = await testAdapter({
     await ensureExistingContentTypeDirs();
 
     // Update Strapi schemas based on Better Auth configuration.
-    await updateStrapiSchema(strapi, authTables, schemaOptions);
+    await updateStrapiSchema(strapi, authTables);
 
     // Restart Strapi in order to load the new schemas before running tests.
     await stopStrapi();

@@ -545,9 +545,8 @@ export interface PluginApiPermissionsRole extends Struct.CollectionTypeSchema {
 }
 
 export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
-  collectionName: 'better_auth_accounts';
+  collectionName: 'ba_account';
   info: {
-    description: 'Better Auth account';
     displayName: 'Accounts';
     pluralName: 'accounts';
     singularName: 'account';
@@ -564,7 +563,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
     };
   };
   attributes: {
-    accessToken: Schema.Attribute.String &
+    accessToken: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -576,7 +575,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
           managed: true;
         };
       }>;
-    accountId: Schema.Attribute.String &
+    accountId: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
@@ -586,7 +585,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    idToken: Schema.Attribute.String &
+    idToken: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -598,13 +597,13 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
       'plugin::better-auth.account'
     > &
       Schema.Attribute.Private;
-    password: Schema.Attribute.String &
+    password: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
         };
       }>;
-    providerId: Schema.Attribute.String &
+    providerId: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
@@ -612,7 +611,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
-    refreshToken: Schema.Attribute.String &
+    refreshToken: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -624,7 +623,7 @@ export interface PluginBetterAuthAccount extends Struct.CollectionTypeSchema {
           managed: true;
         };
       }>;
-    scope: Schema.Attribute.String &
+    scope: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -842,9 +841,8 @@ export interface PluginBetterAuthOrganization
 }
 
 export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
-  collectionName: 'better_auth_sessions';
+  collectionName: 'ba_session';
   info: {
-    description: 'Better Auth session';
     displayName: 'Sessions';
     pluralName: 'sessions';
     singularName: 'session';
@@ -877,7 +875,7 @@ export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
           managed: true;
         };
       }>;
-    ipAddress: Schema.Attribute.String &
+    ipAddress: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -890,7 +888,7 @@ export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    token: Schema.Attribute.String &
+    token: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.Unique &
       Schema.Attribute.SetPluginOptions<{
@@ -901,7 +899,7 @@ export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    userAgent: Schema.Attribute.String &
+    userAgent: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -918,9 +916,8 @@ export interface PluginBetterAuthSession extends Struct.CollectionTypeSchema {
 }
 
 export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
-  collectionName: 'better_auth_users';
+  collectionName: 'ba_user';
   info: {
-    description: 'Better Auth user';
     displayName: 'Users';
     pluralName: 'users';
     singularName: 'user';
@@ -956,7 +953,7 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
         };
       }> &
       Schema.Attribute.DefaultTo<false>;
-    image: Schema.Attribute.String &
+    image: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
           managed: true;
@@ -968,7 +965,7 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
       'plugin::better-auth.user'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String &
+    name: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
@@ -988,9 +985,8 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
 
 export interface PluginBetterAuthVerification
   extends Struct.CollectionTypeSchema {
-  collectionName: 'better_auth_verifications';
+  collectionName: 'ba_verification';
   info: {
-    description: 'Better Auth verification';
     displayName: 'Verifications';
     pluralName: 'verifications';
     singularName: 'verification';
@@ -1017,7 +1013,7 @@ export interface PluginBetterAuthVerification
           managed: true;
         };
       }>;
-    identifier: Schema.Attribute.String &
+    identifier: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {
@@ -1034,7 +1030,7 @@ export interface PluginBetterAuthVerification
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    value: Schema.Attribute.String &
+    value: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {

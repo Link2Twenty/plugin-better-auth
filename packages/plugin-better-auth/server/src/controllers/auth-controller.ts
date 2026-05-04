@@ -27,7 +27,7 @@ const authController = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Update the URL path to the Better Auth format
     const betterAuthPath = ctx.params.path || "";
-    url.pathname = `/api/auth/${betterAuthPath}`;
+    url.pathname = `${auth.options.basePath || "/api/auth"}/${betterAuthPath}`;
 
     // Prepare headers
     const headers = new Headers();
@@ -53,13 +53,30 @@ const authController = ({ strapi }: { strapi: Core.Strapi }) => ({
     // Set response status
     ctx.status = response.status;
 
-    // Copy response headers
+    // Copy response headers, skipping Set-Cookie which needs special handling
     response.headers.forEach((value: string, key: string) => {
-      ctx.set(key, value);
+      if (key.toLowerCase() !== "set-cookie") {
+        ctx.set(key, value);
+      }
     });
+
+    // Set-Cookie headers must be set as an array to prevent them from being
+    // joined with ', ' (which breaks cookie parsing due to date fields).
+    const setCookies = response.headers.getSetCookie?.() ?? [];
+    if (setCookies.length > 0) {
+      ctx.res.setHeader("set-cookie", setCookies);
+    }
 
     // Get response body
     const contentType = response.headers.get("content-type");
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("location");
+      if (location) {
+        ctx.redirect(location);
+        return;
+      }
+    }
 
     if (contentType?.includes("application/json")) {
       ctx.body = await response.json();

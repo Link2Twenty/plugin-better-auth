@@ -4,7 +4,7 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 
 
 > [!CAUTION]  
-> This plugin is in ALPHA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
+> This plugin is in BETA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
 
 **Full flow documentation (API, Content Manager, config, troubleshooting):** [docs/AUTHENTICATION_FLOWS.md](./docs/AUTHENTICATION_FLOWS.md)
 
@@ -49,7 +49,17 @@ const auth = () => betterAuth({
 export default auth;
 ```
 
-### 2. Client implementation
+### 2. Generate the content types
+
+Run the content type generation command to bootstrap the default content types.
+
+```bash
+npx auth@latest generate --config config/better-auth.ts
+```
+
+_Tip: Every time you install a new Better Auth plugin, you have to run this command again._
+
+### 3. Client implementation
 
 Call the Better Auth API from your front-end:
 
@@ -69,7 +79,7 @@ await authClient.signUp.email({
 });
 ```
 
-### 3. Server side authentication
+### 4. Server side authentication
 
 Use the Better Auth session to authenticate your users in custom Strapi controllers.
 

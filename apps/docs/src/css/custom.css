@@ -1,23 +1,17 @@
-/**
- * Custom CSS overrides for the Strapi Auth documentation site.
- * Strapi brand colors: purple #8E6CEF, dark #32324D
- */
-
 :root {
-  --ifm-color-primary: #8e6cef;
-  --ifm-color-primary-dark: #7a55eb;
-  --ifm-color-primary-darker: #6f49e9;
-  --ifm-color-primary-darkest: #5430e3;
-  --ifm-color-primary-light: #a283f3;
-  --ifm-color-primary-lighter: #ad8ff5;
-  --ifm-color-primary-lightest: #c9b3f9;
+  --ifm-color-primary: #3730a3;
+  --ifm-color-primary-dark: #2d2793;
+  --ifm-color-primary-darker: #261f83;
+  --ifm-color-primary-darkest: #1a1566;
+  --ifm-color-primary-light: #4338ca;
+  --ifm-color-primary-lighter: #4f46e5;
+  --ifm-color-primary-lightest: #818cf8;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(142, 108, 239, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(55, 48, 163, 0.1);
 }
 
 /* ─── Content padding ─────────────────────────────────────────────────────── */
 
-/* Pad the article area between sidebar and right edge */
 main > .container {
   padding-inline: 2rem;
 }
@@ -33,15 +27,22 @@ main > .container {
   width: 100%;
 }
 
+/* ─── Footer ──────────────────────────────────────────────────────────────── */
+
+.footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid var(--ifm-toc-border-color);
+}
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 [data-theme='dark'] {
-  --ifm-color-primary: #a283f3;
-  --ifm-color-primary-dark: #8e6cef;
-  --ifm-color-primary-darker: #8462ee;
-  --ifm-color-primary-darkest: #6640e8;
-  --ifm-color-primary-light: #b69af7;
-  --ifm-color-primary-lighter: #c0a6f8;
-  --ifm-color-primary-lightest: #ddd0fc;
-  --docusaurus-highlighted-code-line-bg: rgba(162, 131, 243, 0.2);
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6366f1;
+  --ifm-color-primary-darker: #4f46e5;
+  --ifm-color-primary-darkest: #4338ca;
+  --ifm-color-primary-light: #a5b4fc;
+  --ifm-color-primary-lighter: #c7d2fe;
+  --ifm-color-primary-lightest: #e0e7ff;
+  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.2);
 }

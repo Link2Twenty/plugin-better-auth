@@ -85,20 +85,10 @@ export interface CTBSchema {
 }
 
 /**
- * Configuration options for schema transformation
- */
-export interface SchemaTransformOptions {
-  pluginName?: string;
-  contentManagerVisible?: boolean;
-  contentTypeBuilderVisible?: boolean;
-}
-
-/**
  * Result of transforming a table
  */
 export interface TransformResult {
   contentType: CTBContentType;
-  hasChanges: boolean;
   changeDetails: string[];
 }
 
@@ -107,7 +97,6 @@ export interface TransformResult {
  */
 export interface SchemaTransformResult {
   schema: CTBSchema;
-  hasChanges: boolean;
   allChangeDetails: string[];
 }
 
@@ -115,7 +104,6 @@ export interface SchemaTransformResult {
  * Result of updating the Strapi schema
  */
 export interface UpdateSchemaResult {
-  updated: boolean;
   changeDetails: string[];
 }
 

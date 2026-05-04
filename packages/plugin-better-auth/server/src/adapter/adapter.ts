@@ -5,7 +5,6 @@ import {
 } from "better-auth/adapters";
 import kebabCase from "lodash/kebabCase";
 import {
-  type SchemaTransformOptions,
   transformFilters,
   transformSort,
   transformOutput as transformStrapiOutput,
@@ -49,13 +48,16 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
     // @ts-expect-error
     // Caused by returning true to opt-out of Better Auth's file writing logic in createSchema method
     // https://github.com/better-auth/better-auth/issues/8590
-    adapter: ({ getModelName, getFieldName, debugLog }) => {
+    adapter: ({ getFieldName, getDefaultModelName, debugLog }) => {
       /**
-       * Get the Strapi UID for a model
+       * Get the Strapi UID for a model.
+       * The factory passes `model` as the configured name (e.g. "user_table" when
+       * modelName is overridden). We use getDefaultModelName to resolve it back to
+       * the original schema key so the Strapi UID is always stable.
        */
       const getModelUid = (model: string): UID.ContentType => {
-        const modelName = getModelName(model);
-        return `plugin::better-auth.${kebabCase(modelName)}` as UID.ContentType;
+        const originalKey = getDefaultModelName(model);
+        return `plugin::better-auth.${kebabCase(originalKey)}` as UID.ContentType;
       };
 
       /**
@@ -297,17 +299,18 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
         createSchema: async ({ tables }) => {
           debugLog("createSchema", { tables });
 
-          const schemaOptions: SchemaTransformOptions = {
-            pluginName: "better-auth",
-          };
+          const { cleanupStrapiApp, cleanupDistDirectory, getStrapiApp } =
+            await import("./cli");
 
-          const { cleanupStrapiApp, getStrapiApp } = await import("./cli");
+          // Wipe the compiled dist so the updated config/plugins.ts (which
+          // carries the table_prefix) is recompiled from source.
+          await cleanupDistDirectory({ distDir: `${process.cwd()}/dist` });
 
           // Bootstrap Strapi to access the content-type-builder service
           const { app: strapi, distDir } = await getStrapiApp();
 
           // Use Strapi's content-type-builder service to create/update schemas
-          await updateStrapiSchema(strapi, tables, schemaOptions);
+          await updateStrapiSchema(strapi, tables);
 
           // Clean up Strapi's dist directory and destroy the app instance
           cleanupStrapiApp(strapi, distDir);

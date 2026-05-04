@@ -3,9 +3,9 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Strapi Auth',
+  title: 'Strapi + Better Auth',
   tagline: 'Better Auth + Content API permissions for Strapi v5',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   url: 'https://strapi-community.github.io',
   baseUrl: '/plugin-better-auth/',
@@ -41,7 +41,11 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: 'Strapi Auth',
+      title: 'Strapi + Better Auth',
+      logo: {
+        alt: 'Strapi + Better Auth',
+        src: 'img/logo.svg',
+      },
       items: [
         {
           type: 'docSidebar',
@@ -57,44 +61,8 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Packages',
-          items: [
-            {
-              label: 'plugin-better-auth',
-              to: '/docs/plugin-better-auth',
-            },
-            {
-              label: 'plugin-api-permissions',
-              to: '/docs/plugin-api-permissions',
-            },
-          ],
-        },
-        {
-          title: 'Resources',
-          items: [
-            {
-              label: 'Better Auth',
-              href: 'https://better-auth.com',
-            },
-            {
-              label: 'Strapi',
-              href: 'https://strapi.io',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/strapi-community/plugin-better-auth',
-            },
-          ],
-        },
-      ],
+      style: 'light',
+      links: [],
       copyright: `Copyright © ${new Date().getFullYear()} Strapi Community. Built with Docusaurus.`,
     },
     prism: {

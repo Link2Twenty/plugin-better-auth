@@ -16,7 +16,7 @@ export function mapFieldType(field: DBFieldAttribute): string {
 
   switch (type) {
     case "string":
-      return "string";
+      return "text";
     case "number":
       return field.bigint ? "biginteger" : "integer";
     case "boolean":
@@ -28,7 +28,7 @@ export function mapFieldType(field: DBFieldAttribute): string {
     case "number[]":
       return "json";
     default:
-      return "string";
+      return "text";
   }
 }
 
@@ -114,20 +114,36 @@ export function getExistingBAContentTypes(
 }
 
 /**
- * Generates naming conventions for a model
+ * Generates naming conventions for a model.
+ *
+ * @param modelKey - The stable model identifier (e.g. "user", "session"). Always used for the UID.
+ * @param pluginName - The plugin identifier.
+ * @param tableName - Optional configured model/table name from better-auth. When provided, used
+ *   only for `collectionName` so the database table can be renamed without changing the UID.
  */
-export function generateNames(modelName: string, pluginName: string) {
-  const singularName = kebabCase(modelName);
+export function generateNames(
+  modelKey: string,
+  pluginName: string,
+  tableName?: string,
+) {
+  const singularName = kebabCase(modelKey);
   const pluralName = singularName.endsWith("s")
     ? singularName
     : `${singularName}s`;
 
+  const tableBase = tableName ? kebabCase(tableName) : singularName;
+
+  const tablePrefix = strapi.config.get(
+    `plugin::${pluginName}.table_prefix`,
+    "ba_",
+  );
+
   return {
     singularName,
     pluralName,
-    collectionName: `${snakeCase(pluginName)}_${snakeCase(pluralName)}`,
+    collectionName: `${tablePrefix}${snakeCase(tableBase)}`,
     uid: `plugin::${pluginName}.${singularName}`,
-    globalId: modelName
+    globalId: modelKey
       .split("-")
       .map((w) => upperFirst(camelCase(w)))
       .join(""),

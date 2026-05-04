@@ -1,5 +1,5 @@
 {
-  "name": "@strapi-community/auth",
+  "name": "@strapi-community/plugin-better-auth",
   "private": true,
   "scripts": {
     "build": "turbo build",

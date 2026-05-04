@@ -1,7 +1,7 @@
 import type { Core } from "@strapi/strapi";
 import type { BetterAuthDBSchema } from "better-auth/db";
 import { transformSchema } from "./transformer";
-import type { SchemaTransformOptions, UpdateSchemaResult } from "./types";
+import type { UpdateSchemaResult } from "./types";
 
 export { transformSchema, transformTable } from "./transformer";
 export * from "./types";
@@ -19,40 +19,35 @@ export * from "./utils";
 export async function updateStrapiSchema(
   strapi: Core.Strapi,
   tables: BetterAuthDBSchema,
-  options: SchemaTransformOptions = {},
 ): Promise<UpdateSchemaResult> {
-  const { schema, hasChanges, allChangeDetails } = transformSchema(
-    strapi,
-    tables,
-    options,
-  );
+  const { schema, allChangeDetails } = transformSchema(strapi, tables);
 
-  if (!hasChanges) {
-    return { updated: false, changeDetails: [] };
-  }
-
-  // The CTB service's editContentType preserves non-configurable attributes and
-  // will not delete them even when they are absent from the new attribute list.
-  // Orphaned managed fields (e.g. renamed fields) must be removed from the
-  // in-memory schema before the CTB service clones it, so they are not written
-  // back to disk.
+  // The CTB service clones the in-memory __schema__ when writing content types
+  // back to disk, so any pre-flight mutations here are reflected in the output.
   for (const contentType of schema.contentTypes) {
     if (contentType.action === "delete") continue;
     const uid = contentType.uid;
-    const orphanedFields = contentType.attributes
-      .filter((attr) => attr.action === "delete")
-      .map((attr) => attr.name);
 
-    if (orphanedFields.length > 0) {
-      const rawSchema = (
-        strapi.contentTypes[uid] as {
-          __schema__?: { attributes?: Record<string, unknown> };
-        }
-      )?.__schema__;
-      if (rawSchema?.attributes) {
-        for (const field of orphanedFields) {
-          delete rawSchema.attributes[field];
-        }
+    const rawSchema = (
+      strapi.contentTypes[uid] as {
+        __schema__?: {
+          collectionName?: string;
+          attributes?: Record<string, unknown>;
+        };
+      }
+    )?.__schema__;
+
+    if (rawSchema) {
+      // Patch collectionName so a table_prefix change is written to disk.
+      // CTB does not update collectionName itself — it only handles attributes.
+      rawSchema.collectionName = contentType.collectionName;
+
+      // Remove orphaned managed fields so CTB does not write them back.
+      const orphanedFields = contentType.attributes
+        .filter((attr) => attr.action === "delete")
+        .map((attr) => attr.name);
+      for (const field of orphanedFields) {
+        delete rawSchema.attributes?.[field];
       }
     }
   }
@@ -60,5 +55,5 @@ export async function updateStrapiSchema(
   const schemaService = strapi.plugin("content-type-builder").service("schema");
   await schemaService.updateSchema(schema);
 
-  return { updated: true, changeDetails: allChangeDetails };
+  return { changeDetails: allChangeDetails };
 }

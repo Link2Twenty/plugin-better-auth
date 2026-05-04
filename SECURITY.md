@@ -2,11 +2,11 @@
 
 ## Supported versions
 
-This project is currently in **alpha**. Only the latest published version receives security fixes.
+This project is currently in **beta**. Only the latest published version receives security fixes.
 
 | Version | Supported |
 | ------- | --------- |
-| latest alpha | yes |
+| latest beta | yes |
 | older releases | no |
 
 ## Reporting a vulnerability

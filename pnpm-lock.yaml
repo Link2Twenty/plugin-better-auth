@@ -193,6 +193,9 @@ importers:
       '@types/node':
         specifier: ^22
         version: 22.19.15
+      '@types/react':
+        specifier: '18'
+        version: 18.3.27
       '@types/styled-components':
         specifier: ^5.1.0
         version: 5.1.36
@@ -248,6 +251,12 @@ importers:
       '@types/lodash':
         specifier: ^4.17.21
         version: 4.17.22
+      '@types/supertest':
+        specifier: ^6.0.0
+        version: 6.0.3
+      supertest:
+        specifier: ^7.0.0
+        version: 7.2.2
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -10455,6 +10464,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8flags@4.0.1:
