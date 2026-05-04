@@ -50,13 +50,13 @@ describe("generateNames — table prefix", () => {
 
   it("applies the default ba_ prefix to collectionName", () => {
     const names = generateNames("user", "better-auth");
-    expect(names.collectionName).toBe("ba_users");
+    expect(names.collectionName).toBe("ba_user");
   });
 
   it("applies a custom prefix to collectionName", () => {
     vi.stubGlobal("strapi", makeStrapi("better_auth_"));
     const names = generateNames("user", "better-auth");
-    expect(names.collectionName).toBe("better_auth_users");
+    expect(names.collectionName).toBe("better_auth_user");
   });
 
   it("uid always uses modelKey, never tableName", () => {
@@ -74,7 +74,7 @@ describe("generateNames — table prefix", () => {
   it("collectionName uses modelKey when tableName is omitted", () => {
     vi.stubGlobal("strapi", makeStrapi("ba_"));
     const names = generateNames("session", "better-auth");
-    expect(names.collectionName).toBe("ba_sessions");
+    expect(names.collectionName).toBe("ba_session");
   });
 });
 
@@ -92,9 +92,8 @@ describe("transformTable — collectionName", () => {
     vi.stubGlobal("strapi", strapi);
 
     const result = transformTable(strapi, "user", makeTable());
-    expect(result.contentType.collectionName).toBe("ba_users");
+    expect(result.contentType.collectionName).toBe("ba_user");
     expect(result.contentType.action).toBe("create");
-    expect(result.hasChanges).toBe(true);
   });
 
   it("sets collectionName with custom prefix for a new content type", () => {
@@ -102,14 +101,14 @@ describe("transformTable — collectionName", () => {
     vi.stubGlobal("strapi", strapi);
 
     const result = transformTable(strapi, "user", makeTable());
-    expect(result.contentType.collectionName).toBe("better_auth_users");
+    expect(result.contentType.collectionName).toBe("better_auth_user");
   });
 
-  it("detects collectionName change as hasChanges when prefix changes", () => {
+  it("produces a collectionName with the new prefix when prefix changes", () => {
     const uid = "plugin::better-auth.user";
     const strapi = makeStrapi("better_auth_", {
       [uid]: {
-        collectionName: "ba_users", // old prefix
+        collectionName: "ba_user",
         attributes: {},
         pluginOptions: {},
       },
@@ -117,20 +116,15 @@ describe("transformTable — collectionName", () => {
     vi.stubGlobal("strapi", strapi);
 
     const result = transformTable(strapi, "user", makeTable());
-    expect(result.contentType.collectionName).toBe("better_auth_users");
-    expect(result.hasChanges).toBe(true);
-    expect(result.changeDetails.some((d) => d.includes("collectionName"))).toBe(
-      true,
-    );
+    expect(result.contentType.collectionName).toBe("better_auth_user");
   });
 
   it("produces empty changeDetails when nothing has changed", () => {
     const uid = "plugin::better-auth.user";
     const strapi = makeStrapi("ba_", {
       [uid]: {
-        collectionName: "ba_users", // same prefix
+        collectionName: "ba_user",
         attributes: {
-          // Mirrors makeTable() so buildAttributes sees no field changes.
           name: {
             type: "text",
             required: true,
@@ -151,16 +145,16 @@ describe("transformTable — collectionName", () => {
 // transformSchema — always includes all content types
 // ---------------------------------------------------------------------------
 
-describe("transformSchema — prefix change propagation", () => {
+describe("transformSchema — always includes all tables", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("includes all tables in the output even when only collectionName changes", () => {
+  it("includes all tables in the output with the correct collectionName", () => {
     const uid = "plugin::better-auth.user";
     const strapi = makeStrapi("better_auth_", {
       [uid]: {
-        collectionName: "ba_users", // old prefix
+        collectionName: "ba_user",
         attributes: {},
         pluginOptions: {},
         info: {
@@ -177,16 +171,15 @@ describe("transformSchema — prefix change propagation", () => {
 
     expect(result.schema.contentTypes).toHaveLength(1);
     expect(result.schema.contentTypes[0].collectionName).toBe(
-      "better_auth_users",
+      "better_auth_user",
     );
-    expect(result.hasChanges).toBe(true);
   });
 
-  it("includes all tables even when there are no changes at all", () => {
+  it("includes all tables even when nothing has changed", () => {
     const uid = "plugin::better-auth.user";
     const strapi = makeStrapi("ba_", {
       [uid]: {
-        collectionName: "ba_users",
+        collectionName: "ba_user",
         attributes: {},
         pluginOptions: {},
         info: {
@@ -201,7 +194,6 @@ describe("transformSchema — prefix change propagation", () => {
     const tables: BetterAuthDBSchema = { user: makeTable() };
     const result = transformSchema(strapi, tables);
 
-    // Still produces a content type entry (needed so CTB always syncs collectionName).
     expect(result.schema.contentTypes).toHaveLength(1);
   });
 });

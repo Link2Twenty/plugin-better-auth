@@ -78,10 +78,9 @@ function buildAttributes(
   uid: UID.ContentType,
   table: BetterAuthDBSchema[string],
   changeDetails: string[],
-): { attributes: CTBAttribute[]; hasFieldChanges: boolean } {
+): CTBAttribute[] {
   const attributes: CTBAttribute[] = [];
   const existingAttributes = getExistingAttributes(strapi, uid);
-  let hasFieldChanges = false;
 
   // Preserve user-added fields
   for (const [name, attr] of Object.entries(existingAttributes)) {
@@ -103,7 +102,6 @@ function buildAttributes(
 
     if (existing) {
       if (!attributesAreEqual(existing, props)) {
-        hasFieldChanges = true;
         changeDetails.push(`Updating field: ${actualName} in ${uid}`);
       }
       attributes.push({
@@ -112,7 +110,6 @@ function buildAttributes(
         properties: props,
       });
     } else {
-      hasFieldChanges = true;
       changeDetails.push(`Creating field: ${actualName} in ${uid}`);
       attributes.push({
         action: "create",
@@ -129,12 +126,11 @@ function buildAttributes(
       .map(([n, f]) => f.fieldName ?? n),
   );
   for (const name of getOrphanedFields(strapi, uid, expectedFields)) {
-    hasFieldChanges = true;
     changeDetails.push(`Deleting orphaned field: ${name} in ${uid}`);
     attributes.push({ action: "delete", name });
   }
 
-  return { attributes, hasFieldChanges };
+  return attributes;
 }
 
 /**
@@ -155,17 +151,10 @@ export function transformTable(
 
   const exists = contentTypeExists(strapi, uid);
   const changeDetails: string[] = [];
-  let hasChanges = !exists;
 
   if (!exists) changeDetails.push(`Creating new content type: ${uid}`);
 
-  const { attributes, hasFieldChanges } = buildAttributes(
-    strapi,
-    uid,
-    table,
-    changeDetails,
-  );
-  hasChanges = hasChanges || hasFieldChanges;
+  const attributes = buildAttributes(strapi, uid, table, changeDetails);
 
   const visible = isVisible(modelKey);
   const defaultPluginOptions = {
@@ -195,7 +184,6 @@ export function transformTable(
       pluralName: names.pluralName,
       displayName: names.displayName,
     },
-    hasChanges,
     changeDetails,
   };
 }
@@ -245,7 +233,6 @@ export function transformSchema(
   const pluginName = PLUGIN_ID;
   const contentTypes: CTBContentType[] = [];
   const allChangeDetails: string[] = [];
-  let hasChanges = false;
 
   // Get expected vs existing UIDs
   const expectedUIDs = new Set(
@@ -258,22 +245,19 @@ export function transformSchema(
   );
   const existingUIDs = getExistingBAContentTypes(strapi, pluginName);
 
-  // Process tables
+  // Process all tables — content-types dir is always wiped before generation
+  // so every table is always included to ensure a clean sync.
   for (const [key, table] of Object.entries(tables)) {
     if (table.disableMigrations) continue;
 
     const result = transformTable(strapi, key, table);
-    if (result.hasChanges) {
-      hasChanges = true;
-      contentTypes.push(result.contentType);
-      allChangeDetails.push(...result.changeDetails);
-    }
+    contentTypes.push(result.contentType);
+    allChangeDetails.push(...result.changeDetails);
   }
 
   // Delete orphaned content types
   for (const uid of existingUIDs) {
     if (!expectedUIDs.has(uid)) {
-      hasChanges = true;
       allChangeDetails.push(`Deleting orphaned content type: ${uid}`);
       contentTypes.push(createDeleteContentType(strapi, uid, pluginName));
     }
@@ -281,7 +265,6 @@ export function transformSchema(
 
   return {
     schema: { components: [], contentTypes },
-    hasChanges,
     allChangeDetails,
   };
 }

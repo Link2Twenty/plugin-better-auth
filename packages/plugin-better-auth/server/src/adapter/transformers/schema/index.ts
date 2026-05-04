@@ -20,14 +20,7 @@ export async function updateStrapiSchema(
   strapi: Core.Strapi,
   tables: BetterAuthDBSchema,
 ): Promise<UpdateSchemaResult> {
-  const { schema, hasChanges, allChangeDetails } = transformSchema(
-    strapi,
-    tables,
-  );
-
-  if (!hasChanges) {
-    return { updated: false, changeDetails: [] };
-  }
+  const { schema, allChangeDetails } = transformSchema(strapi, tables);
 
   // The CTB service's editContentType preserves non-configurable attributes and
   // will not delete them even when they are absent from the new attribute list.
@@ -58,5 +51,5 @@ export async function updateStrapiSchema(
   const schemaService = strapi.plugin("content-type-builder").service("schema");
   await schemaService.updateSchema(schema);
 
-  return { updated: true, changeDetails: allChangeDetails };
+  return { changeDetails: allChangeDetails };
 }
