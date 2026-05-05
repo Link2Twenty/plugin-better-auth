@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@strapi/design-system";
 import { Trash } from "@strapi/icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
 import { withContext } from "../../utils/dashContext";
@@ -21,8 +21,6 @@ export function SessionsPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  const offset = (page - 1) * PAGE_SIZE;
 
   const sessionsQuery = useQuery({
     queryKey: ["dash-all-sessions", page],
@@ -39,12 +37,10 @@ export function SessionsPage() {
 
   const revokeSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const result = await client.dash.sessions.revoke({
-        query: {},
-        fetchOptions: {
-          headers: { "Content-Type": "application/json" },
-        },
-      });
+      const result = await client.dash.sessions.revoke(
+        {},
+        withContext({ sessionId }),
+      );
       if (result.error)
         throw new Error(result.error.message ?? "Revoke failed");
     },
@@ -95,21 +91,33 @@ export function SessionsPage() {
   };
 
   return (
-    <Box padding={6}>
+    <Box padding={6} data-testid="sessions-page">
       <Flex
         justifyContent="space-between"
-        alignItems="flex-start"
+        alignItems="center"
         paddingBottom={4}
       >
-        <Typography variant="beta" textColor="neutral800">
-          Sessions
-        </Typography>
+        <Flex alignItems="center" gap={3}>
+          <Typography variant="beta" textColor="neutral800">
+            Sessions
+          </Typography>
+          {usersWithSessions.length > 0 && (
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+              aria-label="Select all users"
+            >
+              Select all
+            </Checkbox>
+          )}
+        </Flex>
         {someSelected && (
           <Button
             variant="danger-light"
             size="S"
             loading={revokeManyMutation.isLoading}
             onClick={() => revokeManyMutation.mutate([...selected])}
+            data-testid="revoke-selected-btn"
           >
             Revoke sessions for {selected.size} user
             {selected.size !== 1 ? "s" : ""}
@@ -148,6 +156,7 @@ export function SessionsPage() {
               borderColor="neutral150"
               borderStyle="solid"
               borderWidth="1px"
+              data-testid="session-user-row"
             >
               <Flex
                 padding={4}
@@ -186,6 +195,7 @@ export function SessionsPage() {
                   borderColor="neutral100"
                   borderStyle="solid"
                   borderWidth="1px"
+                  data-testid="session-row"
                 >
                   <Flex direction="column" gap={1}>
                     {session.ipAddress && (
@@ -216,6 +226,7 @@ export function SessionsPage() {
                   <IconButton
                     label="Revoke session"
                     onClick={() => revokeSessionMutation.mutate(session.id)}
+                    data-testid="revoke-session-btn"
                   >
                     <Trash />
                   </IconButton>

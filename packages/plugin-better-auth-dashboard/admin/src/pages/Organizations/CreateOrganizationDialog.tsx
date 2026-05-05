@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Checkbox,
   Field,
@@ -63,7 +62,10 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
   };
 
   return (
-    <Modal.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
+    <Modal.Root
+      defaultOpen
+      onOpenChange={(open: boolean) => !open && onClose()}
+    >
       <Modal.Content>
         <Modal.Header>
           <Typography variant="beta" tag="h2">

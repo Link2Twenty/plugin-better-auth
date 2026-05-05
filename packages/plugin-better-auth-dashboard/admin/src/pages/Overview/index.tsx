@@ -9,7 +9,7 @@ import {
   SingleSelectOption,
   Typography,
 } from "@strapi/design-system";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "react-query";
 import { client } from "../../client";
 
@@ -108,14 +108,14 @@ export function OverviewPage() {
   const graphData = graphQuery.data?.data ?? [];
 
   return (
-    <Box padding={6}>
+    <Box padding={6} data-testid="overview-page">
       <Box paddingBottom={6}>
         <Typography variant="beta" textColor="neutral800">
           Overview
         </Typography>
       </Box>
 
-      <Grid.Root gap={4}>
+      <Grid.Root gap={4} data-testid="stats-grid">
         <Grid.Item col={3} s={6} xs={12}>
           <StatCard title="Total Users" value={stats.total} />
         </Grid.Item>
@@ -184,7 +184,7 @@ export function OverviewPage() {
               <Field.Label>Period</Field.Label>
               <SingleSelect
                 value={period}
-                onChange={(val) =>
+                onChange={(val: string | number) =>
                   setPeriod(val as "daily" | "weekly" | "monthly")
                 }
                 size="S"

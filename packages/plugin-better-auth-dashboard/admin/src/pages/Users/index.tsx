@@ -12,11 +12,12 @@ import {
   SearchForm,
   Typography,
 } from "@strapi/design-system";
-import { Eye, Pencil, Plus, Trash } from "@strapi/icons";
+import { Pencil, Plus, Trash } from "@strapi/icons";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import type { DashConfig } from "../../hooks/useDashConfig";
 import { hasPlugin } from "../../hooks/useDashConfig";
 import { useUsers } from "../../hooks/useUsers";
@@ -42,6 +43,8 @@ export function UsersPage({ config }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showCreate, setShowCreate] = useState(false);
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmDeleteMany, setConfirmDeleteMany] = useState(false);
 
   const offset = (page - 1) * PAGE_SIZE;
   const { data, isLoading, isError, error } = useUsers({
@@ -61,6 +64,7 @@ export function UsersPage({ config }: Props) {
         throw new Error(result.error.message ?? "Delete failed");
     },
     onSuccess: () => {
+      setConfirmDelete(null);
       qc.invalidateQueries({ queryKey: ["dash-users"] });
       qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
     },
@@ -77,6 +81,7 @@ export function UsersPage({ config }: Props) {
       return result.data;
     },
     onSuccess: () => {
+      setConfirmDeleteMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-users"] });
       qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
@@ -126,7 +131,7 @@ export function UsersPage({ config }: Props) {
   };
 
   return (
-    <Box padding={6}>
+    <Box padding={6} data-testid="users-page">
       <Flex
         justifyContent="space-between"
         alignItems="flex-start"
@@ -141,7 +146,11 @@ export function UsersPage({ config }: Props) {
             {data?.onlineUsers ? ` · ${data.onlineUsers} online` : ""}
           </Typography>
         </Box>
-        <Button startIcon={<Plus />} onClick={() => setShowCreate(true)}>
+        <Button
+          startIcon={<Plus />}
+          onClick={() => setShowCreate(true)}
+          data-testid="create-user-btn"
+        >
           Create user
         </Button>
       </Flex>
@@ -162,6 +171,7 @@ export function UsersPage({ config }: Props) {
                 setSearch("");
                 setPage(1);
               }}
+              data-testid="user-search"
             >
               Search users
             </Searchbar>
@@ -173,8 +183,8 @@ export function UsersPage({ config }: Props) {
             <Button
               variant="danger-light"
               size="S"
-              loading={deleteManyMutation.isLoading}
-              onClick={() => deleteManyMutation.mutate([...selected])}
+              onClick={() => setConfirmDeleteMany(true)}
+              data-testid="delete-selected-btn"
             >
               Delete {selected.size} selected
             </Button>
@@ -255,6 +265,7 @@ export function UsersPage({ config }: Props) {
                       padding: "32px",
                       color: "#666687",
                     }}
+                    data-testid="users-empty"
                   >
                     No users found
                   </td>
@@ -263,6 +274,7 @@ export function UsersPage({ config }: Props) {
                 users.map((user) => (
                   <tr
                     key={user.id}
+                    data-testid="user-row"
                     style={{
                       background: selected.has(user.id) ? "#f0f0ff" : "inherit",
                     }}
@@ -277,7 +289,8 @@ export function UsersPage({ config }: Props) {
                     <td style={{ padding: "12px 16px" }}>
                       <Flex alignItems="center" gap={2}>
                         {user.image && (
-                          <img
+                          <Box
+                            tag="img"
                             src={user.image}
                             alt=""
                             style={{
@@ -331,14 +344,16 @@ export function UsersPage({ config }: Props) {
                     <td style={{ padding: "12px 16px" }}>
                       <Flex gap={1} justifyContent="flex-end">
                         <IconButton
-                          label="View user"
+                          label="Edit user"
                           onClick={() => setDetailUserId(user.id)}
+                          data-testid="edit-user-btn"
                         >
                           <Pencil />
                         </IconButton>
                         <IconButton
                           label="Delete user"
-                          onClick={() => deleteMutation.mutate(user.id)}
+                          onClick={() => setConfirmDelete(user.id)}
+                          data-testid="delete-user-btn"
                         >
                           <Trash />
                         </IconButton>
@@ -363,12 +378,7 @@ export function UsersPage({ config }: Props) {
         </Flex>
       )}
 
-      {showCreate && (
-        <CreateUserDialog
-          onClose={() => setShowCreate(false)}
-          orgEnabled={hasPlugin(config, "organization")}
-        />
-      )}
+      {showCreate && <CreateUserDialog onClose={() => setShowCreate(false)} />}
 
       {detailUserId && (
         <UserDetailDrawer
@@ -376,6 +386,28 @@ export function UsersPage({ config }: Props) {
           banEnabled={banEnabled}
           emailVerificationEnabled={emailVerificationEnabled}
           onClose={() => setDetailUserId(null)}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete user"
+          message="Are you sure you want to delete this user? This action cannot be undone."
+          confirmLabel="Delete"
+          loading={deleteMutation.isLoading}
+          onConfirm={() => deleteMutation.mutate(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {confirmDeleteMany && (
+        <ConfirmDialog
+          title={`Delete ${selected.size} user${selected.size !== 1 ? "s" : ""}`}
+          message={`Are you sure you want to delete ${selected.size} user${selected.size !== 1 ? "s" : ""}? This action cannot be undone.`}
+          confirmLabel="Delete all"
+          loading={deleteManyMutation.isLoading}
+          onConfirm={() => deleteManyMutation.mutate([...selected])}
+          onCancel={() => setConfirmDeleteMany(false)}
         />
       )}
     </Box>

@@ -9,7 +9,6 @@ import {
   Loader,
   Searchbar,
   SearchForm,
-  Table,
   Typography,
 } from "@strapi/design-system";
 import { Pencil, Plus, Trash } from "@strapi/icons";
@@ -17,6 +16,7 @@ import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { withContext } from "../../utils/dashContext";
 import { CreateOrganizationDialog } from "./CreateOrganizationDialog";
 import { OrganizationDetail } from "./OrganizationDetail";
@@ -35,6 +35,8 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showCreate, setShowCreate] = useState(false);
   const [detailOrgId, setDetailOrgId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmDeleteMany, setConfirmDeleteMany] = useState(false);
 
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -67,6 +69,7 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
         throw new Error(result.error.message ?? "Delete failed");
     },
     onSuccess: () => {
+      setConfirmDelete(null);
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
     },
   });
@@ -82,6 +85,7 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
       return result.data;
     },
     onSuccess: () => {
+      setConfirmDeleteMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
     },
@@ -119,7 +123,7 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
   };
 
   return (
-    <Box padding={6}>
+    <Box padding={6} data-testid="organizations-page">
       <Flex
         justifyContent="space-between"
         alignItems="flex-start"
@@ -133,7 +137,11 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
             {total} total
           </Typography>
         </Box>
-        <Button startIcon={<Plus />} onClick={() => setShowCreate(true)}>
+        <Button
+          startIcon={<Plus />}
+          onClick={() => setShowCreate(true)}
+          data-testid="create-org-btn"
+        >
           Create organization
         </Button>
       </Flex>
@@ -163,8 +171,8 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
           <Button
             variant="danger-light"
             size="S"
-            loading={deleteManyMutation.isLoading}
-            onClick={() => deleteManyMutation.mutate([...selected])}
+            onClick={() => setConfirmDeleteMany(true)}
+            data-testid="delete-selected-orgs-btn"
           >
             Delete {selected.size} selected
           </Button>
@@ -236,6 +244,7 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                       padding: "32px",
                       color: "#666687",
                     }}
+                    data-testid="orgs-empty"
                   >
                     No organizations found
                   </td>
@@ -244,6 +253,7 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                 orgs.map((org) => (
                   <tr
                     key={org.id}
+                    data-testid="org-row"
                     style={{
                       background: selected.has(org.id) ? "#f0f0ff" : "inherit",
                     }}
@@ -258,7 +268,8 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                     <td style={{ padding: "12px 16px" }}>
                       <Flex alignItems="center" gap={2}>
                         {org.logo && (
-                          <img
+                          <Box
+                            tag="img"
                             src={org.logo}
                             alt=""
                             style={{
@@ -293,14 +304,16 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                     <td style={{ padding: "12px 16px" }}>
                       <Flex gap={1} justifyContent="flex-end">
                         <IconButton
-                          label="View organization"
+                          label="Edit organization"
                           onClick={() => setDetailOrgId(org.id)}
+                          data-testid="edit-org-btn"
                         >
                           <Pencil />
                         </IconButton>
                         <IconButton
                           label="Delete organization"
-                          onClick={() => deleteMutation.mutate(org.id)}
+                          onClick={() => setConfirmDelete(org.id)}
+                          data-testid="delete-org-btn"
                         >
                           <Trash />
                         </IconButton>
@@ -349,6 +362,28 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
           organizationId={detailOrgId}
           teamsEnabled={teamsEnabled}
           onClose={() => setDetailOrgId(null)}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete organization"
+          message="Are you sure you want to delete this organization? All members and teams will be removed. This action cannot be undone."
+          confirmLabel="Delete"
+          loading={deleteMutation.isLoading}
+          onConfirm={() => deleteMutation.mutate(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {confirmDeleteMany && (
+        <ConfirmDialog
+          title={`Delete ${selected.size} organization${selected.size !== 1 ? "s" : ""}`}
+          message={`Are you sure you want to delete ${selected.size} organization${selected.size !== 1 ? "s" : ""}? This action cannot be undone.`}
+          confirmLabel="Delete all"
+          loading={deleteManyMutation.isLoading}
+          onConfirm={() => deleteManyMutation.mutate([...selected])}
+          onCancel={() => setConfirmDeleteMany(false)}
         />
       )}
     </Box>

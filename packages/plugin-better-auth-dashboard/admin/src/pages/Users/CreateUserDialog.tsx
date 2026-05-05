@@ -15,10 +15,9 @@ import { client } from "../../client";
 
 interface Props {
   onClose: () => void;
-  orgEnabled: boolean;
 }
 
-export function CreateUserDialog({ onClose, orgEnabled }: Props) {
+export function CreateUserDialog({ onClose }: Props) {
   const qc = useQueryClient();
 
   const [name, setName] = useState("");
@@ -58,8 +57,11 @@ export function CreateUserDialog({ onClose, orgEnabled }: Props) {
   };
 
   return (
-    <Modal.Root defaultOpen onOpenChange={(open) => !open && onClose()}>
-      <Modal.Content>
+    <Modal.Root
+      defaultOpen
+      onOpenChange={(open: boolean) => !open && onClose()}
+    >
+      <Modal.Content data-testid="create-user-dialog">
         <Modal.Header>
           <Typography variant="beta" tag="h2">
             Create User
@@ -77,6 +79,7 @@ export function CreateUserDialog({ onClose, orgEnabled }: Props) {
                     setName(e.target.value)
                   }
                   required
+                  data-testid="new-user-name"
                 />
               </Field.Root>
               <Field.Root>
@@ -89,6 +92,7 @@ export function CreateUserDialog({ onClose, orgEnabled }: Props) {
                     setEmail(e.target.value)
                   }
                   required
+                  data-testid="new-user-email"
                 />
               </Field.Root>
               {!generatePassword && (

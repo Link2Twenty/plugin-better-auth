@@ -1,12 +1,11 @@
 import {
   Alert,
   Box,
-  Button,
   Flex,
   Loader,
+  Tabs,
   Typography,
 } from "@strapi/design-system";
-import React from "react";
 import { useQuery } from "react-query";
 import { client } from "../client";
 import { hasPlugin, useDashConfig } from "../hooks/useDashConfig";
@@ -15,34 +14,9 @@ import { OverviewPage } from "./Overview";
 import { SessionsPage } from "./Sessions";
 import { UsersPage } from "./Users";
 
-type TabId = "overview" | "users" | "organizations" | "sessions";
-
-function NavItem({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      variant={active ? "secondary" : "ghost"}
-      size="S"
-      onClick={onClick}
-      style={{ fontWeight: active ? 600 : 400 }}
-    >
-      {children}
-    </Button>
-  );
-}
-
 export function App() {
-  const [activeTab, setActiveTab] = React.useState<TabId>("overview");
   const { data: config, isLoading, isError, error } = useDashConfig();
 
-  // Check if org plugin is enabled and fetch org options for teams
   const orgEnabled = hasPlugin(config, "organization");
 
   const orgOptionsQuery = useQuery({
@@ -84,70 +58,66 @@ export function App() {
   if (!config) return null;
 
   return (
-    <Box background="neutral100" minHeight="100vh">
-      {/* Header */}
-      <Box
-        background="neutral0"
-        borderColor="neutral150"
-        borderStyle="solid"
-        borderWidth="1px"
-        paddingLeft={6}
-        paddingRight={6}
-        paddingTop={4}
-        paddingBottom={0}
-      >
-        <Flex
-          justifyContent="space-between"
-          alignItems="center"
-          paddingBottom={2}
+    <Box background="neutral100" minHeight="100vh" data-testid="dashboard-root">
+      <Tabs.Root defaultValue="overview">
+        <Box
+          background="neutral0"
+          borderColor="neutral150"
+          borderStyle="solid"
+          borderWidth="1px"
+          paddingLeft={6}
+          paddingRight={6}
+          paddingTop={4}
+          paddingBottom={0}
         >
-          <Typography variant="beta" textColor="neutral800">
-            Better Auth Dashboard
-          </Typography>
-          <Typography variant="pi" textColor="neutral500">
-            {config.basePath}
-          </Typography>
-        </Flex>
+          <Flex
+            justifyContent="space-between"
+            alignItems="center"
+            paddingBottom={4}
+          >
+            <Typography variant="beta" textColor="neutral800">
+              Better Auth Dashboard
+            </Typography>
+            <Typography variant="pi" textColor="neutral500">
+              {config.basePath}
+            </Typography>
+          </Flex>
+          <Tabs.List aria-label="Dashboard navigation" data-testid="main-nav">
+            <Tabs.Trigger value="overview" data-testid="nav-overview">
+              Overview
+            </Tabs.Trigger>
+            <Tabs.Trigger value="users" data-testid="nav-users">
+              Users
+            </Tabs.Trigger>
+            {orgEnabled && (
+              <Tabs.Trigger
+                value="organizations"
+                data-testid="nav-organizations"
+              >
+                Organizations
+              </Tabs.Trigger>
+            )}
+            <Tabs.Trigger value="sessions" data-testid="nav-sessions">
+              Sessions
+            </Tabs.Trigger>
+          </Tabs.List>
+        </Box>
 
-        <Flex gap={1} paddingTop={2}>
-          <NavItem
-            active={activeTab === "overview"}
-            onClick={() => setActiveTab("overview")}
-          >
-            Overview
-          </NavItem>
-          <NavItem
-            active={activeTab === "users"}
-            onClick={() => setActiveTab("users")}
-          >
-            Users
-          </NavItem>
-          {orgEnabled && (
-            <NavItem
-              active={activeTab === "organizations"}
-              onClick={() => setActiveTab("organizations")}
-            >
-              Organizations
-            </NavItem>
-          )}
-          <NavItem
-            active={activeTab === "sessions"}
-            onClick={() => setActiveTab("sessions")}
-          >
-            Sessions
-          </NavItem>
-        </Flex>
-      </Box>
-
-      {/* Content */}
-      <Box>
-        {activeTab === "overview" && <OverviewPage />}
-        {activeTab === "users" && <UsersPage config={config} />}
-        {activeTab === "organizations" && orgEnabled && (
-          <OrganizationsPage teamsEnabled={teamsEnabled} />
+        <Tabs.Content value="overview" data-testid="tab-overview">
+          <OverviewPage />
+        </Tabs.Content>
+        <Tabs.Content value="users" data-testid="tab-users">
+          <UsersPage config={config} />
+        </Tabs.Content>
+        {orgEnabled && (
+          <Tabs.Content value="organizations" data-testid="tab-organizations">
+            <OrganizationsPage teamsEnabled={teamsEnabled} />
+          </Tabs.Content>
         )}
-        {activeTab === "sessions" && <SessionsPage />}
-      </Box>
+        <Tabs.Content value="sessions" data-testid="tab-sessions">
+          <SessionsPage />
+        </Tabs.Content>
+      </Tabs.Root>
     </Box>
   );
 }
