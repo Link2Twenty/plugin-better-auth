@@ -29,7 +29,6 @@ const auth = () =>
     database: strapiAdapter(),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
-    basePath: "/api/better-auth",
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
@@ -61,7 +60,6 @@ const auth = () => {
     database: strapiAdapter(),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
-    basePath: "/api/better-auth",
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {

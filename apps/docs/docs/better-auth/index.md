@@ -10,7 +10,7 @@ sidebar_position: 1
 `@strapi-community/plugin-better-auth` is a [Better Auth](https://better-auth.com) database adapter that uses Strapi as the database backend. It integrates Better Auth's authentication system with your Strapi application by:
 
 - Storing users, sessions, accounts, and verification tokens in Strapi content types.
-- Exposing all Better Auth API endpoints at `/api/better-auth/`.
+- Exposing all Better Auth API endpoints at `/api/auth/`.
 - Optionally wiring the authenticated session into [API Permissions](../api-permissions) for Content API RBAC.
 
 ## Features

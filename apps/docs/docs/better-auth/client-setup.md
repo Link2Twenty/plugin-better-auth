@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Client Setup
 
-Better Auth provides framework-specific client helpers for React, Vue, Svelte, and more. All of them point to the Strapi-hosted Better Auth API at `/api/better-auth`.
+Better Auth provides framework-specific client helpers for React, Vue, Svelte, and more. All of them point to the Strapi-hosted Better Auth API at `/api/auth`.
 
 ## Installation
 
@@ -24,7 +24,7 @@ pnpm add better-auth
 import { createAuthClient } from 'better-auth/react';
 
 export const authClient = createAuthClient({
-  baseURL: 'http://localhost:1337/api/better-auth',
+  baseURL: 'http://localhost:1337/api/auth',
 });
 ```
 
@@ -71,7 +71,7 @@ if (session) {
 import { createAuthClient } from 'better-auth/vue';
 
 export const authClient = createAuthClient({
-  baseURL: 'http://localhost:1337/api/better-auth',
+  baseURL: 'http://localhost:1337/api/auth',
 });
 ```
 
@@ -81,20 +81,20 @@ export const authClient = createAuthClient({
 import { createAuthClient } from 'better-auth/client';
 
 export const authClient = createAuthClient({
-  baseURL: 'http://localhost:1337/api/better-auth',
+  baseURL: 'http://localhost:1337/api/auth',
 });
 ```
 
 ## API base URL
 
-The Better Auth API is mounted at `/api/better-auth` by default. All Better Auth endpoints (e.g. `/sign-in/email`, `/sign-up/email`, `/get-session`) are available under this path.
+The Better Auth API is mounted at `/api/auth` by default. All Better Auth endpoints (e.g. `/sign-in/email`, `/sign-up/email`, `/get-session`) are available under this path.
 
 | Endpoint | URL |
 |---|---|
-| Sign up | `POST /api/better-auth/sign-up/email` |
-| Sign in | `POST /api/better-auth/sign-in/email` |
-| Sign out | `POST /api/better-auth/sign-out` |
-| Get session | `GET /api/better-auth/get-session` |
+| Sign up | `POST /api/auth/sign-up/email` |
+| Sign in | `POST /api/auth/sign-in/email` |
+| Sign out | `POST /api/auth/sign-out` |
+| Get session | `GET /api/auth/get-session` |
 
 :::tip
 Refer to the [Better Auth documentation](https://better-auth.com/docs) for the full list of endpoints and client methods available for each plugin.

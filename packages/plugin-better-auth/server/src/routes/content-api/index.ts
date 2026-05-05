@@ -1,55 +1,26 @@
-export default () => ({
+import type { Core } from "@strapi/strapi";
+
+const HTTP_METHODS: Core.Route["method"][] = [
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+];
+
+const createContentApiRoutes = (routePath: string): Core.Router => ({
   type: "content-api",
-  routes: [
-    {
-      method: "GET",
-      path: "/better-auth/:path*",
-      handler: "auth-controller.handleAuthRequest",
-      config: {
-        policies: [],
-        prefix: "",
-        auth: false,
-      },
+  routes: HTTP_METHODS.map((method) => ({
+    method,
+    path: `${routePath}/:path*`,
+    handler: "auth-controller.handleAuthRequest",
+    info: { pluginName: "better-auth" },
+    config: {
+      policies: [],
+      prefix: "",
+      auth: false,
     },
-    {
-      method: "POST",
-      path: "/better-auth/:path*",
-      handler: "auth-controller.handleAuthRequest",
-      config: {
-        policies: [],
-        auth: false,
-        prefix: "",
-      },
-    },
-    {
-      method: "PUT",
-      path: "/better-auth/:path*",
-      handler: "auth-controller.handleAuthRequest",
-      config: {
-        policies: [],
-        auth: false,
-        prefix: "",
-      },
-    },
-    {
-      method: "PATCH",
-      path: "/better-auth/:path*",
-      handler: "auth-controller.handleAuthRequest",
-      config: {
-        policies: [],
-        auth: false,
-        prefix: "",
-      },
-    },
-    {
-      method: "DELETE",
-      path: "/better-auth/:path*",
-      handler: "auth-controller.handleAuthRequest",
-      config: {
-        policies: [],
-        auth: false,
-        prefix: "",
-      },
-    },
-  ],
+  })),
 });
+
+export default createContentApiRoutes;

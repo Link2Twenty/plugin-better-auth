@@ -1,7 +1,3 @@
-import contentAPIRoutes from "./content-api";
+import createContentApiRoutes from "./content-api";
 
-const routes = {
-  "content-api": contentAPIRoutes,
-};
-
-export default routes;
+export { createContentApiRoutes };

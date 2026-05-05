@@ -41,7 +41,6 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
@@ -77,4 +76,4 @@ Start Strapi in development mode. The generated content types will be picked up 
 pnpm develop
 ```
 
-The Better Auth API is now available at `http://localhost:1337/api/better-auth/`.
+The Better Auth API is now available at `http://localhost:1337/api/auth/`.

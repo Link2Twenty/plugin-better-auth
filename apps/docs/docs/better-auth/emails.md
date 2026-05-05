@@ -220,7 +220,6 @@ import {
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
