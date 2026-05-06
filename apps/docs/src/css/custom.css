@@ -1,0 +1,48 @@
+:root {
+  --ifm-color-primary: #3730a3;
+  --ifm-color-primary-dark: #2d2793;
+  --ifm-color-primary-darker: #261f83;
+  --ifm-color-primary-darkest: #1a1566;
+  --ifm-color-primary-light: #4338ca;
+  --ifm-color-primary-lighter: #4f46e5;
+  --ifm-color-primary-lightest: #818cf8;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(55, 48, 163, 0.1);
+}
+
+/* ─── Content padding ─────────────────────────────────────────────────────── */
+
+main > .container {
+  padding-inline: 2rem;
+}
+
+/* ─── Layout containerization ─────────────────────────────────────────────── */
+
+.navbar__inner,
+.main-wrapper,
+.footer__links,
+.footer__bottom {
+  max-width: 1280px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────────────── */
+
+.footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid var(--ifm-toc-border-color);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+[data-theme='dark'] {
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6366f1;
+  --ifm-color-primary-darker: #4f46e5;
+  --ifm-color-primary-darkest: #4338ca;
+  --ifm-color-primary-light: #a5b4fc;
+  --ifm-color-primary-lighter: #c7d2fe;
+  --ifm-color-primary-lightest: #e0e7ff;
+  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.2);
+}

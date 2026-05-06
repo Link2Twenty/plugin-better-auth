@@ -9,7 +9,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/types/generated"]
+    "includes": ["**"]
   },
   "formatter": {
     "enabled": true,
@@ -28,6 +28,9 @@
       },
       "complexity": {
         "noBannedTypes": "off"
+      },
+      "suspicious": {
+        "useNamespaceKeyword": "off"
       },
       "style": {
         "noNonNullAssertion": "off"
