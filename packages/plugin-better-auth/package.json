@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2-experimental.593681493255d3a39231f63454a967a71fdd7d66",
+  "version": "1.0.0-beta.1",
   "keywords": [
     "better-auth",
     "strapi",
@@ -31,7 +31,7 @@
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
     "test:ts:back": "cd server && tsc --noEmit",
-    "test:integration": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
+    "test:integration": "vitest run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -39,10 +39,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@better-auth/test-utils": "catalog:better-auth",
+    "@better-auth/test-utils": "^1.6.9",
     "@biomejs/biome": "^2.3.11",
     "@strapi/sdk-plugin": "^6.0.0",
-    "@strapi/typescript-utils": "catalog:strapi",
+    "@strapi/typescript-utils": "^5.45.0",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
     "@types/supertest": "^6.0.0",
@@ -52,9 +52,9 @@
   },
   "peerDependencies": {
     "@strapi-community/plugin-api-permissions": "workspace:*",
-    "@strapi/strapi": "catalog:strapi",
-    "@strapi/types": "catalog:strapi",
-    "@strapi/utils": "catalog:strapi",
+    "@strapi/strapi": "^5.45.0",
+    "@strapi/types": "^5.45.0",
+    "@strapi/utils": "^5.45.0",
     "better-auth": ">=1.4.0 <2"
   },
   "peerDependenciesMeta": {

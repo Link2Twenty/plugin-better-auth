@@ -1,6 +1,6 @@
 {
   "name": "@strapi-community/plugin-api-permissions",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Content API RBAC for Strapi — auth-provider agnostic roles and permissions",
   "keywords": [
     "strapi",
@@ -63,8 +63,8 @@
     "vitest": "^4.1.0",
     "@playwright/test": "^1.49.0",
     "@strapi/sdk-plugin": "^6.0.0",
-    "@strapi/strapi": "catalog:strapi",
-    "@strapi/typescript-utils": "catalog:strapi",
+    "@strapi/strapi": "^5.45.0",
+    "@strapi/typescript-utils": "^5.45.0",
     "@types/koa": "^3.0.1",
     "@types/lodash": "^4.17.21",
     "@types/node": "^22",
@@ -75,10 +75,10 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@strapi/design-system": "catalog:strapi-design-system",
-    "@strapi/icons": "catalog:strapi-design-system",
-    "@strapi/strapi": "catalog:strapi",
-    "@strapi/utils": "catalog:strapi",
+    "@strapi/design-system": "^2.0.0",
+    "@strapi/icons": "^2.0.0",
+    "@strapi/strapi": "^5.0.0",
+    "@strapi/utils": "^5.0.0",
     "react": "^17.0.0 || ^18.0.0",
     "react-query": "^3.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
