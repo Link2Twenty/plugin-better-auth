@@ -2,8 +2,18 @@ import type { Core } from "@strapi/strapi";
 import { fromNodeHeaders } from "better-auth/node";
 import type { ParameterizedContext } from "koa";
 import { createContentApiRoutes } from "./routes";
+import { isVersionAtLeast, MIN_STRAPI_VERSION } from "./utils";
 
 export default ({ strapi }: { strapi: Core.Strapi }) => {
+  const strapiVersion = strapi.config.get<string>("info.strapi", "0.0.0");
+
+  if (!isVersionAtLeast(strapiVersion, MIN_STRAPI_VERSION)) {
+    throw new Error(
+      `[@strapi-community/plugin-better-auth] Strapi v${strapiVersion} is not supported. ` +
+        `Please upgrade to Strapi v${MIN_STRAPI_VERSION} or higher.`,
+    );
+  }
+
   const auth = strapi.internal_config["better-auth"];
   const apiPermissionsPlugin = strapi.plugin("api-permissions");
   const usersPermissionsPlugin = strapi.plugin("users-permissions");
