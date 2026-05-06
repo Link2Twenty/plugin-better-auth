@@ -6,4 +6,6 @@ export default {
   controllers,
   register,
   config,
+  // Needed if you want to create routes in the plugin extensions folder.
+  routes: {},
 };
