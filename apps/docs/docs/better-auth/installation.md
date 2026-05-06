@@ -18,6 +18,10 @@ yarn add better-auth @strapi-community/plugin-better-auth
 pnpm add better-auth @strapi-community/plugin-better-auth
 ```
 
+:::note
+You must to be running **Strapi 5.45.0** or higher.
+:::
+
 ## 2. Enable the plugin
 
 Add the plugin to your Strapi plugin configuration:

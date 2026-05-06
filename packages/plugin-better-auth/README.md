@@ -15,6 +15,8 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 
 ## Installation
 
+_You need to be running **Strapi 5.45.0** or higher to use this plugin._
+
 ```bash
 npm install better-auth @strapi-community/plugin-better-auth
 # or
