@@ -113,19 +113,3 @@ export async function stopStrapi() {
     instance = undefined;
   }
 }
-
-export async function ensureExistingContentTypeDirs() {
-  const contentTypesRoot = path.join(
-    playgroundDir,
-    "src/extensions/better-auth/content-types",
-  );
-
-  for (const uid of getExistingBAContentTypes(strapi, "better-auth")) {
-    const singularName = uid.split(".").pop();
-    if (!singularName) continue;
-
-    await fspromises.mkdir(path.join(contentTypesRoot, singularName), {
-      recursive: true,
-    });
-  }
-}

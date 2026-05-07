@@ -7,13 +7,7 @@ import {
 import { getAuthTables } from "better-auth/db";
 import { strapiAdapter } from "../src/adapter";
 import { updateStrapiSchema } from "../src/adapter/transformers";
-import {
-  cleanupDir,
-  ensureExistingContentTypeDirs,
-  playgroundDir,
-  setupStrapi,
-  stopStrapi,
-} from "./utils";
+import { cleanupDir, playgroundDir, setupStrapi, stopStrapi } from "./utils";
 
 const { execute } = await testAdapter({
   adapter: (_options) => {
@@ -36,11 +30,6 @@ const { execute } = await testAdapter({
 
     // Start up Strapi and run the schema updates.
     await setupStrapi();
-
-    /**
-     * @todo Check if this needs to be part of the core package.
-     */
-    await ensureExistingContentTypeDirs();
 
     // Update Strapi schemas based on Better Auth configuration.
     await updateStrapiSchema(strapi, authTables);
