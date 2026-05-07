@@ -198,9 +198,6 @@ importers:
 
   packages/plugin-better-auth:
     dependencies:
-      '@strapi-community/plugin-api-permissions':
-        specifier: workspace:*
-        version: link:../plugin-api-permissions
       '@strapi/strapi':
         specifier: ^5.45.0
         version: 5.45.0(@babel/preset-env@7.29.2(@babel/core@7.28.5))(@emotion/is-prop-valid@1.4.0)(@swc/helpers@0.5.18)(@types/hoist-non-react-statics@3.3.7(@types/react@18.3.27))(@types/node@25.0.5)(@types/react@18.3.27)(better-sqlite3@12.4.1)(esbuild@0.27.7)(koa@2.16.4)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(styled-components@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.44.1)(type-fest@4.41.0)(webpack-dev-server@4.15.2(webpack@5.104.1(esbuild@0.27.7)))
