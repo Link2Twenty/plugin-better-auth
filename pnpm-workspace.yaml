@@ -3,6 +3,8 @@ packages:
   - packages/*
 
 catalogs:
+  playwright:
+    "@playwright/test": "^1.49.0"
   better-auth:
     "@better-auth/test-utils": 1.6.9
     "better-auth": 1.6.9

@@ -2,6 +2,7 @@
   "name": "@strapi-community/plugin-better-auth",
   "private": true,
   "scripts": {
+    "postinstall": "playwright install --with-deps",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
@@ -12,6 +13,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:playwright",
     "husky": "9.1.7",
     "lint-staged": "^16.4.0",
     "turbo": "^2.6.3"

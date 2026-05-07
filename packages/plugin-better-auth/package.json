@@ -53,16 +53,10 @@
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
-    "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi/strapi": "^5.45.0",
     "@strapi/types": "^5.45.0",
     "@strapi/utils": "^5.45.0",
     "better-auth": ">=1.4.0 <2"
-  },
-  "peerDependenciesMeta": {
-    "@strapi-community/plugin-api-permissions": {
-      "optional": true
-    }
   },
   "strapi": {
     "kind": "plugin",
