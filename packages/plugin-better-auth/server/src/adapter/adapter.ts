@@ -1,4 +1,4 @@
-import type { UID } from "@strapi/strapi";
+import type { Modules, UID } from "@strapi/strapi";
 import {
   createAdapterFactory,
   type DBAdapterDebugLogOption,
@@ -68,7 +68,9 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
           return undefined;
         }
 
-        return select.map((field) => getFieldName({ model, field }));
+        return select.map((field) =>
+          getFieldName({ model, field }),
+        ) as Modules.Documents.Params.Fields.Any<UID.ContentType>;
       };
 
       return {
@@ -83,7 +85,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const result = await strapi.documents(uid).create({
             data,
-            // @ts-expect-error
             fields,
           });
 
@@ -216,7 +217,6 @@ export const strapiAdapter = (config?: StrapiAdapterConfig) => {
 
           const record = await strapi.documents(uid).findFirst({
             filters,
-            // @ts-expect-error
             fields,
             limit: 1,
           });
