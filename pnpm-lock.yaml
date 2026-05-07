@@ -4,6 +4,25 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  better-auth:
+    '@better-auth/test-utils':
+      specifier: 1.6.9
+      version: 1.6.9
+    better-auth:
+      specifier: 1.6.9
+      version: 1.6.9
+  strapi:
+    '@strapi/strapi':
+      specifier: 5.45.0
+      version: 5.45.0
+    '@strapi/types':
+      specifier: 5.45.0
+      version: 5.45.0
+    '@strapi/typescript-utils':
+      specifier: 5.45.0
+      version: 5.45.0
+
 importers:
 
   .:
@@ -64,13 +83,13 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-better-auth
       '@strapi/strapi':
-        specifier: ^5.45.0
+        specifier: catalog:strapi
         version: 5.45.0(@babel/preset-env@7.29.2(@babel/core@7.28.5))(@emotion/is-prop-valid@1.4.0)(@swc/helpers@0.5.18)(@types/hoist-non-react-statics@3.3.7(@types/react@18.3.27))(@types/node@20.19.37)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(better-sqlite3@12.4.1)(esbuild@0.27.7)(koa@2.16.4)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(styled-components@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.44.1)(type-fest@4.41.0)(webpack-dev-server@4.15.2(webpack@5.104.1(esbuild@0.27.7)))
       '@strapi/types':
-        specifier: ^5.45.0
+        specifier: catalog:strapi
         version: 5.45.0(@types/node@20.19.37)(better-sqlite3@12.4.1)(typescript@5.9.3)
       better-auth:
-        specifier: ^1.6.9
+        specifier: catalog:better-auth
         version: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@20.19.37)(vite@5.4.21(@types/node@20.19.37)(terser@5.44.1)))
       better-sqlite3:
         specifier: 12.4.1
@@ -144,10 +163,10 @@ importers:
         specifier: ^6.0.0
         version: 6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)
       '@strapi/strapi':
-        specifier: ^5.45.0
+        specifier: catalog:strapi
         version: 5.45.0(@babel/preset-env@7.29.2(@babel/core@7.28.5))(@babel/runtime@7.28.4)(@codemirror/autocomplete@6.20.0)(@codemirror/language@6.12.1)(@codemirror/lint@6.9.2)(@codemirror/search@6.5.11)(@codemirror/state@6.5.3)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.9)(@emotion/is-prop-valid@1.4.0)(@swc/helpers@0.5.18)(@types/hoist-non-react-statics@3.3.7(@types/react@18.3.27))(@types/node@22.19.15)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(codemirror@5.65.20)(esbuild@0.27.7)(koa@2.16.4)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(styled-components@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.44.1)(type-fest@4.41.0)(webpack-dev-server@4.15.2(webpack@5.104.1(esbuild@0.27.7)))
       '@strapi/typescript-utils':
-        specifier: ^5.45.0
+        specifier: catalog:strapi
         version: 5.45.0
       '@types/koa':
         specifier: ^3.0.1
@@ -199,7 +218,7 @@ importers:
         version: 4.17.23
     devDependencies:
       '@better-auth/test-utils':
-        specifier: ^1.6.9
+        specifier: catalog:better-auth
         version: 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
       '@biomejs/biome':
         specifier: ^2.3.11
@@ -208,7 +227,7 @@ importers:
         specifier: ^6.0.0
         version: 6.0.1(@types/node@25.0.5)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)
       '@strapi/typescript-utils':
-        specifier: ^5.45.0
+        specifier: catalog:strapi
         version: 5.45.0
       '@types/koa':
         specifier: ^3.0.1
@@ -5148,9 +5167,6 @@ packages:
   caniuse-api@3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
 
-  caniuse-lite@1.0.30001763:
-    resolution: {integrity: sha512-mh/dGtq56uN98LlNX9qdbKnzINhX0QzhiWBFEkFfsFO4QyCvL8YegrJAazCwXIeqkIob8BlZPGM3xdnY+sgmvQ==}
-
   caniuse-lite@1.0.30001784:
     resolution: {integrity: sha512-WU346nBTklUV9YfUl60fqRbU5ZqyXlqvo1SgigE1OAXK5bFL8LL9q1K7aap3N739l4BvNqnkm3YrGHiY9sfUQw==}
 
@@ -6611,11 +6627,6 @@ packages:
 
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
-
-  handlebars@4.7.8:
-    resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
-    engines: {node: '>=0.4.7'}
-    hasBin: true
 
   handlebars@4.7.9:
     resolution: {integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ==}
@@ -11857,7 +11868,7 @@ snapshots:
 
   '@babel/template@7.27.2':
     dependencies:
-      '@babel/code-frame': 7.27.1
+      '@babel/code-frame': 7.29.0
       '@babel/parser': 7.29.0
       '@babel/types': 7.29.0
 
@@ -13151,7 +13162,7 @@ snapshots:
 
   '@docusaurus/theme-translations@3.7.0':
     dependencies:
-      fs-extra: 11.3.3
+      fs-extra: 11.3.4
       tslib: 2.8.1
 
   '@docusaurus/tsconfig@3.7.0': {}
@@ -14908,7 +14919,7 @@ snapshots:
       ajv: 8.18.0
       ajv-draft-04: 1.0.0(ajv@8.18.0)
       ajv-formats: 3.0.1(ajv@8.18.0)
-      fs-extra: 11.3.3
+      fs-extra: 11.3.4
       import-lazy: 4.0.0
       jju: 1.4.0
       resolve: 1.22.11
@@ -14921,7 +14932,7 @@ snapshots:
       ajv: 8.18.0
       ajv-draft-04: 1.0.0(ajv@8.18.0)
       ajv-formats: 3.0.1(ajv@8.18.0)
-      fs-extra: 11.3.3
+      fs-extra: 11.3.4
       import-lazy: 4.0.0
       jju: 1.4.0
       resolve: 1.22.11
@@ -19090,7 +19101,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.9.14
-      caniuse-lite: 1.0.30001763
+      caniuse-lite: 1.0.30001784
       electron-to-chromium: 1.5.267
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -19184,11 +19195,9 @@ snapshots:
   caniuse-api@3.0.0:
     dependencies:
       browserslist: 4.28.1
-      caniuse-lite: 1.0.30001763
+      caniuse-lite: 1.0.30001784
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
-
-  caniuse-lite@1.0.30001763: {}
 
   caniuse-lite@1.0.30001784: {}
 
@@ -19589,7 +19598,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
-      semver: 7.7.3
+      semver: 7.7.4
     optionalDependencies:
       webpack: 5.104.1(esbuild@0.27.7)
 
@@ -19602,7 +19611,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
-      semver: 7.7.3
+      semver: 7.7.4
     optionalDependencies:
       webpack: 5.104.1
 
@@ -20500,7 +20509,7 @@ snapshots:
       memfs: 3.5.3
       minimatch: 3.1.2
       schema-utils: 2.7.0
-      semver: 7.7.3
+      semver: 7.7.4
       tapable: 1.1.3
       typescript: 5.9.3
       webpack: 5.104.1
@@ -20657,7 +20666,7 @@ snapshots:
       get-it: 8.7.0
       registry-auth-token: 5.1.0
       registry-url: 5.1.0
-      semver: 7.7.3
+      semver: 7.7.4
     transitivePeerDependencies:
       - debug
 
@@ -20718,7 +20727,7 @@ snapshots:
 
   glob@13.0.6:
     dependencies:
-      minimatch: 10.2.3
+      minimatch: 10.2.5
       minipass: 7.1.3
       path-scurry: 2.0.2
 
@@ -20834,15 +20843,6 @@ snapshots:
       duplexer: 0.1.2
 
   handle-thing@2.0.1: {}
-
-  handlebars@4.7.8:
-    dependencies:
-      minimist: 1.2.8
-      neo-async: 2.6.2
-      source-map: 0.6.1
-      wordwrap: 1.0.0
-    optionalDependencies:
-      uglify-js: 3.19.3
 
   handlebars@4.7.9:
     dependencies:
@@ -22917,7 +22917,7 @@ snapshots:
       got: 12.6.1
       registry-auth-token: 5.1.0
       registry-url: 6.0.1
-      semver: 7.7.3
+      semver: 7.7.4
 
   pako@1.0.11: {}
 
@@ -23281,7 +23281,7 @@ snapshots:
       cosmiconfig: 8.3.6(typescript@5.9.3)
       jiti: 1.21.7
       postcss: 8.5.6
-      semver: 7.7.3
+      semver: 7.7.4
       webpack: 5.104.1
     transitivePeerDependencies:
       - typescript
@@ -24457,7 +24457,7 @@ snapshots:
 
   semver-diff@4.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   semver@5.7.2: {}
 
@@ -24653,7 +24653,7 @@ snapshots:
 
   simple-update-notifier@2.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   sirv@2.0.4:
     dependencies:
@@ -25179,12 +25179,12 @@ snapshots:
 
   typedoc-plugin-markdown@3.17.1(typedoc@0.25.10(typescript@5.4.5)):
     dependencies:
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       typedoc: 0.25.10(typescript@5.4.5)
 
   typedoc-plugin-markdown@3.17.1(typedoc@0.25.10(typescript@5.9.3)):
     dependencies:
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       typedoc: 0.25.10(typescript@5.9.3)
 
   typedoc@0.25.10(typescript@5.4.5):

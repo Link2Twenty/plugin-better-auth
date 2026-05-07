@@ -19,9 +19,9 @@
   "dependencies": {
     "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi-community/plugin-better-auth": "workspace:*",
-    "@strapi/strapi": "^5.45.0",
-    "@strapi/types": "^5.45.0",
-    "better-auth": "^1.6.9",
+    "@strapi/strapi": "catalog:strapi",
+    "@strapi/types": "catalog:strapi",
+    "better-auth": "catalog:better-auth",
     "better-sqlite3": "12.4.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
