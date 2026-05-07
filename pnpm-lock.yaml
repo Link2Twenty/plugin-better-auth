@@ -12,6 +12,10 @@ catalogs:
     better-auth:
       specifier: 1.6.9
       version: 1.6.9
+  playwright:
+    '@playwright/test':
+      specifier: ^1.49.0
+      version: 1.58.2
   strapi:
     '@strapi/strapi':
       specifier: 5.45.0
@@ -27,6 +31,9 @@ importers:
 
   .:
     devDependencies:
+      '@playwright/test':
+        specifier: catalog:playwright
+        version: 1.58.2
       husky:
         specifier: 9.1.7
         version: 9.1.7
@@ -157,7 +164,7 @@ importers:
         specifier: ^2.3.11
         version: 2.3.11
       '@playwright/test':
-        specifier: ^1.49.0
+        specifier: catalog:playwright
         version: 1.58.2
       '@strapi/sdk-plugin':
         specifier: ^6.0.0
