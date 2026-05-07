@@ -1,4 +1,3 @@
-// @ts-expect-error - An issue with the plugin SDK prevents types from being included in the build.
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 import type { Auth } from "better-auth";
 import { betterAuth } from "better-auth";
