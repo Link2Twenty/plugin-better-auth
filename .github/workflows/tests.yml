@@ -27,20 +27,18 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Cache node_modules
+      - name: Cache dependencies
+        id: dependencies-cache
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install dependencies
+        if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: pnpm install
       - name: Cache build outputs
         id: build-cache
@@ -71,14 +69,15 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Restore node_modules
+      - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run linting
         run: pnpm run lint
   
@@ -96,14 +95,15 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Restore node_modules
+      - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
@@ -131,14 +131,15 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Restore node_modules
+      - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
@@ -166,19 +167,15 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Restore node_modules
+      - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Restore Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
