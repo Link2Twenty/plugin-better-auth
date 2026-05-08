@@ -7,7 +7,7 @@
     "build": "strapi build",
     "console": "strapi console",
     "deploy": "strapi deploy",
-    "dev": "strapi develop",
+    "dev": "node scripts/dev.js",
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
