@@ -35,30 +35,27 @@ Better Auth lets you override the name of each individual model through the Bett
 import { betterAuth } from "better-auth";
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: "serial",
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: "serial",
     },
-    user: {
-      modelId: "custom_user",
-    },
-    session: {
-      modelId: "custom_session",
-    },
-    account: {
-      modelId: "custom_account",
-    },
-    verification: {
-      modelId: "custom_verification",
-    },
-  });
-
-export default auth;
+  },
+  user: {
+    modelId: "custom_user",
+  },
+  session: {
+    modelId: "custom_session",
+  },
+  account: {
+    modelId: "custom_account",
+  },
+  verification: {
+    modelId: "custom_verification",
+  },
+});
 ```
 
 After changing model IDs, re-run the schema generation command so Strapi picks up the new content type names:

@@ -217,30 +217,27 @@ import {
   sendOtpEmail,
 } from './better-auth-emails';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-    emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        await sendVerificationEmail(user.email, url);
-      },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail(user.email, url);
     },
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: true,
-      sendResetPassword: async ({ user, url }) => {
-        await sendResetPasswordEmail(user.email, url);
-      },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail(user.email, url);
     },
-  });
-
-export default auth;
+  },
+});
 ```
 
 ### Environment variables

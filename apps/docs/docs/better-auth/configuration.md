@@ -14,21 +14,18 @@ The Better Auth config file (`src/lib/auth.ts`) is the central place for configu
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-    emailAndPassword: {
-      enabled: true,
-    },
-  });
-
-export default auth;
+  },
+  emailAndPassword: {
+    enabled: true,
+  },
+});
 ```
 
 ### Required options
@@ -44,11 +41,10 @@ Better Auth protects against CSRF attacks by validating that requests come from 
 Add the URL of your front-end to `trustedOrigins`:
 
 ```typescript title="src/lib/auth.ts"
-const auth = () =>
-  betterAuth({
-    // ...
-    trustedOrigins: ['http://localhost:3000'],
-  });
+export const auth = betterAuth({
+  // ...
+  trustedOrigins: ['http://localhost:3000'],
+});
 ```
 
 In production set this to the public URL of your deployed front-end. Multiple origins can be listed if needed.
@@ -58,11 +54,10 @@ In production set this to the public URL of your deployed front-end. Multiple or
 By default, Better Auth exposes its endpoints under `/api/auth`. If you need to change this — for example to avoid a conflict with an existing route or to match a client SDK configured with a custom path — set `basePath` in the Better Auth config:
 
 ```typescript title="src/lib/auth.ts"
-const auth = () =>
-  betterAuth({
-    // ...
-    basePath: '/api/better-auth',
-  });
+export const auth = betterAuth({
+  // ...
+  basePath: '/api/better-auth',
+});
 ```
 
 :::note
@@ -74,20 +69,19 @@ The path must start with the API prefix (default `/api`). If you have customized
 In production you typically want secure, cross-site cookies. Set the `defaultCookieAttributes` option based on your environment:
 
 ```typescript title="src/lib/auth.ts"
-const auth = () =>
-  betterAuth({
-    // ...
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
-      defaultCookieAttributes: {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      },
+export const auth = betterAuth({
+  // ...
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-  });
+    defaultCookieAttributes: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    },
+  },
+});
 ```
 
 This is required when your front-end and Strapi are on different origins (e.g. a separate Vercel deployment talking to Strapi Cloud).
@@ -110,18 +104,15 @@ Pass them to the config:
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-  });
-
-export default auth;
+  },
+});
 ```

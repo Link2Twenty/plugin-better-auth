@@ -42,18 +42,15 @@ Create a Better Auth configuration file that uses the Strapi adapter:
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-  });
-
-export default auth;
+  },
+});
 ```
 
 :::note

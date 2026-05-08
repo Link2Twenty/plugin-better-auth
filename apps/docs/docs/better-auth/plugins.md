@@ -17,21 +17,18 @@ import { betterAuth } from 'better-auth';
 import { twoFactor } from 'better-auth/plugins';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-    plugins: [
-      twoFactor(),
-    ],
-  });
-
-export default auth;
+  },
+  plugins: [
+    twoFactor(),
+  ],
+});
 ```
 
 ## Schema generation
@@ -54,24 +51,21 @@ pnpm develop
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-    socialProviders: {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      },
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
-  });
-
-export default auth;
+  },
+});
 ```
 
 Then in your front-end:
