@@ -2,7 +2,12 @@ import type { Core } from "@strapi/strapi";
 import { fromNodeHeaders } from "better-auth/node";
 import type { ParameterizedContext } from "koa";
 import { createContentApiRoutes } from "./routes";
-import { isVersionAtLeast, MIN_STRAPI_VERSION } from "./utils";
+import {
+  getPluginService,
+  isVersionAtLeast,
+  MIN_STRAPI_VERSION,
+  POSSIBLE_CONFIG_LOCATIONS,
+} from "./utils";
 
 export default ({ strapi }: { strapi: Core.Strapi }) => {
   const strapiVersion = strapi.config.get<string>("info.strapi", "0.0.0");
@@ -14,17 +19,17 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
     );
   }
 
-  const auth = strapi.internal_config["better-auth"];
   const apiPermissionsPlugin = strapi.plugin("api-permissions");
   const usersPermissionsPlugin = strapi.plugin("users-permissions");
+  const auth = getPluginService("auth-service").getAuth();
 
   /**
    * Throw an error if the better-auth config is missing, as the plugin cannot function without it.
    */
   if (!auth) {
     throw new Error(
-      "[@strapi-community/plugin-better-auth] No 'better-auth' config file found. " +
-        "Please add a 'better-auth' file to the config folder of your Strapi project. ",
+      "[@strapi-community/plugin-better-auth] No Better Auth configuration was found" +
+        POSSIBLE_CONFIG_LOCATIONS.map((loc) => `\n - ${loc}`).join(""),
     );
   }
 
@@ -44,7 +49,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
    * to avoid doubling it in the final URL.
    */
   const apiPrefix = strapi.config.get("api.rest.prefix", "/api") as string;
-  const basePath = auth.options.basePath || "/api/auth";
+  const basePath =
+    "basePath" in auth.options
+      ? (auth.options.basePath as string)
+      : "/api/auth";
   const routePath = basePath.startsWith(apiPrefix)
     ? basePath.slice(apiPrefix.length) || "/"
     : basePath;
@@ -69,8 +77,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => {
   apiPermissionsPlugin
     .service("session")
     .registerSessionResolver(async (ctx: ParameterizedContext) => {
-      const auth = strapi.internal_config["better-auth"];
-
       if (!auth?.api?.getSession) return null;
 
       const headers = fromNodeHeaders(ctx.request.headers);

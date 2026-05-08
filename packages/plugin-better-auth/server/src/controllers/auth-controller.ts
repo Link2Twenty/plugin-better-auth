@@ -1,22 +1,22 @@
-import type { Core } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
 import type { KoaContext } from "../types/koa";
+import { getPluginService } from "../utils";
 
 /**
  * Controller for Better Auth API endpoints
  * This controller acts as a proxy between Strapi and Better Auth
  */
-const authController = ({ strapi }: { strapi: Core.Strapi }) => ({
+const authController = () => ({
   /**
    * Handle all Better Auth API requests
    * This method processes the request and forwards it to Better Auth
    */
   async handleAuthRequest(ctx: KoaContext) {
-    // Get the stored Better Auth instance
-    const auth = strapi.internal_config["better-auth"];
+    const auth = getPluginService("auth-service").getAuth();
 
+    // Get the stored Better Auth instance
     if (!auth) {
-      throw new errors.ApplicationError("Better Auth not initialized");
+      throw new errors.ApplicationError("No Better Auth config file found");
     }
 
     // Create a Request object compatible with Better Auth
@@ -27,7 +27,7 @@ const authController = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Update the URL path to the Better Auth format
     const betterAuthPath = ctx.params.path || "";
-    url.pathname = `${auth.options.basePath || "/api/auth"}/${betterAuthPath}`;
+    url.pathname = `${"basePath" in auth.options ? auth.options.basePath : "/api/auth"}/${betterAuthPath}`;
 
     // Prepare headers
     const headers = new Headers();

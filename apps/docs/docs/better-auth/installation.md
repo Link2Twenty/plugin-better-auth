@@ -38,22 +38,19 @@ export default {
 
 Create a Better Auth configuration file that uses the Strapi adapter:
 
-```typescript title="config/better-auth.ts"
+```typescript title="src/lib/auth.ts"
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () =>
-  betterAuth({
-    database: strapiAdapter(),
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      database: {
-        generateId: 'serial',
-      },
+export const auth = betterAuth({
+  database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
+  advanced: {
+    database: {
+      generateId: 'serial',
     },
-  });
-
-export default auth;
+  },
+});
 ```
 
 :::note
@@ -65,12 +62,8 @@ The `generateId: "serial"` option tells Better Auth to use auto-incremented inte
 The plugin does not register any content types automatically. You must run the Better Auth CLI to generate the Strapi schema files:
 
 ```bash
-npx auth generate --config config/better-auth.ts
+npx auth generate
 ```
-
-:::note
-You must specify `--config config/better-auth.ts` because the CLI cannot auto-detect the config location in a Strapi project.
-:::
 
 ## 5. Start Strapi
 

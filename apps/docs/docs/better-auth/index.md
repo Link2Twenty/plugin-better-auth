@@ -41,10 +41,8 @@ Additional content types are added automatically when you enable Better Auth plu
 
 - [Installation](./installation)
 - [Configuration](./configuration)
-- [TypeScript](./typescript)
 - [Schema](./schema)
 - [Emails](./emails)
-- [Hosting](./hosting)
 - [Client Setup](./client-setup)
 - [Server Usage](./server-usage)
 - [Plugins](./plugins)
