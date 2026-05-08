@@ -5,8 +5,11 @@ export const PLUGIN_ID = packageJson.strapi.name;
 
 export const POSSIBLE_CONFIG_LOCATIONS = [
   "auth.ts",
+  "auth.js",
   "lib/auth.ts",
+  "lib/auth.js",
   "src/lib/auth.ts",
+  "src/lib/auth.js",
 ];
 
 export const MIN_STRAPI_VERSION = "5.45.0";
