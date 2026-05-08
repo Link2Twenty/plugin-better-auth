@@ -56,7 +56,7 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
     const apiKeyHash = await hashApiKey(DASHBOARD_API_KEY);
     const { token } = await auth.api.signJWT({
       body: {
-        payload: { apiKeyHash, ...extra },
+        payload: { iat: Math.floor(Date.now() / 1000), apiKeyHash, ...extra },
         overrideOptions: { jwt: { expirationTime: "5m" } },
       },
     });
