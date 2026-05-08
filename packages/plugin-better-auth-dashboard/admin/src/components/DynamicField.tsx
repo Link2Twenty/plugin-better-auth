@@ -1,4 +1,5 @@
 import {
+  Box,
   Checkbox,
   Field,
   Flex,
@@ -32,6 +33,8 @@ function makeLabel(name: string) {
     .trim();
 }
 
+const fieldStyle = { width: "100%" };
+
 export function DynamicField({
   field,
   value,
@@ -44,7 +47,7 @@ export function DynamicField({
 
   if (type === "boolean") {
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <Checkbox
           checked={Boolean(value)}
@@ -59,7 +62,7 @@ export function DynamicField({
 
   if (type === "enumeration" && Array.isArray(enumValues)) {
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <SingleSelect
           value={value != null ? String(value) : ""}
@@ -85,7 +88,7 @@ export function DynamicField({
     type === "decimal"
   ) {
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <NumberInput
           value={value != null ? Number(value) : undefined}
@@ -105,7 +108,7 @@ export function DynamicField({
           ? value
           : JSON.stringify(value, null, 2);
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <JSONInput
           value={jsonStr}
@@ -130,7 +133,7 @@ export function DynamicField({
           ? value.slice(0, 10)
           : "";
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <TextInput
           type="date"
@@ -153,7 +156,7 @@ export function DynamicField({
           ? value.slice(0, 16)
           : "";
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <TextInput
           type="datetime-local"
@@ -170,7 +173,7 @@ export function DynamicField({
 
   if (type === "text" || type === "richtext") {
     return (
-      <Field.Root>
+      <Field.Root style={fieldStyle}>
         <Field.Label>{label}</Field.Label>
         <Textarea
           value={value != null ? String(value) : ""}
@@ -185,7 +188,7 @@ export function DynamicField({
 
   if (type === "relation") {
     return (
-      <Field.Root hint={`Relation → ${attribute.target ?? "unknown"}`}>
+      <Field.Root style={fieldStyle} hint={`Relation → ${attribute.target ?? "unknown"}`}>
         <Field.Label>{label}</Field.Label>
         <TextInput
           value={value != null ? String(value) : ""}
@@ -211,7 +214,7 @@ export function DynamicField({
           : "text";
 
   return (
-    <Field.Root>
+    <Field.Root style={fieldStyle}>
       <Field.Label>{label}</Field.Label>
       <TextInput
         type={inputType}
@@ -244,15 +247,15 @@ export function CustomFieldsSection({
   if (renderable.length === 0) return null;
 
   return (
-    <>
+    <Box paddingTop={6} marginTop={4} borderColor="neutral150" borderStyle="solid" borderWidth="1px 0 0 0">
       <Typography
         variant="sigma"
         textColor="neutral600"
-        style={{ paddingTop: "20px", paddingBottom: "8px", display: "block" }}
+        paddingBottom={4}
       >
         Custom fields
       </Typography>
-      <Flex direction="column" gap={4}>
+      <Flex direction="column" gap={4} alignItems="stretch">
         {renderable.map((field) => (
           <DynamicField
             key={field.name}
@@ -262,6 +265,6 @@ export function CustomFieldsSection({
           />
         ))}
       </Flex>
-    </>
+    </Box>
   );
 }

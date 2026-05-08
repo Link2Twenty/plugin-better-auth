@@ -1,7 +1,6 @@
 import {
   Alert,
   Box,
-  Field,
   Flex,
   Grid,
   Loader,
@@ -116,6 +115,7 @@ export function OverviewPage() {
       </Box>
 
       <Grid.Root gap={4} data-testid="stats-grid">
+        {/* Row 1: Total Users + Sign-ups */}
         <Grid.Item col={3} s={6} xs={12}>
           <StatCard title="Total Users" value={stats.total} />
         </Grid.Item>
@@ -144,7 +144,8 @@ export function OverviewPage() {
           />
         </Grid.Item>
 
-        <Grid.Item col={3} s={6} xs={12}>
+        {/* Row 2: Active users — 3 cards × col=4 fills the row */}
+        <Grid.Item col={4} s={6} xs={12}>
           <StatCard
             title="Daily Active"
             value={stats.activeUsers.daily.active}
@@ -152,7 +153,7 @@ export function OverviewPage() {
             positive={stats.activeUsers.daily.percentage >= 0}
           />
         </Grid.Item>
-        <Grid.Item col={3} s={6} xs={12}>
+        <Grid.Item col={4} s={6} xs={12}>
           <StatCard
             title="Weekly Active"
             value={stats.activeUsers.weekly.active}
@@ -160,7 +161,7 @@ export function OverviewPage() {
             positive={stats.activeUsers.weekly.percentage >= 0}
           />
         </Grid.Item>
-        <Grid.Item col={3} s={6} xs={12}>
+        <Grid.Item col={4} s={6} xs={12}>
           <StatCard
             title="Monthly Active"
             value={stats.activeUsers.monthly.active}
@@ -179,9 +180,11 @@ export function OverviewPage() {
           <Typography variant="delta" textColor="neutral800">
             User Growth
           </Typography>
-          <Box width="160px">
-            <Field.Root>
-              <Field.Label>Period</Field.Label>
+          <Flex alignItems="center" gap={2}>
+            <Typography variant="pi" textColor="neutral600">
+              Period
+            </Typography>
+            <Box width="140px">
               <SingleSelect
                 value={period}
                 onChange={(val: string | number) =>
@@ -193,8 +196,8 @@ export function OverviewPage() {
                 <SingleSelectOption value="weekly">Weekly</SingleSelectOption>
                 <SingleSelectOption value="monthly">Monthly</SingleSelectOption>
               </SingleSelect>
-            </Field.Root>
-          </Box>
+            </Box>
+          </Flex>
         </Flex>
 
         {graphQuery.isLoading ? (

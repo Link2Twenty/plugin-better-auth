@@ -52,7 +52,7 @@ export function UserCombobox({
   const users = data ?? [];
 
   return (
-    <Field.Root hint={hint} error={error}>
+    <Field.Root hint={hint} error={error} style={{ width: "100%" }}>
       <Field.Label>{label}</Field.Label>
       <Combobox
         placeholder={placeholder}

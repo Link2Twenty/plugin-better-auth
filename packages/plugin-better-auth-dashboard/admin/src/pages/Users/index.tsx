@@ -45,6 +45,7 @@ export function UsersPage({ config }: Props) {
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [confirmDeleteMany, setConfirmDeleteMany] = useState(false);
+  const [confirmBanMany, setConfirmBanMany] = useState(false);
 
   const offset = (page - 1) * PAGE_SIZE;
   const { data, isLoading, isError, error } = useUsers({
@@ -98,6 +99,7 @@ export function UsersPage({ config }: Props) {
       return result.data;
     },
     onSuccess: () => {
+      setConfirmBanMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-users"] });
     },
@@ -192,8 +194,7 @@ export function UsersPage({ config }: Props) {
               <Button
                 variant="secondary"
                 size="S"
-                loading={banManyMutation.isLoading}
-                onClick={() => banManyMutation.mutate([...selected])}
+                onClick={() => setConfirmBanMany(true)}
               >
                 Ban {selected.size} selected
               </Button>
@@ -408,6 +409,18 @@ export function UsersPage({ config }: Props) {
           loading={deleteManyMutation.isLoading}
           onConfirm={() => deleteManyMutation.mutate([...selected])}
           onCancel={() => setConfirmDeleteMany(false)}
+        />
+      )}
+
+      {confirmBanMany && (
+        <ConfirmDialog
+          title={`Ban ${selected.size} user${selected.size !== 1 ? "s" : ""}`}
+          message={`Are you sure you want to ban ${selected.size} user${selected.size !== 1 ? "s" : ""}? They will be prevented from signing in.`}
+          confirmLabel="Ban all"
+          variant="danger"
+          loading={banManyMutation.isLoading}
+          onConfirm={() => banManyMutation.mutate([...selected])}
+          onCancel={() => setConfirmBanMany(false)}
         />
       )}
     </Box>

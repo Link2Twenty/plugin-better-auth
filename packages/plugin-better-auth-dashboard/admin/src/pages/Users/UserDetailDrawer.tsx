@@ -14,6 +14,7 @@ import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
 import { useModelSchema } from "../../hooks/useModelSchema";
@@ -80,6 +81,9 @@ export function UserDetailDrawer({
   const [newPassword, setNewPassword] = useState("");
   const [banReason, setBanReason] = useState("");
   const [banExpiresDays, setBanExpiresDays] = useState("");
+  const [confirmRevokeAll, setConfirmRevokeAll] = useState(false);
+  const [confirmUnban, setConfirmUnban] = useState(false);
+  const [confirmUnlinkAccountId, setConfirmUnlinkAccountId] = useState<string | null>(null);
 
   const user = userQuery.data;
   const displayName = editName ?? user?.name ?? "";
@@ -166,8 +170,24 @@ export function UserDetailDrawer({
       return result.data;
     },
     onSuccess: () => {
+      setConfirmUnban(false);
       qc.invalidateQueries({ queryKey: ["dash-user", userId] });
       qc.invalidateQueries({ queryKey: ["dash-users"] });
+    },
+  });
+
+  const unlinkAccountMutation = useMutation({
+    mutationFn: async (providerId: string) => {
+      const result = await client.dash.unlinkAccount(
+        { providerId },
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to unlink account");
+    },
+    onSuccess: () => {
+      setConfirmUnlinkAccountId(null);
+      qc.invalidateQueries({ queryKey: ["dash-user", userId] });
     },
   });
 
@@ -180,6 +200,9 @@ export function UserDetailDrawer({
       if (result.error)
         throw new Error(result.error.message ?? "Revoke failed");
       return result.data;
+    },
+    onSuccess: () => {
+      setConfirmRevokeAll(false);
     },
   });
 
@@ -269,6 +292,7 @@ export function UserDetailDrawer({
           {/* Profile tab */}
           <Tabs.Content value="profile">
             <Box paddingTop={6}>
+              {/* Editable fields */}
               <Grid.Root gap={4}>
                 <Grid.Item col={6}>
                   <Field.Root style={{ width: "100%" }}>
@@ -294,52 +318,15 @@ export function UserDetailDrawer({
                     />
                   </Field.Root>
                 </Grid.Item>
-                <Grid.Item col={6}>
-                  <Field.Root>
-                    <Field.Label>Email verified</Field.Label>
-                    <Checkbox
-                      checked={displayEmailVerified}
-                      onCheckedChange={(checked: boolean) =>
-                        setEditEmailVerified(checked)
-                      }
-                    >
-                      Mark email as verified
-                    </Checkbox>
-                  </Field.Root>
-                </Grid.Item>
-                <Grid.Item col={6}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      User ID
-                    </Typography>
-                    <Typography variant="omega" textColor="neutral600">
-                      {user?.id}
-                    </Typography>
-                  </Flex>
-                </Grid.Item>
-                <Grid.Item col={6}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      Created
-                    </Typography>
-                    <Typography variant="omega" textColor="neutral600">
-                      {user?.createdAt
-                        ? new Date(user.createdAt).toLocaleString()
-                        : "—"}
-                    </Typography>
-                  </Flex>
-                </Grid.Item>
-                <Grid.Item col={6}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      Last updated
-                    </Typography>
-                    <Typography variant="omega" textColor="neutral600">
-                      {user?.updatedAt
-                        ? new Date(user.updatedAt).toLocaleString()
-                        : "—"}
-                    </Typography>
-                  </Flex>
+                <Grid.Item col={12}>
+                  <Checkbox
+                    checked={displayEmailVerified}
+                    onCheckedChange={(checked: boolean) =>
+                      setEditEmailVerified(checked)
+                    }
+                  >
+                    Mark email as verified
+                  </Checkbox>
                 </Grid.Item>
               </Grid.Root>
 
@@ -382,6 +369,64 @@ export function UserDetailDrawer({
                 )}
               </Flex>
 
+              {/* Read-only metadata */}
+              <Box
+                paddingTop={6}
+                marginTop={4}
+                borderColor="neutral150"
+                borderStyle="solid"
+                borderWidth="1px 0 0 0"
+              >
+                <Typography
+                  variant="sigma"
+                  textColor="neutral600"
+                  paddingBottom={4}
+                >
+                  Details
+                </Typography>
+                <Grid.Root gap={4}>
+                  <Grid.Item col={12}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        User ID
+                      </Typography>
+                      <Typography
+                        variant="omega"
+                        textColor="neutral600"
+                        style={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                      >
+                        {user?.id}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                  <Grid.Item col={6}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Created
+                      </Typography>
+                      <Typography variant="omega" textColor="neutral600">
+                        {user?.createdAt
+                          ? new Date(user.createdAt).toLocaleString()
+                          : "—"}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                  <Grid.Item col={6}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Last updated
+                      </Typography>
+                      <Typography variant="omega" textColor="neutral600">
+                        {user?.updatedAt
+                          ? new Date(user.updatedAt).toLocaleString()
+                          : "—"}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                </Grid.Root>
+              </Box>
+
+              {/* Email actions */}
               {emailVerificationEnabled && (
                 <Box
                   paddingTop={6}
@@ -424,29 +469,44 @@ export function UserDetailDrawer({
           {/* Sessions tab */}
           <Tabs.Content value="sessions">
             <Box paddingTop={6}>
-              <Flex direction="column" gap={4}>
-                <Typography variant="omega" textColor="neutral600">
-                  Revoke all active sessions for this user. They will be signed
-                  out on all devices.
-                </Typography>
-                {revokeAllMutation.isSuccess && (
-                  <Typography textColor="success600" variant="pi">
-                    All sessions revoked.
+              <Flex
+                justifyContent="space-between"
+                alignItems="center"
+                padding={4}
+                background="neutral50"
+                hasRadius
+                borderColor="neutral150"
+                borderStyle="solid"
+                borderWidth="1px"
+                gap={4}
+              >
+                <Flex direction="column" gap={1}>
+                  <Typography variant="omega" fontWeight="semiBold">
+                    Revoke all sessions
                   </Typography>
-                )}
-                {revokeAllMutation.isError && (
-                  <Typography textColor="danger600" variant="pi">
-                    {revokeAllMutation.error instanceof Error
-                      ? revokeAllMutation.error.message
-                      : "An error occurred"}
+                  <Typography variant="pi" textColor="neutral500">
+                    Signs the user out on all devices immediately.
                   </Typography>
-                )}
+                  {revokeAllMutation.isSuccess && (
+                    <Typography textColor="success600" variant="pi">
+                      All sessions revoked successfully.
+                    </Typography>
+                  )}
+                  {revokeAllMutation.isError && (
+                    <Typography textColor="danger600" variant="pi">
+                      {revokeAllMutation.error instanceof Error
+                        ? revokeAllMutation.error.message
+                        : "An error occurred"}
+                    </Typography>
+                  )}
+                </Flex>
                 <Button
                   variant="danger-light"
-                  loading={revokeAllMutation.isLoading}
-                  onClick={() => revokeAllMutation.mutate()}
+                  size="S"
+                  onClick={() => setConfirmRevokeAll(true)}
+                  style={{ flexShrink: 0 }}
                 >
-                  Revoke all sessions
+                  Revoke all
                 </Button>
               </Flex>
             </Box>
@@ -488,8 +548,7 @@ export function UserDetailDrawer({
                     )}
                     <Button
                       variant="secondary"
-                      loading={unbanMutation.isLoading}
-                      onClick={() => unbanMutation.mutate()}
+                      onClick={() => setConfirmUnban(true)}
                     >
                       Unban user
                     </Button>
@@ -554,93 +613,89 @@ export function UserDetailDrawer({
           {/* Security tab */}
           <Tabs.Content value="security">
             <Box paddingTop={6}>
-              <Flex direction="column" gap={4}>
-                <Typography variant="delta">Set password</Typography>
-                <Grid.Root gap={4}>
-                  <Grid.Item col={6}>
-                    <Field.Root
-                      hint="Enter a new password for this user"
-                      style={{ width: "100%" }}
-                    >
-                      <Field.Label>New password</Field.Label>
-                      <TextInput
-                        type="password"
-                        value={newPassword}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setNewPassword(e.target.value)
-                        }
-                      />
-                      <Field.Hint />
-                    </Field.Root>
-                  </Grid.Item>
-                </Grid.Root>
-                {passwordMutation.isSuccess && (
-                  <Typography textColor="success600" variant="pi">
-                    Password updated.
-                  </Typography>
-                )}
-                {passwordMutation.isError && (
-                  <Typography textColor="danger600" variant="pi">
-                    {passwordMutation.error instanceof Error
-                      ? passwordMutation.error.message
-                      : "An error occurred"}
-                  </Typography>
-                )}
-                <Box>
-                  <Button
-                    disabled={!newPassword}
-                    loading={passwordMutation.isLoading}
-                    onClick={() => passwordMutation.mutate()}
-                  >
-                    Set password
-                  </Button>
-                </Box>
+              {/* Set password */}
+              <Typography variant="sigma" textColor="neutral600" paddingBottom={4}>
+                Set password
+              </Typography>
+              <Field.Root hint="Enter a new password for this user">
+                <Field.Label>New password</Field.Label>
+                <TextInput
+                  type="password"
+                  value={newPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setNewPassword(e.target.value)
+                  }
+                />
+                <Field.Hint />
+              </Field.Root>
+              {passwordMutation.isSuccess && (
+                <Typography textColor="success600" variant="pi" paddingTop={2}>
+                  Password updated.
+                </Typography>
+              )}
+              {passwordMutation.isError && (
+                <Typography textColor="danger600" variant="pi" paddingTop={2}>
+                  {passwordMutation.error instanceof Error
+                    ? passwordMutation.error.message
+                    : "An error occurred"}
+                </Typography>
+              )}
+              <Box paddingTop={4}>
+                <Button
+                  disabled={!newPassword}
+                  loading={passwordMutation.isLoading}
+                  onClick={() => passwordMutation.mutate()}
+                >
+                  Set password
+                </Button>
+              </Box>
 
-                {user?.account && user.account.length > 0 && (
-                  <Box
-                    paddingTop={4}
-                    marginTop={2}
-                    borderColor="neutral150"
-                    borderStyle="solid"
-                    borderWidth="1px 0 0 0"
+              {/* Linked accounts */}
+              {user?.account && user.account.length > 0 && (
+                <Box
+                  paddingTop={6}
+                  marginTop={4}
+                  borderColor="neutral150"
+                  borderStyle="solid"
+                  borderWidth="1px 0 0 0"
+                >
+                  <Typography
+                    variant="sigma"
+                    textColor="neutral600"
+                    paddingBottom={4}
                   >
-                    <Typography variant="delta" paddingBottom={3}>
-                      Linked accounts
-                    </Typography>
-                    <Flex direction="column" gap={2}>
-                      {user.account.map((acc) => (
-                        <Flex
-                          key={acc.id}
-                          justifyContent="space-between"
-                          alignItems="center"
-                          padding={3}
-                          background="neutral100"
-                          hasRadius
+                    Linked accounts
+                  </Typography>
+                  <Flex direction="column" gap={2}>
+                    {user.account.map((acc) => (
+                      <Flex
+                        key={acc.id}
+                        justifyContent="space-between"
+                        alignItems="center"
+                        padding={3}
+                        background="neutral50"
+                        hasRadius
+                        borderColor="neutral150"
+                        borderStyle="solid"
+                        borderWidth="1px"
+                      >
+                        <Typography variant="omega" fontWeight="semiBold">
+                          {acc.providerId}
+                        </Typography>
+                        <Button
+                          variant="danger-light"
+                          size="S"
+                          onClick={() =>
+                            setConfirmUnlinkAccountId(acc.providerId)
+                          }
                         >
-                          <Typography variant="omega">
-                            {acc.providerId}
-                          </Typography>
-                          <Button
-                            variant="danger-light"
-                            size="S"
-                            onClick={async () => {
-                              await client.dash.unlinkAccount(
-                                { providerId: acc.providerId },
-                                withContext({ userId }),
-                              );
-                              qc.invalidateQueries({
-                                queryKey: ["dash-user", userId],
-                              });
-                            }}
-                          >
-                            Unlink
-                          </Button>
-                        </Flex>
-                      ))}
-                    </Flex>
-                  </Box>
-                )}
-              </Flex>
+                          Unlink
+                        </Button>
+                      </Flex>
+                    ))}
+                  </Flex>
+                </Box>
+              )}
             </Box>
           </Tabs.Content>
 
@@ -693,6 +748,42 @@ export function UserDetailDrawer({
             </Box>
           </Tabs.Content>
         </Tabs.Root>
+      )}
+
+      {confirmRevokeAll && (
+        <ConfirmDialog
+          title="Revoke all sessions"
+          message="Are you sure you want to revoke all sessions for this user? They will be signed out on all devices."
+          confirmLabel="Revoke all"
+          loading={revokeAllMutation.isLoading}
+          onConfirm={() => revokeAllMutation.mutate()}
+          onCancel={() => setConfirmRevokeAll(false)}
+        />
+      )}
+
+      {confirmUnban && (
+        <ConfirmDialog
+          title="Unban user"
+          message="Are you sure you want to unban this user? They will be able to sign in again."
+          confirmLabel="Unban"
+          variant="default"
+          loading={unbanMutation.isLoading}
+          onConfirm={() => unbanMutation.mutate()}
+          onCancel={() => setConfirmUnban(false)}
+        />
+      )}
+
+      {confirmUnlinkAccountId && (
+        <ConfirmDialog
+          title="Unlink account"
+          message={`Are you sure you want to unlink the "${confirmUnlinkAccountId}" provider from this user?`}
+          confirmLabel="Unlink"
+          loading={unlinkAccountMutation.isLoading}
+          onConfirm={() =>
+            unlinkAccountMutation.mutate(confirmUnlinkAccountId)
+          }
+          onCancel={() => setConfirmUnlinkAccountId(null)}
+        />
       )}
     </Drawer>
   );

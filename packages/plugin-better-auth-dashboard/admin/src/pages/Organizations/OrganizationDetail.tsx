@@ -16,6 +16,7 @@ import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
 import { UserCombobox } from "../../components/UserCombobox";
@@ -104,6 +105,9 @@ export function OrganizationDetail({
   const [editName, setEditName] = useState<string | undefined>(undefined);
   const [editSlug, setEditSlug] = useState<string | undefined>(undefined);
   const [editExtra, setEditExtra] = useState<Record<string, unknown>>({});
+  const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
+  const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(null);
+  const [confirmDeleteSsoId, setConfirmDeleteSsoId] = useState<string | null>(null);
 
   const handleExtraChange = (name: string, value: unknown) => {
     setEditExtra((prev) => ({ ...prev, [name]: value }));
@@ -166,6 +170,7 @@ export function OrganizationDetail({
       if (result.error) throw new Error(result.error.message ?? "Failed");
     },
     onSuccess: () => {
+      setConfirmRemoveMemberId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
     },
   });
@@ -217,6 +222,7 @@ export function OrganizationDetail({
       if (result.error) throw new Error(result.error.message ?? "Failed");
     },
     onSuccess: () => {
+      setConfirmDeleteTeamId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-teams", organizationId] });
     },
   });
@@ -229,6 +235,7 @@ export function OrganizationDetail({
       if (result.error) throw new Error(result.error.message ?? "Failed");
     },
     onSuccess: () => {
+      setConfirmDeleteSsoId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-sso", organizationId] });
     },
   });
@@ -276,6 +283,7 @@ export function OrganizationDetail({
           {/* Details tab */}
           <Tabs.Content value="details">
             <Box paddingTop={6}>
+              {/* Editable fields */}
               <Grid.Root gap={4}>
                 <Grid.Item col={6}>
                   <Field.Root style={{ width: "100%" }}>
@@ -304,45 +312,6 @@ export function OrganizationDetail({
                     />
                     <Field.Hint />
                   </Field.Root>
-                </Grid.Item>
-                <Grid.Item col={4}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      Members
-                    </Typography>
-                    <Typography variant="omega">
-                      {org?.memberCount ?? 0}
-                    </Typography>
-                  </Flex>
-                </Grid.Item>
-                <Grid.Item col={4}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      Created
-                    </Typography>
-                    <Typography variant="omega">
-                      {org?.createdAt
-                        ? new Date(org.createdAt).toLocaleDateString()
-                        : "—"}
-                    </Typography>
-                  </Flex>
-                </Grid.Item>
-                <Grid.Item col={4}>
-                  <Flex direction="column" gap={1}>
-                    <Typography variant="pi" textColor="neutral500">
-                      Organization ID
-                    </Typography>
-                    <Typography
-                      variant="pi"
-                      textColor="neutral600"
-                      style={{
-                        fontFamily: "monospace",
-                        wordBreak: "break-all",
-                      }}
-                    >
-                      {org?.id}
-                    </Typography>
-                  </Flex>
                 </Grid.Item>
               </Grid.Root>
 
@@ -383,6 +352,64 @@ export function OrganizationDetail({
                   </Button>
                 )}
               </Flex>
+
+              {/* Read-only metadata */}
+              <Box
+                paddingTop={6}
+                marginTop={4}
+                borderColor="neutral150"
+                borderStyle="solid"
+                borderWidth="1px 0 0 0"
+              >
+                <Typography
+                  variant="sigma"
+                  textColor="neutral600"
+                  paddingBottom={4}
+                >
+                  Details
+                </Typography>
+                <Grid.Root gap={4}>
+                  <Grid.Item col={12}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Organization ID
+                      </Typography>
+                      <Typography
+                        variant="omega"
+                        textColor="neutral600"
+                        style={{
+                          fontFamily: "monospace",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {org?.id}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                  <Grid.Item col={4}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Members
+                      </Typography>
+                      <Typography variant="omega">
+                        {org?.memberCount ?? 0}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                  <Grid.Item col={4}>
+                    <Flex direction="column" gap={1}>
+                      <Typography variant="pi" textColor="neutral500">
+                        Created
+                      </Typography>
+                      <Typography variant="omega">
+                        {org?.createdAt
+                          ? new Date(org.createdAt).toLocaleDateString()
+                          : "—"}
+                      </Typography>
+                    </Flex>
+                  </Grid.Item>
+                </Grid.Root>
+              </Box>
             </Box>
           </Tabs.Content>
 
@@ -414,15 +441,25 @@ export function OrganizationDetail({
                       />
                     </Grid.Item>
                     <Grid.Item col={4}>
-                      <Field.Root hint="e.g. member, admin, owner">
+                      <Field.Root>
                         <Field.Label>Role</Field.Label>
-                        <TextInput
+                        <SingleSelect
                           value={addRole}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            setAddRole(e.target.value)
+                          onChange={(role: string | number) =>
+                            setAddRole(String(role))
                           }
-                        />
-                        <Field.Hint />
+                          aria-label="Member role"
+                        >
+                          <SingleSelectOption value="member">
+                            Member
+                          </SingleSelectOption>
+                          <SingleSelectOption value="admin">
+                            Admin
+                          </SingleSelectOption>
+                          <SingleSelectOption value="owner">
+                            Owner
+                          </SingleSelectOption>
+                        </SingleSelect>
                       </Field.Root>
                     </Grid.Item>
                   </Grid.Root>
@@ -503,7 +540,7 @@ export function OrganizationDetail({
                           <IconButton
                             label="Remove member"
                             onClick={() =>
-                              removeMemberMutation.mutate(member.id)
+                              setConfirmRemoveMemberId(member.id)
                             }
                             data-testid="remove-member-btn"
                           >
@@ -571,7 +608,7 @@ export function OrganizationDetail({
                         key={team.id}
                         team={team}
                         organizationId={organizationId}
-                        onDelete={() => deleteTeamMutation.mutate(team.id)}
+                        onDelete={() => setConfirmDeleteTeamId(team.id)}
                       />
                     ))
                   )}
@@ -617,7 +654,7 @@ export function OrganizationDetail({
                         <IconButton
                           label="Delete SSO provider"
                           onClick={() =>
-                            deleteSsoMutation.mutate(provider.providerId)
+                            setConfirmDeleteSsoId(provider.providerId)
                           }
                         >
                           <Trash />
@@ -630,6 +667,39 @@ export function OrganizationDetail({
             </Box>
           </Tabs.Content>
         </Tabs.Root>
+      )}
+
+      {confirmRemoveMemberId && (
+        <ConfirmDialog
+          title="Remove member"
+          message="Are you sure you want to remove this member from the organization?"
+          confirmLabel="Remove"
+          loading={removeMemberMutation.isLoading}
+          onConfirm={() => removeMemberMutation.mutate(confirmRemoveMemberId)}
+          onCancel={() => setConfirmRemoveMemberId(null)}
+        />
+      )}
+
+      {confirmDeleteTeamId && (
+        <ConfirmDialog
+          title="Delete team"
+          message="Are you sure you want to delete this team? All team members will be removed. This action cannot be undone."
+          confirmLabel="Delete"
+          loading={deleteTeamMutation.isLoading}
+          onConfirm={() => deleteTeamMutation.mutate(confirmDeleteTeamId)}
+          onCancel={() => setConfirmDeleteTeamId(null)}
+        />
+      )}
+
+      {confirmDeleteSsoId && (
+        <ConfirmDialog
+          title="Delete SSO provider"
+          message="Are you sure you want to delete this SSO provider? Members using this provider will need to authenticate differently."
+          confirmLabel="Delete"
+          loading={deleteSsoMutation.isLoading}
+          onConfirm={() => deleteSsoMutation.mutate(confirmDeleteSsoId)}
+          onCancel={() => setConfirmDeleteSsoId(null)}
+        />
       )}
     </Drawer>
   );
@@ -646,6 +716,7 @@ function TeamRow({
 }) {
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState(false);
+  const [confirmRemoveTeamMemberId, setConfirmRemoveTeamMemberId] = useState<string | null>(null);
 
   const teamMembersQuery = useQuery({
     queryKey: ["dash-team-members", organizationId, team.id],
@@ -691,6 +762,7 @@ function TeamRow({
       if (result.error) throw new Error(result.error.message ?? "Failed");
     },
     onSuccess: () => {
+      setConfirmRemoveTeamMemberId(null);
       qc.invalidateQueries({
         queryKey: ["dash-team-members", organizationId, team.id],
       });
@@ -772,7 +844,9 @@ function TeamRow({
                   </Typography>
                   <IconButton
                     label="Remove from team"
-                    onClick={() => removeTeamMemberMutation.mutate(tm.userId)}
+                    onClick={() =>
+                      setConfirmRemoveTeamMemberId(tm.userId)
+                    }
                   >
                     <Trash />
                   </IconButton>
@@ -781,6 +855,19 @@ function TeamRow({
             )}
           </Flex>
         </Box>
+      )}
+
+      {confirmRemoveTeamMemberId && (
+        <ConfirmDialog
+          title="Remove from team"
+          message="Are you sure you want to remove this member from the team?"
+          confirmLabel="Remove"
+          loading={removeTeamMemberMutation.isLoading}
+          onConfirm={() =>
+            removeTeamMemberMutation.mutate(confirmRemoveTeamMemberId)
+          }
+          onCancel={() => setConfirmRemoveTeamMemberId(null)}
+        />
       )}
     </Box>
   );

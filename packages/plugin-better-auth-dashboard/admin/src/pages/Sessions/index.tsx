@@ -13,6 +13,7 @@ import { Trash } from "@strapi/icons";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { withContext } from "../../utils/dashContext";
 
 const PAGE_SIZE = 25;
@@ -21,13 +22,15 @@ export function SessionsPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmRevokeSessionId, setConfirmRevokeSessionId] = useState<
+    string | null
+  >(null);
+  const [confirmRevokeMany, setConfirmRevokeMany] = useState(false);
 
   const sessionsQuery = useQuery({
     queryKey: ["dash-all-sessions", page],
     queryFn: async () => {
-      const result = await client.dash.listAllSessions({
-        // query: { limit: PAGE_SIZE, offset },
-      });
+      const result = await client.dash.listAllSessions({});
       if (result.error)
         throw new Error(result.error.message ?? "Failed to load sessions");
       return result.data ?? [];
@@ -45,6 +48,7 @@ export function SessionsPage() {
         throw new Error(result.error.message ?? "Revoke failed");
     },
     onSuccess: () => {
+      setConfirmRevokeSessionId(null);
       qc.invalidateQueries({ queryKey: ["dash-all-sessions"] });
     },
   });
@@ -60,14 +64,13 @@ export function SessionsPage() {
       return result.data;
     },
     onSuccess: () => {
+      setConfirmRevokeMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-all-sessions"] });
     },
   });
 
   const usersWithSessions = sessionsQuery.data ?? [];
-
-  // Flatten for selection — selecting by userId
   const allUserIds = usersWithSessions.map((u) => u.id);
   const allSelected =
     allUserIds.length > 0 && allUserIds.every((id) => selected.has(id));
@@ -83,40 +86,33 @@ export function SessionsPage() {
   };
 
   const handleSelectAll = () => {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(allUserIds));
-    }
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(allUserIds));
   };
 
   return (
     <Box padding={6} data-testid="sessions-page">
+      {/* Page header */}
       <Flex
         justifyContent="space-between"
-        alignItems="center"
+        alignItems="flex-start"
         paddingBottom={4}
       >
-        <Flex alignItems="center" gap={3}>
+        <Box>
           <Typography variant="beta" textColor="neutral800">
             Sessions
           </Typography>
-          {usersWithSessions.length > 0 && (
-            <Checkbox
-              checked={allSelected}
-              onCheckedChange={handleSelectAll}
-              aria-label="Select all users"
-            >
-              Select all
-            </Checkbox>
-          )}
-        </Flex>
+          <Typography variant="pi" textColor="neutral500" paddingTop={1}>
+            {usersWithSessions.length > 0
+              ? `${usersWithSessions.length} user${usersWithSessions.length !== 1 ? "s" : ""} with active sessions`
+              : "Active sessions across all users"}
+          </Typography>
+        </Box>
         {someSelected && (
           <Button
             variant="danger-light"
             size="S"
-            loading={revokeManyMutation.isLoading}
-            onClick={() => revokeManyMutation.mutate([...selected])}
+            onClick={() => setConfirmRevokeMany(true)}
             data-testid="revoke-selected-btn"
           >
             Revoke sessions for {selected.size} user
@@ -140,7 +136,40 @@ export function SessionsPage() {
         borderColor="neutral150"
         borderStyle="solid"
         borderWidth="1px"
+        style={{ overflow: "hidden" }}
       >
+        {/* Column header */}
+        {!sessionsQuery.isLoading && usersWithSessions.length > 0 && (
+          <Flex
+            paddingLeft={4}
+            paddingRight={4}
+            paddingTop={3}
+            paddingBottom={3}
+            alignItems="center"
+            gap={3}
+            background="neutral50"
+            borderColor="neutral150"
+            borderStyle="solid"
+            borderWidth="0 0 1px 0"
+          >
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+              aria-label="Select all users"
+            />
+            <Typography
+              variant="sigma"
+              textColor="neutral600"
+              style={{ flex: 1 }}
+            >
+              User
+            </Typography>
+            <Typography variant="sigma" textColor="neutral600">
+              Sessions
+            </Typography>
+          </Flex>
+        )}
+
         {sessionsQuery.isLoading ? (
           <Flex justifyContent="center" padding={8}>
             <Loader>Loading sessions…</Loader>
@@ -155,21 +184,17 @@ export function SessionsPage() {
               key={userRow.id}
               borderColor="neutral150"
               borderStyle="solid"
-              borderWidth="1px"
+              borderWidth="0 0 1px 0"
               data-testid="session-user-row"
             >
-              <Flex
-                padding={4}
-                alignItems="center"
-                gap={3}
-                background="neutral50"
-              >
+              {/* User header */}
+              <Flex padding={4} alignItems="center" gap={3}>
                 <Checkbox
                   checked={selected.has(userRow.id)}
                   onCheckedChange={() => toggleSelect(userRow.id)}
                   aria-label={`Select ${userRow.name}`}
                 />
-                <Flex direction="column">
+                <Flex direction="column" gap={1} style={{ flex: 1 }}>
                   <Typography variant="omega" fontWeight="semiBold">
                     {userRow.name}
                   </Typography>
@@ -183,32 +208,50 @@ export function SessionsPage() {
                 </Badge>
               </Flex>
 
+              {/* Session rows */}
               {userRow.sessions.map((session) => (
                 <Flex
                   key={session.id}
-                  paddingLeft={10}
+                  paddingLeft={8}
                   paddingRight={4}
                   paddingTop={3}
                   paddingBottom={3}
-                  alignItems="center"
-                  gap={3}
-                  borderColor="neutral100"
+                  alignItems="flex-start"
+                  justifyContent="space-between"
+                  gap={4}
+                  background="neutral0"
+                  borderColor="neutral150"
                   borderStyle="solid"
-                  borderWidth="1px"
+                  borderWidth="1px 0 0 0"
                   data-testid="session-row"
                 >
-                  <Flex direction="column" gap={1}>
-                    {session.ipAddress && (
-                      <Typography variant="pi" textColor="neutral700">
-                        IP: {session.ipAddress}
+                  <Flex
+                    direction="column"
+                    gap={1}
+                    style={{ flex: 1, minWidth: 0 }}
+                  >
+                    <Flex gap={4} alignItems="center" style={{ flexWrap: "wrap" }}>
+                      {session.ipAddress && (
+                        <Typography
+                          variant="pi"
+                          fontWeight="semiBold"
+                          textColor="neutral700"
+                        >
+                          {session.ipAddress}
+                        </Typography>
+                      )}
+                      <Typography variant="pi" textColor="neutral400">
+                        Created{" "}
+                        {new Date(session.createdAt).toLocaleString()}
+                        {" · "}
+                        Expires {new Date(session.expiresAt).toLocaleString()}
                       </Typography>
-                    )}
+                    </Flex>
                     {session.userAgent && (
                       <Typography
                         variant="pi"
                         textColor="neutral500"
                         style={{
-                          maxWidth: 400,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
@@ -217,15 +260,11 @@ export function SessionsPage() {
                         {session.userAgent}
                       </Typography>
                     )}
-                    <Typography variant="pi" textColor="neutral400">
-                      Created: {new Date(session.createdAt).toLocaleString()}
-                      {" · "}
-                      Expires: {new Date(session.expiresAt).toLocaleString()}
-                    </Typography>
                   </Flex>
                   <IconButton
                     label="Revoke session"
-                    onClick={() => revokeSessionMutation.mutate(session.id)}
+                    onClick={() => setConfirmRevokeSessionId(session.id)}
+                    style={{ flexShrink: 0 }}
                     data-testid="revoke-session-btn"
                   >
                     <Trash />
@@ -257,6 +296,30 @@ export function SessionsPage() {
             </Button>
           </Flex>
         </Flex>
+      )}
+
+      {confirmRevokeSessionId && (
+        <ConfirmDialog
+          title="Revoke session"
+          message="Are you sure you want to revoke this session? The user will be signed out on this device."
+          confirmLabel="Revoke"
+          loading={revokeSessionMutation.isLoading}
+          onConfirm={() =>
+            revokeSessionMutation.mutate(confirmRevokeSessionId)
+          }
+          onCancel={() => setConfirmRevokeSessionId(null)}
+        />
+      )}
+
+      {confirmRevokeMany && (
+        <ConfirmDialog
+          title={`Revoke sessions for ${selected.size} user${selected.size !== 1 ? "s" : ""}`}
+          message={`Are you sure you want to revoke all sessions for ${selected.size} user${selected.size !== 1 ? "s" : ""}? They will be signed out on all their devices.`}
+          confirmLabel="Revoke all"
+          loading={revokeManyMutation.isLoading}
+          onConfirm={() => revokeManyMutation.mutate([...selected])}
+          onCancel={() => setConfirmRevokeMany(false)}
+        />
       )}
     </Box>
   );

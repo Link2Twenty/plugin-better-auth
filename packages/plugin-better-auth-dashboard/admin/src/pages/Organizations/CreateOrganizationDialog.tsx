@@ -1,9 +1,10 @@
 import {
+  Box,
   Button,
   Checkbox,
   Field,
   Flex,
-  Modal,
+  Grid,
   TextInput,
   Typography,
 } from "@strapi/design-system";
@@ -11,6 +12,7 @@ import type React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { client } from "../../client";
+import { Drawer } from "../../components/Drawer";
 import { UserCombobox } from "../../components/UserCombobox";
 import { withContext } from "../../utils/dashContext";
 
@@ -52,7 +54,6 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
     },
   });
 
-  // Auto-generate slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setName(val);
@@ -61,20 +62,32 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
     }
   };
 
+  const footer = (
+    <>
+      <Button variant="tertiary" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button
+        loading={createMutation.isLoading}
+        disabled={!name || !slug || !ownerId}
+        onClick={() => createMutation.mutate()}
+      >
+        Create organization
+      </Button>
+    </>
+  );
+
   return (
-    <Modal.Root
-      defaultOpen
-      onOpenChange={(open: boolean) => !open && onClose()}
+    <Drawer
+      title="Create organization"
+      footer={footer}
+      onClose={onClose}
     >
-      <Modal.Content>
-        <Modal.Header>
-          <Typography variant="beta" tag="h2">
-            Create Organization
-          </Typography>
-        </Modal.Header>
-        <Modal.Body>
-          <Flex direction="column" gap={4}>
-            <Field.Root>
+      <Flex direction="column" gap={4}>
+        {/* Name + Slug */}
+        <Grid.Root gap={4}>
+          <Grid.Item col={6}>
+            <Field.Root style={{ width: "100%" }}>
               <Field.Label>Name</Field.Label>
               <TextInput
                 name="name"
@@ -83,7 +96,9 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
                 required
               />
             </Field.Root>
-            <Field.Root hint="URL-safe identifier for the organization">
+          </Grid.Item>
+          <Grid.Item col={6}>
+            <Field.Root hint="URL-safe identifier" style={{ width: "100%" }}>
               <Field.Label>Slug</Field.Label>
               <TextInput
                 name="slug"
@@ -95,77 +110,86 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
               />
               <Field.Hint />
             </Field.Root>
-            <Field.Root>
-              <Field.Label>Logo URL</Field.Label>
-              <TextInput
-                name="logo"
-                type="url"
-                value={logo}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setLogo(e.target.value)
-                }
-              />
-            </Field.Root>
-            <Field.Root>
-              <Field.Label>Owner</Field.Label>
-              <UserCombobox
-                hint="The user who will own this organization"
-                value={ownerId}
-                onChange={setOwnerId}
-                required
-              />
-            </Field.Root>
+          </Grid.Item>
+        </Grid.Root>
 
-            {teamsEnabled && (
-              <>
-                <Checkbox
-                  name="skipDefaultTeam"
-                  checked={skipDefaultTeam}
-                  onCheckedChange={(checked: boolean) =>
-                    setSkipDefaultTeam(checked)
-                  }
-                >
-                  Skip creating a default team
-                </Checkbox>
-                {!skipDefaultTeam && (
-                  <Field.Root hint="Leave blank to use the default team name">
-                    <Field.Label>Default team name</Field.Label>
-                    <TextInput
-                      name="defaultTeamName"
-                      value={defaultTeamName}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setDefaultTeamName(e.target.value)
-                      }
-                    />
-                    <Field.Hint />
-                  </Field.Root>
-                )}
-              </>
-            )}
+        {/* Logo URL */}
+        <Field.Root style={{ width: "100%" }} hint="Optional URL of the organization logo">
+          <Field.Label>Logo URL</Field.Label>
+          <TextInput
+            name="logo"
+            type="url"
+            value={logo}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setLogo(e.target.value)
+            }
+          />
+          <Field.Hint />
+        </Field.Root>
 
-            {createMutation.isError && (
-              <Typography textColor="danger600" variant="pi">
-                {createMutation.error instanceof Error
-                  ? createMutation.error.message
-                  : "Create failed"}
-              </Typography>
-            )}
-          </Flex>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="tertiary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            loading={createMutation.isLoading}
-            disabled={!name || !slug || !ownerId}
-            onClick={() => createMutation.mutate()}
+        {/* Owner */}
+        <UserCombobox
+          label="Owner"
+          hint="The user who will own this organization"
+          value={ownerId}
+          onChange={setOwnerId}
+          required
+        />
+
+        {/* Teams */}
+        {teamsEnabled && (
+          <Box
+            paddingTop={4}
+            borderColor="neutral150"
+            borderStyle="solid"
+            borderWidth="1px 0 0 0"
           >
-            Create
-          </Button>
-        </Modal.Footer>
-      </Modal.Content>
-    </Modal.Root>
+            <Typography
+              variant="sigma"
+              textColor="neutral600"
+              paddingBottom={3}
+            >
+              Teams
+            </Typography>
+            <Flex direction="column" gap={3}>
+              <Checkbox
+                name="skipDefaultTeam"
+                checked={skipDefaultTeam}
+                onCheckedChange={(checked: boolean) =>
+                  setSkipDefaultTeam(checked)
+                }
+              >
+                Skip creating a default team
+              </Checkbox>
+              {!skipDefaultTeam && (
+                <Field.Root
+                  style={{ width: "100%" }}
+                  hint="Leave blank to use the default team name"
+                >
+                  <Field.Label>Default team name</Field.Label>
+                  <TextInput
+                    name="defaultTeamName"
+                    value={defaultTeamName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setDefaultTeamName(e.target.value)
+                    }
+                  />
+                  <Field.Hint />
+                </Field.Root>
+              )}
+            </Flex>
+          </Box>
+        )}
+
+        {createMutation.isError && (
+          <Typography textColor="danger600" variant="pi">
+            {createMutation.error instanceof Error
+              ? createMutation.error.message
+              : "Create failed"}
+          </Typography>
+        )}
+      </Flex>
+    </Drawer>
   );
 }
 
