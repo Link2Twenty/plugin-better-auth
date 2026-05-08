@@ -42,6 +42,17 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install dependencies
         run: pnpm install
+      - name: Cache build outputs
+        id: build-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+      - name: Run build
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: pnpm run build
       - name: Discover test packages
         id: discover
         run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
@@ -93,8 +104,13 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Run build
-        run: pnpm run build
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run TypeScript checks
         run: pnpm run check-types
 
@@ -123,8 +139,13 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Run build
-        run: pnpm run build
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
         run: pnpm --filter='${{ matrix.package }}' run test:integration
 
@@ -158,8 +179,13 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Run build
-        run: pnpm run build
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
         run: pnpm --filter='${{ matrix.package }}' run test:e2e
       - uses: actions/upload-artifact@v4
