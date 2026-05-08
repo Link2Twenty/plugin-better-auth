@@ -11,7 +11,43 @@ on:
       - develop
 
 jobs:
+  setup:
+    name: 'setup'
+    runs-on: ubuntu-latest
+    outputs:
+      integration-matrix: ${{ steps.discover.outputs.integration }}
+      e2e-matrix: ${{ steps.discover.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install dependencies
+        run: pnpm install
+      - name: Discover test packages
+        id: discover
+        run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
+
   lint:
+    needs: [setup]
     name: 'lint'
     runs-on: ubuntu-latest
     steps:
@@ -24,14 +60,24 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run linting
         run: pnpm run lint
-  test:
-    needs: [lint]
-    name: 'test'
+
+  test-integration:
+    needs: [setup, lint]
+    name: 'test:integration (${{ matrix.name }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.integration-matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -42,18 +88,56 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run build
         run: pnpm run build
       - name: Run integration tests
-        run: pnpm run test:integration
+        run: pnpm --filter='${{ matrix.package }}' run test:integration
+
+  test-e2e:
+    needs: [setup, lint]
+    name: 'test:e2e (${{ matrix.name }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.e2e-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Run build
+        run: pnpm run build
       - name: Run e2e tests
-        run: pnpm run test:e2e
+        run: pnpm --filter='${{ matrix.package }}' run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.name }}
           path: '**/playwright-report/'
           retention-days: 30
-

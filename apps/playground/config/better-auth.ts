@@ -1,6 +1,7 @@
+import { dash } from "@better-auth/infra";
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
-import type { Auth } from "better-auth";
 import { betterAuth } from "better-auth";
+import { jwt, organization } from "better-auth/plugins";
 
 const auth = () =>
   betterAuth({
@@ -8,6 +9,16 @@ const auth = () =>
     emailAndPassword: {
       enabled: true,
     },
+    plugins: [
+      dash({
+        apiUrl: process.env.STRAPI_URL || "http://localhost:1337",
+        apiKey:
+          process.env.BETTER_AUTH_DASHBOARD_SECRET ||
+          "strapi-internal-dashboard-key",
+      }),
+      organization(),
+      jwt(),
+    ],
     database: strapiAdapter(),
     account: {
       accountLinking: {
@@ -23,13 +34,3 @@ const auth = () =>
   });
 
 export default auth;
-
-import type {} from "@strapi/types/dist/core/strapi";
-
-declare module "@strapi/types/dist/core/strapi" {
-  interface Strapi {
-    internal_config: {
-      "better-auth": Auth;
-    };
-  }
-}

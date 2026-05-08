@@ -9,7 +9,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**"]
+    "includes": ["**", "!**/types/generated"]
   },
   "formatter": {
     "enabled": true,

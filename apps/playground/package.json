@@ -7,7 +7,7 @@
     "build": "strapi build",
     "console": "strapi console",
     "deploy": "strapi deploy",
-    "dev": "strapi develop",
+    "dev": "tsx scripts/dev.ts",
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
@@ -17,8 +17,10 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.1.13",
     "@strapi-community/plugin-api-permissions": "workspace:*",
     "@strapi-community/plugin-better-auth": "workspace:*",
+    "@strapi-community/plugin-better-auth-dashboard": "workspace:*",
     "@strapi/strapi": "catalog:strapi",
     "@strapi/types": "catalog:strapi",
     "better-auth": "catalog:better-auth",
@@ -33,6 +35,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "engines": {

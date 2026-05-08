@@ -66,6 +66,15 @@
         }
       },
       "required": true
+    },
+    "activeOrganizationId": {
+      "type": "string",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     }
   }
 }
