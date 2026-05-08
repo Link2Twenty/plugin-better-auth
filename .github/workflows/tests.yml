@@ -93,6 +93,8 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Run build
+        run: pnpm run build
       - name: Run TypeScript checks
         run: pnpm run check-types
 
