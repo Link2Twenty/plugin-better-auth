@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/strapi-community/auth.git",
+    "url": "git+https://github.com/strapi-community/plugin-better-auth.git",
     "directory": "packages/plugin-better-auth-dashboard"
   },
   "type": "commonjs",
@@ -39,7 +39,6 @@
     "dist"
   ],
   "scripts": {
-    "postinstall": "playwright install --with-deps",
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
@@ -51,7 +50,7 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "catalog:playwright",
     "@strapi/sdk-plugin": "^6.0.0",
     "@biomejs/biome": "^2.3.11",
     "@strapi/strapi": "catalog:strapi",
@@ -63,13 +62,13 @@
   },
   "peerDependencies": {
     "@better-auth/infra": "^0.1.13",
-    "@strapi-community/plugin-better-auth": "workspace:*",
-    "better-auth": "catalog:better-auth",
-    "@strapi/design-system": "catalog:strapi-design-system",
-    "@strapi/icons": "catalog:strapi-design-system",
-    "@strapi/strapi": "catalog:strapi",
-    "@strapi/types": "catalog:strapi",
-    "@strapi/utils": "catalog:strapi",
+    "@strapi-community/plugin-better-auth": "workspace:^",
+    "@strapi/design-system": "^2.0.0",
+    "@strapi/icons": "^2.0.0",
+    "@strapi/strapi": "^5.45.0",
+    "@strapi/types": "^5.45.0",
+    "@strapi/utils": "^5.45.0",
+    "better-auth": ">=1.4.0 <2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-intl": "^6.0.0 || ^7.0.0",
