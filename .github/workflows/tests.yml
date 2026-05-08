@@ -80,7 +80,7 @@ jobs:
         run: pnpm run build
 
   lint:
-    needs: [install]
+    needs: [install, build]
     name: 'lint'
     runs-on: ubuntu-latest
     steps:
@@ -106,7 +106,7 @@ jobs:
         run: pnpm run lint
 
   typescript:
-    needs: [build]
+    needs: [install, build]
     name: 'typescript'
     runs-on: ubuntu-latest
     steps:
