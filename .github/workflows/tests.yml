@@ -70,9 +70,34 @@ jobs:
           key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run linting
         run: pnpm run lint
+  
+  typescript:
+    needs: [setup]
+    name: 'typescript'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Run TypeScript checks
+        run: pnpm run check-types
 
   test-integration:
-    needs: [setup, lint]
+    needs: [setup, lint, typescript]
     name: 'test:integration (${{ matrix.name }})'
     runs-on: ubuntu-latest
     strategy:
@@ -102,7 +127,7 @@ jobs:
         run: pnpm --filter='${{ matrix.package }}' run test:integration
 
   test-e2e:
-    needs: [setup, lint]
+    needs: [setup, lint, typescript]
     name: 'test:e2e (${{ matrix.name }})'
     runs-on: ubuntu-latest
     strategy:
