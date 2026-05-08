@@ -18,10 +18,8 @@ const sidebars: SidebarsConfig = {
       items: [
         'better-auth/installation',
         'better-auth/configuration',
-        'better-auth/typescript',
         'better-auth/schema',
         'better-auth/emails',
-        'better-auth/hosting',
         'better-auth/client-setup',
         'better-auth/server-usage',
         'better-auth/plugins',

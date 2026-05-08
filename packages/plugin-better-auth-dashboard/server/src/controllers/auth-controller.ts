@@ -1,6 +1,6 @@
-import type { Core } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
 import type { Context } from "koa";
+import { auth } from "../utils";
 
 export const DASHBOARD_API_KEY =
   process.env.BETTER_AUTH_DASHBOARD_SECRET || "strapi-internal-dashboard-key";
@@ -23,11 +23,10 @@ async function hashApiKey(value: string): Promise<string> {
     .join("");
 }
 
-const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
+const proxyController = () => ({
   async handleAuthRequest(ctx: Context) {
-    const auth = strapi.internal_config["better-auth"];
-
-    if (!auth) throw new errors.ApplicationError("Better Auth not initialized");
+    if (!auth)
+      throw new errors.ApplicationError("No Better Auth config file found");
 
     if (!auth.api.signJWT) {
       throw new errors.ApplicationError(

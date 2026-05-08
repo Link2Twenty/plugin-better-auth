@@ -10,10 +10,10 @@ You can interact with the Better Auth instance directly from Strapi controllers,
 
 ## Accessing the Better Auth instance
 
-The configured Better Auth instance is attached to Strapi's internal config after the plugin initialises:
+If you need access to the Better Auth api from your Strapi server code, you can simply import it from `src/lib/auth.ts`
 
 ```typescript
-const auth = strapi.internal_config['better-auth'];
+import { auth } from '@/lib/auth.ts';
 ```
 
 ## Reading the session in a controller
@@ -21,10 +21,10 @@ const auth = strapi.internal_config['better-auth'];
 Use `auth.api.getSession` to verify the session from an incoming request:
 
 ```typescript title="src/api/my-resource/controllers/my-resource.ts"
+import { auth } from '@/lib/auth.ts';
+
 export default {
   async protectedAction(ctx) {
-    const auth = strapi.internal_config['better-auth'];
-
     const session = await auth.api.getSession({
       headers: ctx.request.headers,
     });
@@ -46,14 +46,13 @@ Strapi policies are the idiomatic way to guard routes. Create a global policy th
 
 ```typescript title="src/policies/is-authenticated.ts"
 import type { Core } from '@strapi/strapi';
+import { auth } from '@/lib/auth.ts';
 
 export default async (
   policyContext: any,
   _config: any,
   { strapi }: { strapi: Core.Strapi },
 ) => {
-  const auth = strapi.internal_config['better-auth'];
-
   const session = await auth.api.getSession({
     headers: policyContext.request.headers,
   });

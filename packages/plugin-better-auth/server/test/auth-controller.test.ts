@@ -1,15 +1,21 @@
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type {} from "../src/types/strapi";
+import { getPluginService } from "../src/utils";
 import { setupStrapi, stopStrapi } from "./utils";
 
 const BASE = "/api/auth";
 
-let savedAuth: unknown;
+type AuthService = ReturnType<
+  typeof import("../src/services/auth-service").default
+>;
+
+let authService: AuthService;
+let savedGetAuth: AuthService["getAuth"];
 
 beforeAll(async () => {
   await setupStrapi();
-  savedAuth = strapi.internal_config["better-auth"];
+  authService = getPluginService("auth-service");
+  savedGetAuth = authService.getAuth;
 }, 120_000);
 
 afterAll(async () => {
@@ -17,14 +23,12 @@ afterAll(async () => {
 });
 
 afterEach(() => {
-  strapi.internal_config["better-auth"] = savedAuth as never;
+  authService.getAuth = savedGetAuth;
 });
 
 function mockHandler(handler: (req: Request) => Response | Promise<Response>) {
-  strapi.internal_config["better-auth"] = {
-    handler,
-    options: { basePath: "/api/auth" },
-  } as never;
+  authService.getAuth = () =>
+    ({ handler, options: { basePath: "/api/auth" } }) as never;
 }
 
 // ---------------------------------------------------------------------------
@@ -161,8 +165,7 @@ describe("auth-controller — status and header forwarding", () => {
 
 describe("auth-controller — error handling", () => {
   it("returns an error response when Better Auth is not initialized", async () => {
-    // @ts-expect-error — intentionally removing the auth instance
-    strapi.internal_config["better-auth"] = null;
+    authService.getAuth = () => null;
 
     const res = await request(strapi.server.httpServer).get(`${BASE}/session`);
     expect(res.status).toBeGreaterThanOrEqual(400);

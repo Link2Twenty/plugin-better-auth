@@ -1,11 +1,13 @@
-import type { Core } from "@strapi/strapi";
 import packageJson from "../../../package.json";
+import type config from "../";
 
 export const PLUGIN_ID = packageJson.strapi.name;
 
-export function getService(strapi: Core.Strapi, name: string) {
-  return strapi.plugin(PLUGIN_ID).service(name);
-}
+export const POSSIBLE_CONFIG_LOCATIONS = [
+  "auth.ts",
+  "lib/auth.ts",
+  "src/lib/auth.ts",
+];
 
 export const MIN_STRAPI_VERSION = "5.45.0";
 
@@ -20,3 +22,18 @@ export function isVersionAtLeast(version: string, minimum: string): boolean {
   if (min !== minMin) return min > minMin;
   return pat >= minPat;
 }
+
+type Config = typeof config;
+type Services = Config["services"];
+/**
+ * A helper function to obtain a plugin service.
+ * @param {string} name The name of the service.
+ *
+ * @return {any} service.
+ */
+export const getPluginService = <ServiceName extends keyof Services>(
+  name: ServiceName,
+) => {
+  const service = strapi.service(`plugin::${PLUGIN_ID}.${name}`);
+  return service as ReturnType<Services[ServiceName]>;
+};

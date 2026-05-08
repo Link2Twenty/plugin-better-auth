@@ -84,12 +84,11 @@ await authClient.signUp.email({
 Use the Better Auth session to authenticate your users in custom Strapi controllers.
 
 ```typescript
+import { auth } from '@/lib/auth.ts';
+
 // In a Strapi controller
 export default {
   async customMethod(ctx) {
-    // Access the Better Auth instance
-    const auth = strapi.internal_config['better-auth'];
-    
     // Use Better Auth API methods
     const session = await auth.api.getSession({
       headers: ctx.request.headers,

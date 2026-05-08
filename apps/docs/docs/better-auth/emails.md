@@ -208,7 +208,7 @@ The `new Function("return import(...)")()` pattern is required because `@better-
 
 ### 3. Wire the functions into your Better Auth config
 
-```typescript title="config/better-auth.ts"
+```typescript title="src/lib/auth.ts"
 import { betterAuth } from 'better-auth';
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 import {
