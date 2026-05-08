@@ -1,7 +1,6 @@
 import type { Core } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
 import type { Context } from "koa";
-import { getPluginService } from "../utils";
 
 export const DASHBOARD_API_KEY =
   process.env.BETTER_AUTH_DASHBOARD_SECRET || "strapi-internal-dashboard-key";
@@ -16,13 +15,26 @@ export const DASHBOARD_API_KEY =
  */
 export const DASH_CONTEXT_HEADER = "x-dash-context";
 
+async function hashApiKey(value: string): Promise<string> {
+  const data = new TextEncoder().encode(value);
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
   async handleAuthRequest(ctx: Context) {
     const auth = strapi.internal_config["better-auth"];
 
     if (!auth) throw new errors.ApplicationError("Better Auth not initialized");
 
-    const keyPair = await getPluginService("crypto").getKeyPair();
+    if (!auth.api.signJWT) {
+      throw new errors.ApplicationError(
+        "[@strapi-community/plugin-better-auth-dashboard] The better-auth JWT plugin is required. " +
+          "Add jwt() from 'better-auth/plugins' to your better-auth configuration.",
+      );
+    }
 
     // Read JWT context from the dedicated X-Dash-Context header.
     // The admin client base64-encodes the context JSON and sets this header,
@@ -41,12 +53,13 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     }
 
-    // Mint a JWT for the dashboard API key with the context fields.
-    const jwt = await getPluginService("crypto").mintInternalJwt(
-      keyPair,
-      DASHBOARD_API_KEY,
-      extra,
-    );
+    const apiKeyHash = await hashApiKey(DASHBOARD_API_KEY);
+    const { token } = await auth.api.signJWT({
+      body: {
+        payload: { apiKeyHash, ...extra },
+        overrideOptions: { jwt: { expirationTime: "5m" } },
+      },
+    });
 
     // Create a Request object compatible with Better Auth
     const url = new URL(
@@ -66,8 +79,8 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     });
 
-    // Set the Authorization header with the minted JWT
-    headers.set("Authorization", `Bearer ${jwt}`);
+    // Set the Authorization header with the signed JWT
+    headers.set("Authorization", `Bearer ${token}`);
 
     const hasBody =
       ctx.request.method !== "GET" && ctx.request.method !== "HEAD";
@@ -100,11 +113,6 @@ const proxyController = ({ strapi }: { strapi: Core.Strapi }) => ({
     } else {
       ctx.body = await response.text();
     }
-  },
-
-  async getJwks(ctx: Context) {
-    const keyPair = await getPluginService("crypto").getKeyPair();
-    ctx.send({ keys: [keyPair.publicJwk] });
   },
 });
 

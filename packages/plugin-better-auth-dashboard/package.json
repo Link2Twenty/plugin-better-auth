@@ -50,9 +50,6 @@
     "lint": "biome check --fix",
     "test:e2e": "playwright test"
   },
-  "dependencies": {
-    "jose": "^6.0.0"
-  },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@strapi/sdk-plugin": "^6.0.0",

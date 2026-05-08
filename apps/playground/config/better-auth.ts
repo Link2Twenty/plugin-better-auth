@@ -1,7 +1,7 @@
 import { dash } from "@better-auth/infra";
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 import { betterAuth } from "better-auth";
-import { organization } from "better-auth/plugins";
+import { jwt, organization } from "better-auth/plugins";
 
 const auth = () =>
   betterAuth({
@@ -17,6 +17,7 @@ const auth = () =>
           "strapi-internal-dashboard-key",
       }),
       organization(),
+      jwt(),
     ],
     database: strapiAdapter(),
     account: {

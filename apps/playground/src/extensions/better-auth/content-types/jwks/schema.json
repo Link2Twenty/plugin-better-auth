@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_organization",
+  "collectionName": "ba_jwks",
   "info": {
-    "singularName": "organization",
-    "pluralName": "organizations",
-    "displayName": "Organizations"
+    "singularName": "jwks",
+    "pluralName": "jwks",
+    "displayName": "Jwks"
   },
   "options": {
     "draftAndPublish": false
@@ -18,8 +18,8 @@
     }
   },
   "attributes": {
-    "name": {
-      "type": "string",
+    "publicKey": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -28,28 +28,18 @@
       },
       "required": true
     },
-    "slug": {
-      "type": "string",
+    "privateKey": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
           "managed": true
         }
       },
-      "required": true,
-      "unique": true
+      "required": true
     },
-    "logo": {
-      "type": "string",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "metadata": {
-      "type": "string",
+    "expiresAt": {
+      "type": "datetime",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {

@@ -38,7 +38,7 @@ export function getAuthHeaders(): Record<string, string> {
 }
 
 /**
- * Better Auth client pointed at the admin proxy (/better-auth).
+ * Better Auth client pointed at the admin proxy (/auth).
  *
  * Auth is handled at the route level (Strapi JWT in Authorization header).
  * InferPlugin<ReturnType<typeof dash>> exposes all server-side dash() endpoints
@@ -49,7 +49,7 @@ export function getAuthHeaders(): Record<string, string> {
  */
 export const client = createAuthClient({
   baseURL: window.location.origin,
-  basePath: "/better-auth",
+  basePath: "/auth",
   plugins: [dashClient(), InferPlugin<ReturnType<typeof dash>>()],
   fetchOptions: {
     headers: getAuthHeaders(),

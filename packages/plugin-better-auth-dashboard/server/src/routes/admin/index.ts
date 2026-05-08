@@ -13,7 +13,7 @@ export default () => ({
     },
     {
       method: "GET",
-      path: "/better-auth/:path*",
+      path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
         policies: [],
@@ -23,7 +23,7 @@ export default () => ({
     },
     {
       method: "POST",
-      path: "/better-auth/:path*",
+      path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
         policies: [],
@@ -33,7 +33,7 @@ export default () => ({
     },
     {
       method: "PUT",
-      path: "/better-auth/:path*",
+      path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
         policies: [],
@@ -43,7 +43,7 @@ export default () => ({
     },
     {
       method: "PATCH",
-      path: "/better-auth/:path*",
+      path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
         policies: [],
@@ -53,7 +53,7 @@ export default () => ({
     },
     {
       method: "DELETE",
-      path: "/better-auth/:path*",
+      path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
         policies: [],

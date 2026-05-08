@@ -68,6 +68,9 @@
       },
       "required": true,
       "unique": true
+    },
+    "verified": {
+      "type": "boolean"
     }
   }
 }
