@@ -14,6 +14,9 @@ jobs:
   setup:
     name: 'setup'
     runs-on: ubuntu-latest
+    outputs:
+      integration-matrix: ${{ steps.discover.outputs.integration }}
+      e2e-matrix: ${{ steps.discover.outputs.e2e }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -39,6 +42,33 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install dependencies
         run: pnpm install
+      - name: Discover test packages
+        id: discover
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+
+          function getMatrix(script) {
+            const result = [];
+            for (const dir of ['packages', 'apps']) {
+              if (!fs.existsSync(dir)) continue;
+              for (const pkg of fs.readdirSync(dir)) {
+                const pkgJsonPath = `${dir}/${pkg}/package.json`;
+                if (!fs.existsSync(pkgJsonPath)) continue;
+                const json = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
+                if (json.scripts?.[script]) {
+                  result.push({ name: pkg, package: json.name });
+                }
+              }
+            }
+            return JSON.stringify({ include: result });
+          }
+
+          const integration = getMatrix('test:integration');
+          const e2e = getMatrix('test:e2e');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `integration=${integration}\ne2e=${e2e}\n`);
+          EOF
 
   lint:
     needs: [setup]
@@ -66,9 +96,12 @@ jobs:
         run: pnpm run lint
 
   test-integration:
-    needs: [lint]
-    name: 'test:integration'
+    needs: [setup, lint]
+    name: 'test:integration (${{ matrix.name }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.integration-matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -90,12 +123,15 @@ jobs:
       - name: Run build
         run: pnpm run build
       - name: Run integration tests
-        run: pnpm run test:integration
+        run: pnpm --filter='${{ matrix.package }}' run test:integration
 
   test-e2e:
-    needs: [lint]
-    name: 'test:e2e'
+    needs: [setup, lint]
+    name: 'test:e2e (${{ matrix.name }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.e2e-matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -122,11 +158,10 @@ jobs:
       - name: Run build
         run: pnpm run build
       - name: Run e2e tests
-        run: pnpm run test:e2e
+        run: pnpm --filter='${{ matrix.package }}' run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.name }}
           path: '**/playwright-report/'
           retention-days: 30
-
