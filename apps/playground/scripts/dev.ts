@@ -1,18 +1,18 @@
-const { spawn } = require("node:child_process");
-const { watch, existsSync } = require("node:fs");
-const { createConnection } = require("node:net");
-const { resolve } = require("node:path");
+import { type ChildProcess, spawn } from "node:child_process";
+import { existsSync, watch } from "node:fs";
+import { createConnection } from "node:net";
+import { resolve } from "node:path";
 
 const playgroundDir = resolve(__dirname, "..");
 const packagesDir = resolve(__dirname, "../../../packages");
 const strapiBin = resolve(playgroundDir, "node_modules/.bin/strapi");
 const STRAPI_PORT = process.env.PORT ? Number(process.env.PORT) : 1337;
 
-let strapiProcess = null;
+let strapiProcess: ChildProcess | null = null;
 let intentionalKill = false;
 let strapiReady = false;
 
-function waitForPort(port) {
+function waitForPort(port: number): Promise<void> {
   return new Promise((resolve) => {
     const check = () => {
       const socket = createConnection(port, "localhost");
@@ -29,13 +29,17 @@ function waitForPort(port) {
   });
 }
 
-function startStrapi() {
+function startStrapi(): void {
   intentionalKill = false;
   strapiReady = false;
+
+  // Strip NODE_PATH set by tsx so Strapi resolves its own modules cleanly
+  const { NODE_PATH: _np, ...strapiEnv } = process.env;
 
   strapiProcess = spawn(strapiBin, ["develop"], {
     cwd: playgroundDir,
     stdio: "inherit",
+    env: strapiEnv,
   });
 
   waitForPort(STRAPI_PORT).then(() => {
@@ -49,7 +53,7 @@ function startStrapi() {
   });
 }
 
-function restartStrapi(filename) {
+function restartStrapi(filename: string): void {
   if (!strapiProcess || !strapiReady) return;
   console.log(`\n[dev] Package changed (${filename}), restarting Strapi...\n`);
   const proc = strapiProcess;
@@ -68,7 +72,7 @@ process.on("SIGINT", () => {
 startStrapi();
 
 if (existsSync(packagesDir)) {
-  watch(packagesDir, { recursive: true }, (event, filename) => {
+  watch(packagesDir, { recursive: true }, (_, filename) => {
     if (!filename?.includes("dist") || filename.includes("dist/admin")) return;
     if (!/\.(js|mjs|cjs)$/.test(filename)) return;
     restartStrapi(filename);

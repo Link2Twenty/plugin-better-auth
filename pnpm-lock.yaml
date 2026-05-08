@@ -132,6 +132,9 @@ importers:
       '@types/react-dom':
         specifier: ^18
         version: 18.3.7(@types/react@18.3.27)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -174,7 +177,7 @@ importers:
         version: 1.58.2
       '@strapi/sdk-plugin':
         specifier: ^6.0.0
-        version: 6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)
+        version: 6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       '@strapi/strapi':
         specifier: catalog:strapi
         version: 5.45.0(@babel/preset-env@7.29.2(@babel/core@7.28.5))(@babel/runtime@7.28.4)(@codemirror/autocomplete@6.20.0)(@codemirror/language@6.12.1)(@codemirror/lint@6.9.2)(@codemirror/search@6.5.11)(@codemirror/state@6.5.3)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.9)(@emotion/is-prop-valid@1.4.0)(@swc/helpers@0.5.18)(@types/hoist-non-react-statics@3.3.7(@types/react@18.3.27))(@types/node@22.19.15)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(codemirror@5.65.20)(esbuild@0.27.7)(koa@2.16.4)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(styled-components@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.44.1)(type-fest@4.41.0)(webpack-dev-server@4.15.2(webpack@5.104.1(esbuild@0.27.7)))
@@ -207,7 +210,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/plugin-better-auth:
     dependencies:
@@ -222,20 +225,20 @@ importers:
         version: 5.45.0
       better-auth:
         specifier: '>=1.4.0 <2'
-        version: 1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
+        version: 1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
     devDependencies:
       '@better-auth/test-utils':
         specifier: catalog:better-auth
-        version: 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
+        version: 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@biomejs/biome':
         specifier: ^2.3.11
         version: 2.3.11
       '@strapi/sdk-plugin':
         specifier: ^6.0.0
-        version: 6.0.1(@types/node@25.0.5)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)
+        version: 6.0.1(@types/node@25.0.5)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       '@strapi/typescript-utils':
         specifier: catalog:strapi
         version: 5.45.0
@@ -256,13 +259,13 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/plugin-better-auth-dashboard:
     dependencies:
       '@better-auth/infra':
         specifier: ^0.1.13
-        version: 0.1.13(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))(zod@4.3.6)
+        version: 0.1.13(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))(zod@4.3.6)
       '@strapi-community/plugin-better-auth':
         specifier: workspace:^
         version: link:../plugin-better-auth
@@ -280,7 +283,7 @@ importers:
         version: 5.45.0
       better-auth:
         specifier: '>=1.4.0 <2'
-        version: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
+        version: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
       react:
         specifier: ^18.0.0
         version: 18.3.1
@@ -305,7 +308,7 @@ importers:
         version: 1.58.2
       '@strapi/sdk-plugin':
         specifier: ^6.0.0
-        version: 6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)
+        version: 6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       '@strapi/strapi':
         specifier: catalog:strapi
         version: 5.45.0(@babel/preset-env@7.29.2(@babel/core@7.28.5))(@babel/runtime@7.28.4)(@codemirror/autocomplete@6.20.0)(@codemirror/language@6.12.1)(@codemirror/lint@6.9.2)(@codemirror/search@6.5.11)(@codemirror/state@6.5.3)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.9)(@emotion/is-prop-valid@1.4.0)(@swc/helpers@0.5.18)(@types/hoist-non-react-statics@3.3.7(@types/react@18.3.27))(@types/node@22.19.15)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(better-sqlite3@12.4.1)(codemirror@5.65.20)(esbuild@0.27.7)(koa@2.16.4)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(styled-components@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.44.1)(type-fest@4.41.0)(webpack-dev-server@4.15.2(webpack@5.104.1(esbuild@0.27.7)))
@@ -10288,6 +10291,11 @@ packages:
     resolution: {integrity: sha512-LxhtAkPDTkVCMQjt2h6eBVY28KCjikZqZfMcC15YBeNjkgUpdCfBu5HoiOTDu86v6smE8yOjyEktJ8hlbANHQA==}
     engines: {node: '>=0.6.x'}
 
+  tsx@4.21.0:
+    resolution: {integrity: sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
@@ -12144,12 +12152,12 @@ snapshots:
       libphonenumber-js: 1.12.41
       zod: 4.3.6
 
-  '@better-auth/infra@0.1.13(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))(zod@4.3.6)':
+  '@better-auth/infra@0.1.13(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))(zod@4.3.6)':
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1)
-      '@better-auth/sso': 1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))
+      '@better-auth/sso': 1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))
       '@better-fetch/fetch': 1.1.21
-      better-auth: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
+      better-auth: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
       better-call: 1.3.4(zod@4.3.6)
       jose: 6.1.3
       libphonenumber-js: 1.12.41
@@ -12216,11 +12224,11 @@ snapshots:
       tldts: 6.1.86
       zod: 4.3.6
 
-  '@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))':
+  '@better-auth/sso@1.5.6(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))':
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1)
       '@better-fetch/fetch': 1.1.21
-      better-auth: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
+      better-auth: 1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
       fast-xml-parser: 5.5.9
       jose: 6.1.3
       samlify: 2.12.0
@@ -12239,11 +12247,11 @@ snapshots:
       '@better-auth/utils': 0.4.0
       '@better-fetch/fetch': 1.1.21
 
-  '@better-auth/test-utils@1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))))(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))':
+  '@better-auth/test-utils@1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))))(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))':
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1)
-      better-auth: 1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)))
-      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      better-auth: 1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))
+      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
 
   '@better-auth/utils@0.3.1': {}
 
@@ -17624,10 +17632,10 @@ snapshots:
       - redux
       - typescript
 
-  '@strapi/sdk-plugin@6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)':
+  '@strapi/sdk-plugin@6.0.1(@types/node@22.19.15)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)':
     dependencies:
       '@types/prompts': 2.4.9
-      '@vitejs/plugin-react': 4.7.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      '@vitejs/plugin-react': 4.7.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       boxen: 5.1.2
       chalk: 4.1.2
       commander: 12.1.0
@@ -17643,8 +17651,8 @@ snapshots:
       prettier: 2.8.8
       prompts: 2.4.2
       typescript: 5.4.4
-      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-dts: 4.5.4(@types/node@22.19.15)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-dts: 4.5.4(@types/node@22.19.15)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       yup: 0.32.9
     transitivePeerDependencies:
       - '@types/node'
@@ -17662,10 +17670,10 @@ snapshots:
       - tsx
       - yaml
 
-  '@strapi/sdk-plugin@6.0.1(@types/node@25.0.5)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(yaml@2.8.2)':
+  '@strapi/sdk-plugin@6.0.1(@types/node@25.0.5)(jiti@1.21.7)(rollup@4.55.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)':
     dependencies:
       '@types/prompts': 2.4.9
-      '@vitejs/plugin-react': 4.7.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      '@vitejs/plugin-react': 4.7.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       boxen: 5.1.2
       chalk: 4.1.2
       commander: 12.1.0
@@ -17681,8 +17689,8 @@ snapshots:
       prettier: 2.8.8
       prompts: 2.4.2
       typescript: 5.4.4
-      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-dts: 4.5.4(@types/node@25.0.5)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-dts: 4.5.4(@types/node@25.0.5)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       yup: 0.32.9
     transitivePeerDependencies:
       - '@types/node'
@@ -19327,7 +19335,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))':
+  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -19335,11 +19343,11 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))':
+  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -19347,7 +19355,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -19369,21 +19377,21 @@ snapshots:
       vite: 5.4.21(@types/node@20.19.37)(terser@5.44.1)
     optional: true
 
-  '@vitest/mocker@4.1.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))':
+  '@vitest/mocker@4.1.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.1.0
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@vitest/mocker@4.1.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))':
+  '@vitest/mocker@4.1.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.1.0
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/pretty-format@4.1.0':
     dependencies:
@@ -19823,7 +19831,7 @@ snapshots:
 
   bcryptjs@2.4.3: {}
 
-  better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))):
+  better-auth@1.5.6(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))):
     dependencies:
       '@better-auth/core': 1.5.6(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1)
       '@better-auth/drizzle-adapter': 1.5.6(@better-auth/core@1.5.6(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.12)(nanostores@1.1.1))(@better-auth/utils@0.3.1)
@@ -19847,7 +19855,7 @@ snapshots:
       mongodb: 7.1.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -19881,7 +19889,7 @@ snapshots:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
 
-  better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))):
+  better-auth@1.6.9(@opentelemetry/api@1.9.0)(better-sqlite3@12.4.1)(mongodb@7.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))):
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1)
       '@better-auth/drizzle-adapter': 1.6.9(@better-auth/core@1.6.9(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(jose@6.1.3)(kysely@0.28.17)(nanostores@1.1.1))(@better-auth/utils@0.4.0)
@@ -19905,7 +19913,7 @@ snapshots:
       mongodb: 7.1.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -26102,6 +26110,13 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
+  tsx@4.21.0:
+    dependencies:
+      esbuild: 0.27.7
+      get-tsconfig: 4.13.0
+    optionalDependencies:
+      fsevents: 2.3.3
+
   tunnel-agent@0.6.0:
     dependencies:
       safe-buffer: 5.2.1
@@ -26423,7 +26438,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-dts@4.5.4(@types/node@22.19.15)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)):
+  vite-plugin-dts@4.5.4(@types/node@22.19.15)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@microsoft/api-extractor': 7.57.7(@types/node@22.19.15)
       '@rollup/pluginutils': 5.3.0(rollup@4.55.1)
@@ -26436,13 +26451,13 @@ snapshots:
       magic-string: 0.30.21
       typescript: 5.4.4
     optionalDependencies:
-      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
       - supports-color
 
-  vite-plugin-dts@4.5.4(@types/node@25.0.5)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)):
+  vite-plugin-dts@4.5.4(@types/node@25.0.5)(rollup@4.55.1)(typescript@5.4.4)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@microsoft/api-extractor': 7.57.7(@types/node@25.0.5)
       '@rollup/pluginutils': 5.3.0(rollup@4.55.1)
@@ -26455,7 +26470,7 @@ snapshots:
       magic-string: 0.30.21
       typescript: 5.4.4
     optionalDependencies:
-      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
@@ -26491,7 +26506,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.44.1
 
-  vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2):
+  vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -26504,9 +26519,10 @@ snapshots:
       fsevents: 2.3.3
       jiti: 1.21.7
       terser: 5.44.1
+      tsx: 4.21.0
       yaml: 2.8.2
 
-  vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2):
+  vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -26519,6 +26535,7 @@ snapshots:
       fsevents: 2.3.3
       jiti: 1.21.7
       terser: 5.44.1
+      tsx: 4.21.0
       yaml: 2.8.2
 
   vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@20.19.37)(vite@5.4.21(@types/node@20.19.37)(terser@5.44.1)):
@@ -26550,10 +26567,10 @@ snapshots:
       - msw
     optional: true
 
-  vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)):
+  vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@vitest/expect': 4.1.0
-      '@vitest/mocker': 4.1.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      '@vitest/mocker': 4.1.0(vite@6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.1.0
       '@vitest/runner': 4.1.0
       '@vitest/snapshot': 4.1.0
@@ -26570,7 +26587,7 @@ snapshots:
       tinyexec: 1.0.4
       tinyglobby: 0.2.15
       tinyrainbow: 3.1.0
-      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@22.19.15)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
@@ -26578,10 +26595,10 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)):
+  vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.0.5)(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@vitest/expect': 4.1.0
-      '@vitest/mocker': 4.1.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2))
+      '@vitest/mocker': 4.1.0(vite@6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.1.0
       '@vitest/runner': 4.1.0
       '@vitest/snapshot': 4.1.0
@@ -26598,7 +26615,7 @@ snapshots:
       tinyexec: 1.0.4
       tinyglobby: 0.2.15
       tinyrainbow: 3.1.0
-      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@25.0.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
