@@ -11,8 +11,8 @@ on:
       - develop
 
 jobs:
-  setup:
-    name: 'setup'
+  install:
+    name: 'install'
     runs-on: ubuntu-latest
     outputs:
       integration-matrix: ${{ steps.discover.outputs.integration }}
@@ -40,6 +40,33 @@ jobs:
       - name: Install dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: pnpm install
+      - name: Discover test packages
+        id: discover
+        run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
+
+  build:
+    needs: [install]
+    name: 'build'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Cache build outputs
         id: build-cache
         uses: actions/cache@v4
@@ -51,12 +78,9 @@ jobs:
       - name: Run build
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm run build
-      - name: Discover test packages
-        id: discover
-        run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
 
   lint:
-    needs: [setup]
+    needs: [install]
     name: 'lint'
     runs-on: ubuntu-latest
     steps:
@@ -80,9 +104,9 @@ jobs:
           key: ${{ runner.os }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run linting
         run: pnpm run lint
-  
+
   typescript:
-    needs: [setup]
+    needs: [build]
     name: 'typescript'
     runs-on: ubuntu-latest
     steps:
@@ -115,12 +139,12 @@ jobs:
         run: pnpm run check-types
 
   test-integration:
-    needs: [setup, lint, typescript]
+    needs: [install, build, lint, typescript]
     name: 'test:integration (${{ matrix.name }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.setup.outputs.integration-matrix) }}
+      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -151,12 +175,12 @@ jobs:
         run: pnpm --filter='${{ matrix.package }}' run test:integration
 
   test-e2e:
-    needs: [setup, lint, typescript]
+    needs: [install, build, lint, typescript]
     name: 'test:e2e (${{ matrix.name }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.setup.outputs.e2e-matrix) }}
+      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
