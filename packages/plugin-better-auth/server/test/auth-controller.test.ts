@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type {} from "../src/types/strapi";
 import { setupStrapi, stopStrapi } from "./utils";
 
-const BASE = "/api/better-auth";
+const BASE = "/api/auth";
 
 let savedAuth: unknown;
 

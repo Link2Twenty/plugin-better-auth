@@ -17,7 +17,6 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
@@ -34,9 +33,8 @@ export default auth;
 
 ### Required options
 
-Two options are fixed and **must not be changed**:
+The following options are fixed and **must not be changed**:
 
-- **`basePath: '/api/better-auth'`** — This is the path where Strapi mounts the Better Auth request handler. The plugin expects all Better Auth requests at exactly this path.
 - **`advanced.database.generateId: 'serial'`** — Tells Better Auth to use auto-incremented integer IDs, which aligns with Strapi's default ID strategy. Changing this will break the Strapi adapter.
 
 ### Accessing the Better Auth instance
@@ -63,6 +61,22 @@ const auth = () =>
 
 In production set this to the public URL of your deployed front-end. Multiple origins can be listed if needed.
 
+## Base path
+
+By default, Better Auth exposes its endpoints under `/api/auth`. If you need to change this — for example to avoid a conflict with an existing route or to match a client SDK configured with a custom path — set `basePath` in the Better Auth config:
+
+```typescript title="config/better-auth.ts"
+const auth = () =>
+  betterAuth({
+    // ...
+    basePath: '/api/better-auth',
+  });
+```
+
+:::note
+The path must start with the API prefix (default `/api`). If you have customized `api.rest.prefix` in your Strapi config, make sure the `basePath` starts with that prefix instead.
+:::
+
 ## Cookie settings
 
 In production you typically want secure, cross-site cookies. Set the `defaultCookieAttributes` option based on your environment:
@@ -71,7 +85,6 @@ In production you typically want secure, cross-site cookies. Set the `defaultCoo
 const auth = () =>
   betterAuth({
     // ...
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
@@ -110,7 +123,6 @@ const auth = () =>
     database: strapiAdapter(),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {

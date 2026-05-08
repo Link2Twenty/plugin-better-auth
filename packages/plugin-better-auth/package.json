@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2-experimental.593681493255d3a39231f63454a967a71fdd7d66",
+  "version": "1.0.0-beta.4",
   "keywords": [
     "better-auth",
     "strapi",
@@ -7,10 +7,12 @@
     "authentication"
   ],
   "type": "commonjs",
+  "types": "./dist/adapter/adapter.d.ts",
+  "main": "./dist/adapter/index.js",
   "exports": {
     ".": {
-      "source": "./server/src/adapter/index.ts",
-      "types": "./dist/adapter/index.d.ts",
+      "source": "./server/src/adapter/adapter.ts",
+      "types": "./dist/adapter/adapter.d.ts",
       "require": "./dist/adapter/index.js",
       "default": "./dist/adapter/index.js"
     },
@@ -30,8 +32,8 @@
     "watch": "strapi-plugin watch",
     "dev": "strapi-plugin watch",
     "verify": "strapi-plugin verify",
-    "test:ts:back": "cd server && tsc --noEmit",
-    "test:integration": "node --js-explicit-resource-management node_modules/vitest/vitest.mjs run",
+    "test:ts:back": "tsc --noEmit",
+    "test:integration": "vitest run",
     "check-types": "pnpm run test:ts:back",
     "lint": "biome check --fix"
   },
@@ -51,16 +53,10 @@
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
-    "@strapi-community/plugin-api-permissions": "workspace:*",
-    "@strapi/strapi": "catalog:strapi",
-    "@strapi/types": "catalog:strapi",
-    "@strapi/utils": "catalog:strapi",
+    "@strapi/strapi": "^5.45.0",
+    "@strapi/types": "^5.45.0",
+    "@strapi/utils": "^5.45.0",
     "better-auth": ">=1.4.0 <2"
-  },
-  "peerDependenciesMeta": {
-    "@strapi-community/plugin-api-permissions": {
-      "optional": true
-    }
   },
   "strapi": {
     "kind": "plugin",

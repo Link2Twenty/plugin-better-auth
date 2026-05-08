@@ -94,7 +94,7 @@ export const transformFilters = (
     return {};
   }
 
-  const filters: { [key: string]: unknown } = {};
+  const filters: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(where)) {
     const fieldName = getFieldName({ model, field: key });
@@ -131,5 +131,5 @@ export const transformFilters = (
     }
   }
 
-  return filters;
+  return filters as Modules.Documents.Params.Filters.Any<UID.ContentType>;
 };

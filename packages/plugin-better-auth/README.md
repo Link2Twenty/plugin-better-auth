@@ -2,11 +2,8 @@
 
 A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](https://strapi.io) as the database backend. This package allows you to integrate Better Auth's authentication system with your Strapi application seamlessly.
 
-
 > [!CAUTION]  
 > This plugin is in BETA state. It is by no means considered stable and should not be used in production. If you want to contribute to it's development, please contact any of the maintainers.
-
-**Full flow documentation (API, Content Manager, config, troubleshooting):** [docs/AUTHENTICATION_FLOWS.md](./docs/AUTHENTICATION_FLOWS.md)
 
 ## Features
 
@@ -17,6 +14,8 @@ A [Better Auth](https://better-auth.com) database adapter that uses [Strapi](htt
 - ✅ Works with Strapi v5+
 
 ## Installation
+
+_You need to be running **Strapi 5.45.0** or higher to use this plugin._
 
 ```bash
 npm install better-auth @strapi-community/plugin-better-auth
@@ -39,9 +38,10 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
 const auth = () => betterAuth({
   database: strapiAdapter(),
+  trustedOrigins: ['http://localhost:3000'],
   advanced: {
     database: {
-      generateId: "serial",
+      generateId: 'serial',
     },
   },
 });
@@ -68,7 +68,7 @@ Call the Better Auth API from your front-end:
 import { createAuthClient } from 'better-auth/react'; // or /vue, /svelte
 
 const authClient = createAuthClient({
-  baseURL: 'http://localhost:1337/api/better-auth',
+  baseURL: 'http://localhost:1337/api/auth',
 });
 
 // Sign up

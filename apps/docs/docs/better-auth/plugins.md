@@ -20,7 +20,6 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
@@ -62,7 +61,6 @@ import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 const auth = () =>
   betterAuth({
     database: strapiAdapter(),
-    basePath: '/api/better-auth',
     trustedOrigins: ['http://localhost:3000'],
     advanced: {
       database: {
