@@ -5,4 +5,4 @@ export const PLUGIN_ID = packageJson.strapi.name;
 
 export const auth = strapi
   .service("plugin::better-auth.auth-service")
-  .getAuth() as Auth | null;
+  ?.getAuth() as Auth | null;

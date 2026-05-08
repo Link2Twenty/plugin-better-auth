@@ -160,6 +160,32 @@ describe("auth-controller — status and header forwarding", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Base path
+// ---------------------------------------------------------------------------
+
+describe("auth-controller — base path", () => {
+  it("forwards the request using a custom basePath", async () => {
+    let capturedUrl: string | undefined;
+
+    authService.getAuth = () =>
+      ({
+        handler: (req: Request) => {
+          capturedUrl = req.url;
+          return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        },
+        options: { basePath: "/custom/auth" },
+      }) as never;
+
+    await request(strapi.server.httpServer).get(`${BASE}/session`);
+
+    expect(capturedUrl).toContain("/custom/auth/session");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Error handling
 // ---------------------------------------------------------------------------
 
