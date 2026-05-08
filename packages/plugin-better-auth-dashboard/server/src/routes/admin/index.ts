@@ -3,16 +3,6 @@ export default () => ({
   routes: [
     {
       method: "GET",
-      path: "/better-auth-dashboard/schema/:model",
-      handler: "schema-controller.getModelSchema",
-      config: {
-        policies: [],
-        prefix: "",
-        auth: false,
-      },
-    },
-    {
-      method: "GET",
       path: "/auth/:path*",
       handler: "auth-controller.handleAuthRequest",
       config: {
