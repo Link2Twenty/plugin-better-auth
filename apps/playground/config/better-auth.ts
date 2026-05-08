@@ -33,13 +33,3 @@ const auth = () =>
   });
 
 export default auth;
-
-import type {} from "@strapi/types/dist/core/strapi";
-
-declare module "@strapi/types/dist/core/strapi" {
-  interface Strapi {
-    internal_config: {
-      "better-auth": ReturnType<typeof auth>;
-    };
-  }
-}
