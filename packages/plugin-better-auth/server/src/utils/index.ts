@@ -36,7 +36,7 @@ type Services = Config["services"];
  */
 export const getPluginService = <ServiceName extends keyof Services>(
   name: ServiceName,
-) => {
+): ReturnType<Services[ServiceName]> => {
   const service = strapi.service(`plugin::${PLUGIN_ID}.${name}`);
   return service as ReturnType<Services[ServiceName]>;
 };

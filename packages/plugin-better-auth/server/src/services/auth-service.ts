@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Auth } from "../../types/better-auth";
+import type { Auth } from "better-auth";
 import { POSSIBLE_CONFIG_LOCATIONS } from "../utils";
 
 export default () => ({

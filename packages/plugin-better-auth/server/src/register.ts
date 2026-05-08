@@ -1,4 +1,3 @@
-import type { Core } from "@strapi/strapi";
 import { fromNodeHeaders } from "better-auth/node";
 import type { ParameterizedContext } from "koa";
 import { createContentApiRoutes } from "./routes";
@@ -9,7 +8,7 @@ import {
   POSSIBLE_CONFIG_LOCATIONS,
 } from "./utils";
 
-export default ({ strapi }: { strapi: Core.Strapi }) => {
+export default () => {
   const strapiVersion = strapi.config.get<string>("info.strapi", "0.0.0");
 
   if (!isVersionAtLeast(strapiVersion, MIN_STRAPI_VERSION)) {
