@@ -32,11 +32,11 @@ pnpm add better-auth @strapi-community/plugin-better-auth
 Create the Better Auth config file and add the following content.
 
 ```typescript
-// config/better-auth.ts
+// src/lib/auth.ts
 import { betterAuth } from "better-auth";
 import { strapiAdapter } from '@strapi-community/plugin-better-auth';
 
-const auth = () => betterAuth({
+export const auth = betterAuth({
   database: strapiAdapter(),
   trustedOrigins: ['http://localhost:3000'],
   advanced: {
@@ -45,8 +45,6 @@ const auth = () => betterAuth({
     },
   },
 });
-
-export default auth;
 ```
 
 ### 2. Generate the content types
@@ -54,7 +52,7 @@ export default auth;
 Run the content type generation command to bootstrap the default content types.
 
 ```bash
-npx auth@latest generate --config config/better-auth.ts
+npx auth generate
 ```
 
 _Tip: Every time you install a new Better Auth plugin, you have to run this command again._
@@ -107,7 +105,7 @@ export default {
 Any Better Auth plugin may be used with Strapi + Better Auth. Some plugins require you to run the `generate` CLI in order to make the required schema changes. To do that you have to manually specify the location of the Better Auth config file.
 
 ```bash
-npx auth@latest generate --config config/better-auth.ts
+npx auth generate
 ```
 
 ## Resources
