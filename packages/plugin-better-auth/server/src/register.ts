@@ -27,8 +27,8 @@ export default () => {
    */
   if (!auth) {
     throw new Error(
-      "[@strapi-community/plugin-better-auth] No Better Auth configuration was found" +
-        POSSIBLE_CONFIG_LOCATIONS.map((loc) => `\n - ${loc}`).join(""),
+      "[@strapi-community/plugin-better-auth] No Better Auth configuration was found. " +
+        "There should be an auth.js|ts file in ./, ./lib or ./src/lib with a default export or named export 'auth'.",
     );
   }
 
