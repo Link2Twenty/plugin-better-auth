@@ -1,5 +1,4 @@
 import {
-  Box,
   Checkbox,
   Field,
   Flex,
@@ -9,10 +8,10 @@ import {
   SingleSelectOption,
   Textarea,
   TextInput,
-  Typography,
 } from "@strapi/design-system";
 import type React from "react";
 import type { StrapiAttribute } from "../hooks/useModelSchema";
+import { FormSection, SectionLabel } from "./FormPrimitives";
 
 export interface AdditionalFieldDef {
   name: string;
@@ -188,7 +187,10 @@ export function DynamicField({
 
   if (type === "relation") {
     return (
-      <Field.Root style={fieldStyle} hint={`Relation → ${attribute.target ?? "unknown"}`}>
+      <Field.Root
+        style={fieldStyle}
+        hint={`Relation → ${attribute.target ?? "unknown"}`}
+      >
         <Field.Label>{label}</Field.Label>
         <TextInput
           value={value != null ? String(value) : ""}
@@ -247,14 +249,8 @@ export function CustomFieldsSection({
   if (renderable.length === 0) return null;
 
   return (
-    <Box paddingTop={6} marginTop={4} borderColor="neutral150" borderStyle="solid" borderWidth="1px 0 0 0">
-      <Typography
-        variant="sigma"
-        textColor="neutral600"
-        paddingBottom={4}
-      >
-        Custom fields
-      </Typography>
+    <FormSection>
+      <SectionLabel>Custom fields</SectionLabel>
       <Flex direction="column" gap={4} alignItems="stretch">
         {renderable.map((field) => (
           <DynamicField
@@ -265,6 +261,6 @@ export function CustomFieldsSection({
           />
         ))}
       </Flex>
-    </Box>
+    </FormSection>
   );
 }

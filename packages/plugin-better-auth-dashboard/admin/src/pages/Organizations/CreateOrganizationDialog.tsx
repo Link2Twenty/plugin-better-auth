@@ -4,15 +4,17 @@ import {
   Checkbox,
   Field,
   Flex,
-  Grid,
   TextInput,
   Typography,
 } from "@strapi/design-system";
+import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { client } from "../../client";
 import { Drawer } from "../../components/Drawer";
+import { FormSection, SectionLabel } from "../../components/FormPrimitives";
+import { MediaPickerField } from "../../components/MediaPickerField";
 import { UserCombobox } from "../../components/UserCombobox";
 import { withContext } from "../../utils/dashContext";
 
@@ -23,6 +25,7 @@ interface Props {
 
 export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
   const qc = useQueryClient();
+  const { toggleNotification } = useNotification();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -50,7 +53,17 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      toggleNotification({
+        type: "success",
+        message: "Organization created successfully",
+      });
       onClose();
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to create organization",
+      });
     },
   });
 
@@ -78,115 +91,89 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
   );
 
   return (
-    <Drawer
-      title="Create organization"
-      footer={footer}
-      onClose={onClose}
-    >
-      <Flex direction="column" gap={4}>
-        {/* Name + Slug */}
-        <Grid.Root gap={4}>
-          <Grid.Item col={6}>
-            <Field.Root style={{ width: "100%" }}>
-              <Field.Label>Name</Field.Label>
-              <TextInput
-                name="name"
-                value={name}
-                onChange={handleNameChange}
-                required
-              />
-            </Field.Root>
-          </Grid.Item>
-          <Grid.Item col={6}>
-            <Field.Root hint="URL-safe identifier" style={{ width: "100%" }}>
-              <Field.Label>Slug</Field.Label>
-              <TextInput
-                name="slug"
-                value={slug}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSlug(e.target.value)
-                }
-                required
-              />
-              <Field.Hint />
-            </Field.Root>
-          </Grid.Item>
-        </Grid.Root>
-
-        {/* Logo URL */}
-        <Field.Root style={{ width: "100%" }} hint="Optional URL of the organization logo">
-          <Field.Label>Logo URL</Field.Label>
-          <TextInput
+    <Drawer title="Create organization" footer={footer} onClose={onClose}>
+      <Flex direction="column" gap={5}>
+        {/* Details */}
+        <FormSection>
+          <SectionLabel>Details</SectionLabel>
+          <Field.Root style={{ width: "100%" }} required>
+            <Field.Label>Name</Field.Label>
+            <TextInput
+              name="name"
+              value={name}
+              onChange={handleNameChange}
+              placeholder="Acme Corp"
+            />
+          </Field.Root>
+          <Field.Root style={{ width: "100%" }} hint="Used in URLs" required>
+            <Field.Label>Slug</Field.Label>
+            <TextInput
+              name="slug"
+              value={slug}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSlug(e.target.value)
+              }
+              placeholder="acme-corp"
+            />
+            <Field.Hint />
+          </Field.Root>
+          <MediaPickerField
+            label="Logo URL"
             name="logo"
-            type="url"
             value={logo}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setLogo(e.target.value)
-            }
+            onChange={setLogo}
+            placeholder="https://example.com/logo.png"
+            hint="Optional — publicly accessible image URL"
           />
-          <Field.Hint />
-        </Field.Root>
+        </FormSection>
 
         {/* Owner */}
-        <UserCombobox
-          label="Owner"
-          hint="The user who will own this organization"
-          value={ownerId}
-          onChange={setOwnerId}
-          required
-        />
+        <FormSection>
+          <SectionLabel>Owner</SectionLabel>
+          <UserCombobox
+            label="Owner"
+            hint="The user who will own and manage this organization"
+            value={ownerId}
+            onChange={setOwnerId}
+            required
+          />
+        </FormSection>
 
-        {/* Teams */}
+        {/* Default team (only when teams are enabled) */}
         {teamsEnabled && (
-          <Box
-            paddingTop={4}
-            borderColor="neutral150"
-            borderStyle="solid"
-            borderWidth="1px 0 0 0"
-          >
-            <Typography
-              variant="sigma"
-              textColor="neutral600"
-              paddingBottom={3}
+          <FormSection>
+            <SectionLabel>Default team</SectionLabel>
+            <Checkbox
+              name="skipDefaultTeam"
+              checked={skipDefaultTeam}
+              onCheckedChange={(checked: boolean) =>
+                setSkipDefaultTeam(checked)
+              }
             >
-              Teams
-            </Typography>
-            <Flex direction="column" gap={3}>
-              <Checkbox
-                name="skipDefaultTeam"
-                checked={skipDefaultTeam}
-                onCheckedChange={(checked: boolean) =>
-                  setSkipDefaultTeam(checked)
-                }
-              >
-                Skip creating a default team
-              </Checkbox>
-              {!skipDefaultTeam && (
-                <Field.Root
-                  style={{ width: "100%" }}
-                  hint="Leave blank to use the default team name"
-                >
-                  <Field.Label>Default team name</Field.Label>
-                  <TextInput
-                    name="defaultTeamName"
-                    value={defaultTeamName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setDefaultTeamName(e.target.value)
-                    }
-                  />
-                  <Field.Hint />
-                </Field.Root>
-              )}
-            </Flex>
-          </Box>
-        )}
-
-        {createMutation.isError && (
-          <Typography textColor="danger600" variant="pi">
-            {createMutation.error instanceof Error
-              ? createMutation.error.message
-              : "Create failed"}
-          </Typography>
+              Don't create a default team
+            </Checkbox>
+            {!skipDefaultTeam && (
+              <Field.Root style={{ width: "100%" }}>
+                <Field.Label>Default team name</Field.Label>
+                <TextInput
+                  name="defaultTeamName"
+                  value={defaultTeamName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDefaultTeamName(e.target.value)
+                  }
+                  placeholder="Leave blank to use the system default"
+                />
+              </Field.Root>
+            )}
+            {skipDefaultTeam && (
+              <Box>
+                <Typography variant="pi" textColor="neutral500">
+                  Members can be added to teams manually after the organization
+                  is created.
+                </Typography>
+              </Box>
+            )}
+          </FormSection>
         )}
       </Flex>
     </Drawer>

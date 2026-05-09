@@ -8,6 +8,37 @@ import {
 import { Cross } from "@strapi/icons";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import styled, { keyframes } from "styled-components";
+
+const slideIn = keyframes`
+  from { transform: translateX(100%); opacity: 0.6; }
+  to   { transform: translateX(0);    opacity: 1; }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(33, 33, 52, 0.4);
+  animation: ${fadeIn} 180ms ease;
+`;
+
+const Panel = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(760px, 95vw);
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: -8px 0 40px rgba(33, 33, 52, 0.18);
+  animation: ${slideIn} 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+`;
 
 interface DrawerProps {
   title: ReactNode;
@@ -42,30 +73,9 @@ export function Drawer({
 
   return (
     <Portal>
-      <div style={{ position: "fixed", inset: 0, zIndex: 9999 }}>
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(33,33,52,0.4)",
-          }}
-          onClick={onClose}
-          aria-hidden="true"
-        />
-        <Box
-          background="neutral0"
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            width: "min(760px, 95vw)",
-            display: "flex",
-            flexDirection: "column",
-            boxShadow: "-8px 0 32px rgba(33,33,52,0.16)",
-          }}
-          data-testid={testId}
-        >
+      <div style={{ position: "fixed", inset: 0, zIndex: 200 }}>
+        <Overlay onClick={onClose} aria-hidden="true" />
+        <Panel data-testid={testId}>
           <Flex
             justifyContent="space-between"
             alignItems="center"
@@ -112,7 +122,7 @@ export function Drawer({
               {footer}
             </Flex>
           )}
-        </Box>
+        </Panel>
       </div>
     </Portal>
   );

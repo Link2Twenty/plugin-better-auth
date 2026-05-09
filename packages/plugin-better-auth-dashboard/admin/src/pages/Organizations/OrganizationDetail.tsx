@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Field,
@@ -12,6 +13,7 @@ import {
   Typography,
 } from "@strapi/design-system";
 import { Plus, Trash } from "@strapi/icons";
+import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -19,6 +21,19 @@ import { client } from "../../client";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
+import {
+  AccountRow,
+  EditLayout,
+  EditSidebar,
+  FormSection,
+  MetaItem,
+  MetaKey,
+  MetaVal,
+  MonoChip,
+  ProviderBadge,
+  SectionLabel,
+} from "../../components/FormPrimitives";
+import { MediaPickerField } from "../../components/MediaPickerField";
 import { UserCombobox } from "../../components/UserCombobox";
 import { useModelSchema } from "../../hooks/useModelSchema";
 import { withContext } from "../../utils/dashContext";
@@ -47,6 +62,7 @@ export function OrganizationDetail({
 }: Props) {
   const schemaQuery = useModelSchema("organization");
   const qc = useQueryClient();
+  const { toggleNotification } = useNotification();
 
   const orgQuery = useQuery({
     queryKey: ["dash-org", organizationId],
@@ -102,12 +118,20 @@ export function OrganizationDetail({
     },
   });
 
+  const [activeTab, setActiveTab] = useState("details");
   const [editName, setEditName] = useState<string | undefined>(undefined);
   const [editSlug, setEditSlug] = useState<string | undefined>(undefined);
+  const [editLogo, setEditLogo] = useState<string | undefined>(undefined);
   const [editExtra, setEditExtra] = useState<Record<string, unknown>>({});
-  const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
-  const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(null);
-  const [confirmDeleteSsoId, setConfirmDeleteSsoId] = useState<string | null>(null);
+  const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<
+    string | null
+  >(null);
+  const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(
+    null,
+  );
+  const [confirmDeleteSsoId, setConfirmDeleteSsoId] = useState<string | null>(
+    null,
+  );
 
   const handleExtraChange = (name: string, value: unknown) => {
     setEditExtra((prev) => ({ ...prev, [name]: value }));
@@ -124,6 +148,7 @@ export function OrganizationDetail({
       const body: Record<string, unknown> = { ...editExtra };
       if (editName !== undefined) body.name = editName;
       if (editSlug !== undefined) body.slug = editSlug;
+      if (editLogo !== undefined) body.logo = editLogo;
       const result = await client.dash.organization.update(
         body as never,
         withContext({ organizationId }),
@@ -137,7 +162,19 @@ export function OrganizationDetail({
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
       setEditName(undefined);
       setEditSlug(undefined);
+      setEditLogo(undefined);
       setEditExtra({});
+      toggleNotification({
+        type: "success",
+        message: "Organization updated successfully",
+      });
+      onClose();
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Update failed",
+      });
     },
   });
 
@@ -158,6 +195,13 @@ export function OrganizationDetail({
       qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
       setAddUserId("");
       setAddRole("member");
+      toggleNotification({ type: "success", message: "Member added" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to add member",
+      });
     },
   });
 
@@ -172,6 +216,13 @@ export function OrganizationDetail({
     onSuccess: () => {
       setConfirmRemoveMemberId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
+      toggleNotification({ type: "success", message: "Member removed" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to remove member",
+      });
     },
   });
 
@@ -192,6 +243,13 @@ export function OrganizationDetail({
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-org-members", organizationId] });
+      toggleNotification({ type: "success", message: "Role updated" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to update role",
+      });
     },
   });
 
@@ -210,6 +268,13 @@ export function OrganizationDetail({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-org-teams", organizationId] });
       setNewTeamName("");
+      toggleNotification({ type: "success", message: "Team created" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to create team",
+      });
     },
   });
 
@@ -224,6 +289,13 @@ export function OrganizationDetail({
     onSuccess: () => {
       setConfirmDeleteTeamId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-teams", organizationId] });
+      toggleNotification({ type: "success", message: "Team deleted" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete team",
+      });
     },
   });
 
@@ -237,6 +309,13 @@ export function OrganizationDetail({
     onSuccess: () => {
       setConfirmDeleteSsoId(null);
       qc.invalidateQueries({ queryKey: ["dash-org-sso", organizationId] });
+      toggleNotification({ type: "success", message: "SSO provider deleted" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete SSO provider",
+      });
     },
   });
 
@@ -247,28 +326,59 @@ export function OrganizationDetail({
   const hasOrgEdits =
     editName !== undefined ||
     editSlug !== undefined ||
+    editLogo !== undefined ||
     Object.keys(editExtra).length > 0;
 
   const customFields = Object.entries(schemaQuery.data ?? {})
     .filter(([name]) => !STANDARD_ORG_FIELDS.has(name))
     .map(([name, attribute]) => ({ name, attribute }));
 
+  const detailsFooter =
+    activeTab === "details" ? (
+      <>
+        <Button
+          variant="tertiary"
+          onClick={() => {
+            setEditName(undefined);
+            setEditSlug(undefined);
+            setEditLogo(undefined);
+            setEditExtra({});
+          }}
+        >
+          Discard
+        </Button>
+        <Button
+          disabled={!hasOrgEdits}
+          loading={updateOrgMutation.isLoading}
+          onClick={() => updateOrgMutation.mutate()}
+          data-testid="save-org-btn"
+        >
+          Save changes
+        </Button>
+      </>
+    ) : undefined;
+
   return (
     <Drawer
       title={org?.name ?? "Organization"}
+      footer={detailsFooter}
       onClose={onClose}
       data-testid="org-detail-drawer"
     >
       {orgQuery.isLoading ? (
         <Typography textColor="neutral500">Loading…</Typography>
       ) : orgQuery.isError ? (
-        <Typography textColor="danger600">
+        <Alert
+          closeLabel="Close"
+          title="Failed to load organization"
+          variant="danger"
+        >
           {orgQuery.error instanceof Error
             ? orgQuery.error.message
             : "An error occurred"}
-        </Typography>
+        </Alert>
       ) : (
-        <Tabs.Root defaultValue="details">
+        <Tabs.Root defaultValue="details" onValueChange={setActiveTab}>
           <Tabs.List>
             <Tabs.Trigger value="details">Details</Tabs.Trigger>
             <Tabs.Trigger value="members" data-testid="org-members-tab">
@@ -280,12 +390,13 @@ export function OrganizationDetail({
             <Tabs.Trigger value="sso">SSO ({ssoProviders.length})</Tabs.Trigger>
           </Tabs.List>
 
-          {/* Details tab */}
+          {/* ── Details ── */}
           <Tabs.Content value="details">
-            <Box paddingTop={6}>
-              {/* Editable fields */}
-              <Grid.Root gap={4}>
-                <Grid.Item col={6}>
+            <EditLayout>
+              {/* Left: editable fields */}
+              <Flex direction="column" gap={5}>
+                <FormSection>
+                  <SectionLabel>Details</SectionLabel>
                   <Field.Root style={{ width: "100%" }}>
                     <Field.Label>Name</Field.Label>
                     <TextInput
@@ -296,12 +407,7 @@ export function OrganizationDetail({
                       data-testid="org-name-input"
                     />
                   </Field.Root>
-                </Grid.Item>
-                <Grid.Item col={6}>
-                  <Field.Root
-                    hint="URL-safe identifier"
-                    style={{ width: "100%" }}
-                  >
+                  <Field.Root hint="Used in URLs" style={{ width: "100%" }}>
                     <Field.Label>Slug</Field.Label>
                     <TextInput
                       value={editSlug ?? org?.slug ?? ""}
@@ -312,142 +418,156 @@ export function OrganizationDetail({
                     />
                     <Field.Hint />
                   </Field.Root>
-                </Grid.Item>
-              </Grid.Root>
+                  <MediaPickerField
+                    label="Logo URL"
+                    name="logo"
+                    value={editLogo ?? org?.logo ?? ""}
+                    onChange={setEditLogo}
+                    placeholder="https://example.com/logo.png"
+                    hint="Optional — publicly accessible image URL"
+                  />
+                </FormSection>
 
-              {/* Custom fields */}
-              <CustomFieldsSection
-                fields={customFields}
-                data={extraData}
-                onChange={handleExtraChange}
-              />
-
-              {updateOrgMutation.isError && (
-                <Typography textColor="danger600" variant="pi" paddingTop={3}>
-                  {updateOrgMutation.error instanceof Error
-                    ? updateOrgMutation.error.message
-                    : "An error occurred"}
-                </Typography>
-              )}
-
-              <Flex gap={2} paddingTop={4}>
-                <Button
-                  disabled={!hasOrgEdits}
-                  loading={updateOrgMutation.isLoading}
-                  onClick={() => updateOrgMutation.mutate()}
-                  data-testid="save-org-btn"
-                >
-                  Save changes
-                </Button>
-                {hasOrgEdits && (
-                  <Button
-                    variant="tertiary"
-                    onClick={() => {
-                      setEditName(undefined);
-                      setEditSlug(undefined);
-                      setEditExtra({});
-                    }}
-                  >
-                    Discard
-                  </Button>
-                )}
+                <CustomFieldsSection
+                  fields={customFields}
+                  data={extraData}
+                  onChange={handleExtraChange}
+                />
               </Flex>
 
-              {/* Read-only metadata */}
-              <Box
-                paddingTop={6}
-                marginTop={4}
-                borderColor="neutral150"
-                borderStyle="solid"
-                borderWidth="1px 0 0 0"
-              >
-                <Typography
-                  variant="sigma"
-                  textColor="neutral600"
-                  paddingBottom={4}
-                >
-                  Details
-                </Typography>
-                <Grid.Root gap={4}>
-                  <Grid.Item col={12}>
-                    <Flex direction="column" gap={1}>
-                      <Typography variant="pi" textColor="neutral500">
-                        Organization ID
-                      </Typography>
-                      <Typography
-                        variant="omega"
-                        textColor="neutral600"
-                        style={{
-                          fontFamily: "monospace",
-                          wordBreak: "break-all",
-                        }}
-                      >
-                        {org?.id}
-                      </Typography>
-                    </Flex>
-                  </Grid.Item>
-                  <Grid.Item col={4}>
-                    <Flex direction="column" gap={1}>
-                      <Typography variant="pi" textColor="neutral500">
-                        Members
-                      </Typography>
-                      <Typography variant="omega">
-                        {org?.memberCount ?? 0}
-                      </Typography>
-                    </Flex>
-                  </Grid.Item>
-                  <Grid.Item col={4}>
-                    <Flex direction="column" gap={1}>
-                      <Typography variant="pi" textColor="neutral500">
-                        Created
-                      </Typography>
-                      <Typography variant="omega">
+              {/* Right: metadata */}
+              <EditSidebar>
+                <FormSection>
+                  <SectionLabel>Details</SectionLabel>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 12,
+                    }}
+                  >
+                    <MetaItem style={{ gridColumn: "1 / -1" }}>
+                      <MetaKey>Organization ID</MetaKey>
+                      <MonoChip>{org?.id}</MonoChip>
+                    </MetaItem>
+                    <MetaItem>
+                      <MetaKey>Members</MetaKey>
+                      <MetaVal>{org?.memberCount ?? 0}</MetaVal>
+                    </MetaItem>
+                    <MetaItem>
+                      <MetaKey>Created</MetaKey>
+                      <MetaVal>
                         {org?.createdAt
                           ? new Date(org.createdAt).toLocaleDateString()
                           : "—"}
-                      </Typography>
-                    </Flex>
-                  </Grid.Item>
-                </Grid.Root>
-              </Box>
-            </Box>
+                      </MetaVal>
+                    </MetaItem>
+                  </div>
+                </FormSection>
+              </EditSidebar>
+            </EditLayout>
           </Tabs.Content>
 
-          {/* Members tab */}
+          {/* ── Members ── */}
           <Tabs.Content value="members">
-            <Box paddingTop={6}>
-              <Flex direction="column" gap={4}>
+            <Flex direction="column" gap={4} paddingTop={6}>
+              {/* Add member form */}
+              <Box
+                background="neutral50"
+                padding={4}
+                hasRadius
+                borderColor="neutral150"
+                borderStyle="solid"
+                borderWidth="1px"
+              >
+                <SectionLabel style={{ marginBottom: 12 }}>
+                  Add member
+                </SectionLabel>
+                <Grid.Root gap={3}>
+                  <Grid.Item col={8}>
+                    <UserCombobox
+                      label="User"
+                      value={addUserId}
+                      onChange={setAddUserId}
+                    />
+                  </Grid.Item>
+                  <Grid.Item col={4}>
+                    <Field.Root>
+                      <Field.Label>Role</Field.Label>
+                      <SingleSelect
+                        value={addRole}
+                        onChange={(role: string | number) =>
+                          setAddRole(String(role))
+                        }
+                        aria-label="Member role"
+                      >
+                        <SingleSelectOption value="member">
+                          Member
+                        </SingleSelectOption>
+                        <SingleSelectOption value="admin">
+                          Admin
+                        </SingleSelectOption>
+                        <SingleSelectOption value="owner">
+                          Owner
+                        </SingleSelectOption>
+                      </SingleSelect>
+                    </Field.Root>
+                  </Grid.Item>
+                </Grid.Root>
+                <Box paddingTop={3}>
+                  <Button
+                    size="S"
+                    startIcon={<Plus />}
+                    disabled={!addUserId}
+                    loading={addMemberMutation.isLoading}
+                    onClick={() => addMemberMutation.mutate()}
+                    data-testid="add-member-btn"
+                  >
+                    Add member
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Member list */}
+              {membersQuery.isLoading ? (
+                <Typography textColor="neutral500">Loading…</Typography>
+              ) : members.length === 0 ? (
                 <Box
                   background="neutral50"
-                  padding={4}
+                  padding={5}
                   hasRadius
                   borderColor="neutral150"
                   borderStyle="solid"
                   borderWidth="1px"
                 >
-                  <Typography
-                    variant="sigma"
-                    textColor="neutral600"
-                    paddingBottom={3}
-                  >
-                    Add member
-                  </Typography>
-                  <Grid.Root gap={3}>
-                    <Grid.Item col={8}>
-                      <UserCombobox
-                        label="User"
-                        value={addUserId}
-                        onChange={setAddUserId}
-                      />
-                    </Grid.Item>
-                    <Grid.Item col={4}>
-                      <Field.Root>
-                        <Field.Label>Role</Field.Label>
+                  <Flex justifyContent="center">
+                    <Typography textColor="neutral500">
+                      No members yet
+                    </Typography>
+                  </Flex>
+                </Box>
+              ) : (
+                members.map((member) => (
+                  <AccountRow key={member.id} data-testid="member-row">
+                    <Flex direction="column" gap={1} style={{ flex: 1 }}>
+                      <Typography variant="omega" fontWeight="semiBold">
+                        {member.user?.name ?? "Unknown"}
+                      </Typography>
+                      <Typography variant="pi" textColor="neutral500">
+                        {member.user?.email}
+                      </Typography>
+                    </Flex>
+                    <Flex gap={2} alignItems="center">
+                      <Field.Root style={{ width: 110 }}>
                         <SingleSelect
-                          value={addRole}
+                          value={member.role}
                           onChange={(role: string | number) =>
-                            setAddRole(String(role))
+                            updateRoleMutation.mutate({
+                              memberId: member.id,
+                              role: String(role),
+                            })
                           }
+                          size="S"
                           aria-label="Member role"
                         >
                           <SingleSelectOption value="member">
@@ -461,210 +581,133 @@ export function OrganizationDetail({
                           </SingleSelectOption>
                         </SingleSelect>
                       </Field.Root>
-                    </Grid.Item>
-                  </Grid.Root>
-                  {addMemberMutation.isError && (
-                    <Typography
-                      textColor="danger600"
-                      variant="pi"
-                      paddingTop={2}
-                    >
-                      {addMemberMutation.error instanceof Error
-                        ? addMemberMutation.error.message
-                        : "An error occurred"}
-                    </Typography>
-                  )}
-                  <Box paddingTop={3}>
-                    <Button
-                      size="S"
-                      startIcon={<Plus />}
-                      disabled={!addUserId}
-                      loading={addMemberMutation.isLoading}
-                      onClick={() => addMemberMutation.mutate()}
-                      data-testid="add-member-btn"
-                    >
-                      Add member
-                    </Button>
-                  </Box>
-                </Box>
-
-                {membersQuery.isLoading ? (
-                  <Typography textColor="neutral500">Loading…</Typography>
-                ) : members.length === 0 ? (
-                  <Typography textColor="neutral500">No members yet</Typography>
-                ) : (
-                  members.map((member) => (
-                    <Box
-                      key={member.id}
-                      padding={3}
-                      background="neutral0"
-                      hasRadius
-                      borderColor="neutral150"
-                      borderStyle="solid"
-                      borderWidth="1px"
-                      data-testid="member-row"
-                    >
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Flex direction="column" gap={1}>
-                          <Typography variant="omega" fontWeight="semiBold">
-                            {member.user?.name ?? "Unknown"}
-                          </Typography>
-                          <Typography variant="pi" textColor="neutral500">
-                            {member.user?.email}
-                          </Typography>
-                        </Flex>
-                        <Flex gap={2} alignItems="center">
-                          <Field.Root>
-                            <SingleSelect
-                              value={member.role}
-                              onChange={(role: string | number) =>
-                                updateRoleMutation.mutate({
-                                  memberId: member.id,
-                                  role: String(role),
-                                })
-                              }
-                              size="S"
-                              aria-label="Member role"
-                            >
-                              <SingleSelectOption value="member">
-                                Member
-                              </SingleSelectOption>
-                              <SingleSelectOption value="admin">
-                                Admin
-                              </SingleSelectOption>
-                              <SingleSelectOption value="owner">
-                                Owner
-                              </SingleSelectOption>
-                            </SingleSelect>
-                          </Field.Root>
-                          <IconButton
-                            label="Remove member"
-                            onClick={() =>
-                              setConfirmRemoveMemberId(member.id)
-                            }
-                            data-testid="remove-member-btn"
-                          >
-                            <Trash />
-                          </IconButton>
-                        </Flex>
-                      </Flex>
-                    </Box>
-                  ))
-                )}
-              </Flex>
-            </Box>
+                      <IconButton
+                        label="Remove member"
+                        onClick={() => setConfirmRemoveMemberId(member.id)}
+                        data-testid="remove-member-btn"
+                      >
+                        <Trash />
+                      </IconButton>
+                    </Flex>
+                  </AccountRow>
+                ))
+              )}
+            </Flex>
           </Tabs.Content>
 
-          {/* Teams tab */}
+          {/* ── Teams ── */}
           {teamsEnabled && (
             <Tabs.Content value="teams">
-              <Box paddingTop={6}>
-                <Flex direction="column" gap={4}>
+              <Flex direction="column" gap={4} paddingTop={6}>
+                {/* Create team */}
+                <Box
+                  background="neutral50"
+                  padding={4}
+                  hasRadius
+                  borderColor="neutral150"
+                  borderStyle="solid"
+                  borderWidth="1px"
+                >
+                  <SectionLabel style={{ marginBottom: 12 }}>
+                    Create team
+                  </SectionLabel>
+                  <Flex gap={2} alignItems="flex-end">
+                    <Box style={{ flex: 1 }}>
+                      <Field.Root>
+                        <Field.Label>Team name</Field.Label>
+                        <TextInput
+                          value={newTeamName}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setNewTeamName(e.target.value)
+                          }
+                          placeholder="e.g. Engineering"
+                        />
+                      </Field.Root>
+                    </Box>
+                    <Button
+                      startIcon={<Plus />}
+                      disabled={!newTeamName}
+                      loading={createTeamMutation.isLoading}
+                      onClick={() => createTeamMutation.mutate()}
+                    >
+                      Create
+                    </Button>
+                  </Flex>
+                </Box>
+
+                {teamsQuery.isLoading ? (
+                  <Typography textColor="neutral500">Loading…</Typography>
+                ) : teams.length === 0 ? (
                   <Box
                     background="neutral50"
-                    padding={4}
+                    padding={5}
                     hasRadius
                     borderColor="neutral150"
                     borderStyle="solid"
                     borderWidth="1px"
                   >
-                    <Typography
-                      variant="sigma"
-                      textColor="neutral600"
-                      paddingBottom={3}
-                    >
-                      Create team
-                    </Typography>
-                    <Flex gap={2} alignItems="flex-end">
-                      <Box style={{ flex: 1 }}>
-                        <Field.Root>
-                          <Field.Label>Team name</Field.Label>
-                          <TextInput
-                            value={newTeamName}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>,
-                            ) => setNewTeamName(e.target.value)}
-                          />
-                        </Field.Root>
-                      </Box>
-                      <Button
-                        startIcon={<Plus />}
-                        disabled={!newTeamName}
-                        loading={createTeamMutation.isLoading}
-                        onClick={() => createTeamMutation.mutate()}
-                      >
-                        Create
-                      </Button>
+                    <Flex justifyContent="center">
+                      <Typography textColor="neutral500">
+                        No teams yet
+                      </Typography>
                     </Flex>
                   </Box>
-
-                  {teamsQuery.isLoading ? (
-                    <Typography textColor="neutral500">Loading…</Typography>
-                  ) : teams.length === 0 ? (
-                    <Typography textColor="neutral500">No teams yet</Typography>
-                  ) : (
-                    teams.map((team) => (
-                      <TeamRow
-                        key={team.id}
-                        team={team}
-                        organizationId={organizationId}
-                        onDelete={() => setConfirmDeleteTeamId(team.id)}
-                      />
-                    ))
-                  )}
-                </Flex>
-              </Box>
-            </Tabs.Content>
-          )}
-
-          {/* SSO tab */}
-          <Tabs.Content value="sso">
-            <Box paddingTop={6}>
-              <Flex direction="column" gap={4}>
-                {ssoQuery.isLoading ? (
-                  <Typography textColor="neutral500">Loading…</Typography>
-                ) : ssoProviders.length === 0 ? (
-                  <Typography textColor="neutral500">
-                    No SSO providers configured.
-                  </Typography>
                 ) : (
-                  ssoProviders.map((provider) => (
-                    <Box
-                      key={provider.id}
-                      padding={3}
-                      background="neutral0"
-                      hasRadius
-                      borderColor="neutral150"
-                      borderStyle="solid"
-                      borderWidth="1px"
-                      data-testid="sso-provider-row"
-                    >
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Flex direction="column" gap={1}>
-                          <Typography variant="omega" fontWeight="semiBold">
-                            {provider.providerId}
-                          </Typography>
-                          <Typography variant="pi" textColor="neutral500">
-                            {provider.domain}
-                          </Typography>
-                          <Typography variant="pi" textColor="neutral500">
-                            Issuer: {provider.issuer}
-                          </Typography>
-                        </Flex>
-                        <IconButton
-                          label="Delete SSO provider"
-                          onClick={() =>
-                            setConfirmDeleteSsoId(provider.providerId)
-                          }
-                        >
-                          <Trash />
-                        </IconButton>
-                      </Flex>
-                    </Box>
+                  teams.map((team) => (
+                    <TeamRow
+                      key={team.id}
+                      team={team}
+                      organizationId={organizationId}
+                      onDelete={() => setConfirmDeleteTeamId(team.id)}
+                    />
                   ))
                 )}
               </Flex>
-            </Box>
+            </Tabs.Content>
+          )}
+
+          {/* ── SSO ── */}
+          <Tabs.Content value="sso">
+            <Flex direction="column" gap={3} paddingTop={6}>
+              {ssoQuery.isLoading ? (
+                <Typography textColor="neutral500">Loading…</Typography>
+              ) : ssoProviders.length === 0 ? (
+                <Box
+                  background="neutral50"
+                  padding={5}
+                  hasRadius
+                  borderColor="neutral150"
+                  borderStyle="solid"
+                  borderWidth="1px"
+                >
+                  <Flex justifyContent="center">
+                    <Typography textColor="neutral500">
+                      No SSO providers configured.
+                    </Typography>
+                  </Flex>
+                </Box>
+              ) : (
+                ssoProviders.map((provider) => (
+                  <AccountRow key={provider.id} data-testid="sso-provider-row">
+                    <Flex direction="column" gap={1} style={{ flex: 1 }}>
+                      <ProviderBadge>{provider.providerId}</ProviderBadge>
+                      <Typography variant="pi" textColor="neutral500">
+                        {provider.domain}
+                      </Typography>
+                      <Typography variant="pi" textColor="neutral500">
+                        Issuer: {provider.issuer}
+                      </Typography>
+                    </Flex>
+                    <IconButton
+                      label="Delete SSO provider"
+                      onClick={() => setConfirmDeleteSsoId(provider.providerId)}
+                    >
+                      <Trash />
+                    </IconButton>
+                  </AccountRow>
+                ))
+              )}
+            </Flex>
           </Tabs.Content>
         </Tabs.Root>
       )}
@@ -716,7 +759,9 @@ function TeamRow({
 }) {
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState(false);
-  const [confirmRemoveTeamMemberId, setConfirmRemoveTeamMemberId] = useState<string | null>(null);
+  const [confirmRemoveTeamMemberId, setConfirmRemoveTeamMemberId] = useState<
+    string | null
+  >(null);
 
   const teamMembersQuery = useQuery({
     queryKey: ["dash-team-members", organizationId, team.id],
@@ -785,14 +830,19 @@ function TeamRow({
         style={{ cursor: "pointer" }}
         onClick={() => setExpanded((e) => !e)}
       >
-        <Typography variant="omega" fontWeight="semiBold">
-          {team.name}
-        </Typography>
-        <Flex gap={2} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+        <Flex alignItems="center" gap={2}>
+          <Typography variant="omega" fontWeight="semiBold">
+            {team.name}
+          </Typography>
+          <Typography variant="pi" textColor="neutral400">
+            {expanded ? "▲" : "▼"}
+          </Typography>
+        </Flex>
+        <Box onClick={(e: React.MouseEvent) => e.stopPropagation()}>
           <IconButton label="Delete team" onClick={onDelete}>
             <Trash />
           </IconButton>
-        </Flex>
+        </Box>
       </Flex>
 
       {expanded && (
@@ -844,9 +894,7 @@ function TeamRow({
                   </Typography>
                   <IconButton
                     label="Remove from team"
-                    onClick={() =>
-                      setConfirmRemoveTeamMemberId(tm.userId)
-                    }
+                    onClick={() => setConfirmRemoveTeamMemberId(tm.userId)}
                   >
                     <Trash />
                   </IconButton>

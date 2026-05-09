@@ -15,6 +15,7 @@ import { Pencil, Plus, Trash } from "@strapi/icons";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import styled from "styled-components";
 import { client } from "../../client";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { withContext } from "../../utils/dashContext";
@@ -22,6 +23,111 @@ import { CreateOrganizationDialog } from "./CreateOrganizationDialog";
 import { OrganizationDetail } from "./OrganizationDetail";
 
 const PAGE_SIZE = 25;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const TH = styled.th`
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid #dcdce4;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666687;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: #f6f6f9;
+`;
+
+const THCheck = styled(TH)`
+  width: 44px;
+  padding-right: 8px;
+`;
+
+const THActions = styled(TH)`
+  width: 80px;
+`;
+
+const TD = styled.td`
+  padding: 11px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #eaeaef;
+`;
+
+const TDCheck = styled(TD)`
+  width: 44px;
+  padding-right: 8px;
+`;
+
+const TDActions = styled(TD)`
+  width: 80px;
+`;
+
+const TR = styled.tr<{ $selected?: boolean }>`
+  background: ${(p) => (p.$selected ? "#F0F0FF" : "white")};
+  transition: background 100ms ease;
+
+  &:hover {
+    background: ${(p) => (p.$selected ? "#E6E5FF" : "#F6F6F9")};
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+`;
+
+const OrgLogoFallback = styled.div<{ $bg: string; $fg: string }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$fg};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+`;
+
+const ORG_COLORS = [
+  { bg: "#EAF5FF", fg: "#0C75AF" },
+  { bg: "#F0F0FF", fg: "#4945FF" },
+  { bg: "#EAFBE7", fg: "#328048" },
+  { bg: "#FFF3D3", fg: "#8E6A00" },
+  { bg: "#FCECEA", fg: "#D02B20" },
+  { bg: "#F6ECFC", fg: "#8312D1" },
+];
+
+function OrgAvatar({ name, logo }: { name: string; logo?: string | null }) {
+  if (logo) {
+    return (
+      <Box
+        tag="img"
+        src={logo}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 6,
+          objectFit: "cover",
+          flexShrink: 0,
+        }}
+      />
+    );
+  }
+  const color = ORG_COLORS[(name.charCodeAt(0) || 0) % ORG_COLORS.length];
+  const initials = name.slice(0, 2).toUpperCase();
+  return (
+    <OrgLogoFallback $bg={color.bg} $fg={color.fg}>
+      {initials}
+    </OrgLogoFallback>
+  );
+}
 
 interface Props {
   teamsEnabled: boolean;
@@ -133,9 +239,11 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
           <Typography variant="beta" textColor="neutral800">
             Organizations
           </Typography>
-          <Typography variant="pi" textColor="neutral500" paddingTop={1}>
-            {total} total
-          </Typography>
+          <Box paddingTop={1}>
+            <Typography variant="pi" textColor="neutral500">
+              {total.toLocaleString()} total
+            </Typography>
+          </Box>
         </Box>
         <Button
           startIcon={<Plus />}
@@ -194,114 +302,86 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
         borderColor="neutral150"
         borderStyle="solid"
         borderWidth="1px"
+        style={{ overflow: "hidden" }}
       >
         {orgsQuery.isLoading ? (
           <Flex justifyContent="center" padding={8}>
             <Loader>Loading organizations…</Loader>
           </Flex>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <Table>
             <thead>
               <tr>
-                <th
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid #dcdce4",
-                    width: 40,
-                  }}
-                >
+                <THCheck>
                   <Checkbox
                     checked={allSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                   />
-                </th>
-                {["Name", "Slug", "Members", "Created", ""].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: "left",
-                      padding: "12px 16px",
-                      borderBottom: "1px solid #dcdce4",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      color: "#666687",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
+                </THCheck>
+                <TH>Name</TH>
+                <TH>Slug</TH>
+                <TH>Members</TH>
+                <TH>Created</TH>
+                <THActions />
               </tr>
             </thead>
             <tbody>
               {orgs.length === 0 ? (
                 <tr>
-                  <td
+                  <TD
                     colSpan={6}
                     style={{
                       textAlign: "center",
-                      padding: "32px",
-                      color: "#666687",
+                      padding: "40px",
+                      color: "#8e8ea9",
                     }}
                     data-testid="orgs-empty"
                   >
-                    No organizations found
-                  </td>
+                    {search
+                      ? `No organizations matching "${search}"`
+                      : "No organizations found"}
+                  </TD>
                 </tr>
               ) : (
                 orgs.map((org) => (
-                  <tr
+                  <TR
                     key={org.id}
+                    $selected={selected.has(org.id)}
                     data-testid="org-row"
-                    style={{
-                      background: selected.has(org.id) ? "#f0f0ff" : "inherit",
-                    }}
                   >
-                    <td style={{ padding: "12px 16px" }}>
+                    <TDCheck>
                       <Checkbox
                         checked={selected.has(org.id)}
                         onCheckedChange={() => toggleSelect(org.id)}
                         aria-label={`Select ${org.name}`}
                       />
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
+                    </TDCheck>
+                    <TD>
                       <Flex alignItems="center" gap={2}>
-                        {org.logo && (
-                          <Box
-                            tag="img"
-                            src={org.logo}
-                            alt=""
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: 4,
-                              objectFit: "cover",
-                            }}
-                          />
-                        )}
+                        <OrgAvatar name={org.name} logo={org.logo} />
                         <Typography variant="omega" fontWeight="semiBold">
                           {org.name}
                         </Typography>
                       </Flex>
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
+                    </TD>
+                    <TD>
                       <Badge
                         backgroundColor="neutral100"
                         textColor="neutral600"
                       >
                         {org.slug}
                       </Badge>
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
+                    </TD>
+                    <TD>
                       <Typography variant="omega">{org.memberCount}</Typography>
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
+                    </TD>
+                    <TD>
                       <Typography variant="omega" textColor="neutral500">
                         {new Date(org.createdAt).toLocaleDateString()}
                       </Typography>
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
+                    </TD>
+                    <TDActions>
                       <Flex gap={1} justifyContent="flex-end">
                         <IconButton
                           label="Edit organization"
@@ -318,12 +398,12 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                           <Trash />
                         </IconButton>
                       </Flex>
-                    </td>
-                  </tr>
+                    </TDActions>
+                  </TR>
                 ))
               )}
             </tbody>
-          </table>
+          </Table>
         )}
       </Box>
 

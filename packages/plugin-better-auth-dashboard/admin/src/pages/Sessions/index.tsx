@@ -12,11 +12,69 @@ import {
 import { Trash } from "@strapi/icons";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import styled from "styled-components";
 import { client } from "../../client";
+import { Avatar } from "../../components/Avatar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { withContext } from "../../utils/dashContext";
 
 const PAGE_SIZE = 25;
+
+const SessionCard = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px 10px 32px;
+  border-top: 1px solid #eaeaef;
+  background: white;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: #f6f6f9;
+  }
+`;
+
+const SessionMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const IpText = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #32324d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  background: #f0f0ff;
+  padding: 1px 5px;
+  border-radius: 3px;
+`;
+
+const TimestampText = styled.span`
+  font-size: 11px;
+  color: #8e8ea9;
+`;
+
+const AgentText = styled.span`
+  font-size: 11px;
+  color: #8e8ea9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  max-width: 480px;
+`;
+
+const UserRowHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: default;
+`;
 
 export function SessionsPage() {
   const qc = useQueryClient();
@@ -92,7 +150,6 @@ export function SessionsPage() {
 
   return (
     <Box padding={6} data-testid="sessions-page">
-      {/* Page header */}
       <Flex
         justifyContent="space-between"
         alignItems="flex-start"
@@ -102,11 +159,13 @@ export function SessionsPage() {
           <Typography variant="beta" textColor="neutral800">
             Sessions
           </Typography>
-          <Typography variant="pi" textColor="neutral500" paddingTop={1}>
-            {usersWithSessions.length > 0
-              ? `${usersWithSessions.length} user${usersWithSessions.length !== 1 ? "s" : ""} with active sessions`
-              : "Active sessions across all users"}
-          </Typography>
+          <Box paddingTop={1}>
+            <Typography variant="pi" textColor="neutral500">
+              {usersWithSessions.length > 0
+                ? `${usersWithSessions.length} user${usersWithSessions.length !== 1 ? "s" : ""} with active sessions`
+                : "Active sessions across all users"}
+            </Typography>
+          </Box>
         </Box>
         {someSelected && (
           <Button
@@ -138,7 +197,6 @@ export function SessionsPage() {
         borderWidth="1px"
         style={{ overflow: "hidden" }}
       >
-        {/* Column header */}
         {!sessionsQuery.isLoading && usersWithSessions.length > 0 && (
           <Flex
             paddingLeft={4}
@@ -187,13 +245,13 @@ export function SessionsPage() {
               borderWidth="0 0 1px 0"
               data-testid="session-user-row"
             >
-              {/* User header */}
-              <Flex padding={4} alignItems="center" gap={3}>
+              <UserRowHeader>
                 <Checkbox
                   checked={selected.has(userRow.id)}
                   onCheckedChange={() => toggleSelect(userRow.id)}
                   aria-label={`Select ${userRow.name}`}
                 />
+                <Avatar name={userRow.name ?? ""} src={null} size={30} />
                 <Flex direction="column" gap={1} style={{ flex: 1 }}>
                   <Typography variant="omega" fontWeight="semiBold">
                     {userRow.name}
@@ -206,61 +264,28 @@ export function SessionsPage() {
                   {userRow.sessions.length} session
                   {userRow.sessions.length !== 1 ? "s" : ""}
                 </Badge>
-              </Flex>
+              </UserRowHeader>
 
-              {/* Session rows */}
               {userRow.sessions.map((session) => (
-                <Flex
-                  key={session.id}
-                  paddingLeft={8}
-                  paddingRight={4}
-                  paddingTop={3}
-                  paddingBottom={3}
-                  alignItems="flex-start"
-                  justifyContent="space-between"
-                  gap={4}
-                  background="neutral0"
-                  borderColor="neutral150"
-                  borderStyle="solid"
-                  borderWidth="1px 0 0 0"
-                  data-testid="session-row"
-                >
-                  <Flex
-                    direction="column"
-                    gap={1}
-                    style={{ flex: 1, minWidth: 0 }}
-                  >
-                    <Flex gap={4} alignItems="center" style={{ flexWrap: "wrap" }}>
+                <SessionCard key={session.id} data-testid="session-row">
+                  <SessionMeta>
+                    <Flex
+                      gap={2}
+                      alignItems="center"
+                      style={{ flexWrap: "wrap" }}
+                    >
                       {session.ipAddress && (
-                        <Typography
-                          variant="pi"
-                          fontWeight="semiBold"
-                          textColor="neutral700"
-                        >
-                          {session.ipAddress}
-                        </Typography>
+                        <IpText>{session.ipAddress}</IpText>
                       )}
-                      <Typography variant="pi" textColor="neutral400">
-                        Created{" "}
-                        {new Date(session.createdAt).toLocaleString()}
-                        {" · "}
+                      <TimestampText>
+                        Created {new Date(session.createdAt).toLocaleString()} ·
                         Expires {new Date(session.expiresAt).toLocaleString()}
-                      </Typography>
+                      </TimestampText>
                     </Flex>
                     {session.userAgent && (
-                      <Typography
-                        variant="pi"
-                        textColor="neutral500"
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {session.userAgent}
-                      </Typography>
+                      <AgentText>{session.userAgent}</AgentText>
                     )}
-                  </Flex>
+                  </SessionMeta>
                   <IconButton
                     label="Revoke session"
                     onClick={() => setConfirmRevokeSessionId(session.id)}
@@ -269,7 +294,7 @@ export function SessionsPage() {
                   >
                     <Trash />
                   </IconButton>
-                </Flex>
+                </SessionCard>
               ))}
             </Box>
           ))
@@ -304,9 +329,7 @@ export function SessionsPage() {
           message="Are you sure you want to revoke this session? The user will be signed out on this device."
           confirmLabel="Revoke"
           loading={revokeSessionMutation.isLoading}
-          onConfirm={() =>
-            revokeSessionMutation.mutate(confirmRevokeSessionId)
-          }
+          onConfirm={() => revokeSessionMutation.mutate(confirmRevokeSessionId)}
           onCancel={() => setConfirmRevokeSessionId(null)}
         />
       )}

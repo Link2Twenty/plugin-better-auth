@@ -1,6 +1,6 @@
 import { errors } from "@strapi/utils";
 import type { Context } from "koa";
-import { auth } from "../utils";
+import type { Auth } from "../../types/better-auth";
 
 export const DASHBOARD_API_KEY =
   process.env.BETTER_AUTH_DASHBOARD_SECRET || "strapi-internal-dashboard-key";
@@ -25,6 +25,10 @@ async function hashApiKey(value: string): Promise<string> {
 
 const proxyController = () => ({
   async handleAuthRequest(ctx: Context) {
+    const auth = strapi
+      .service("plugin::better-auth.auth-service")
+      .getAuth() as Auth | null;
+
     if (!auth)
       throw new errors.ApplicationError("No Better Auth config file found");
 
