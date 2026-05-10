@@ -64,6 +64,8 @@ const proxyController = () => ({
       },
     });
 
+    console.log("Generated JWT with payload:", { token });
+
     // Create a Request object compatible with Better Auth
     const url = new URL(
       ctx.request.url,

@@ -61,7 +61,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@better-auth/infra": "^0.1.13",
+    "@better-auth/infra": "^0.2.6",
     "@strapi-community/plugin-better-auth": "workspace:^",
     "@strapi/design-system": "^2.0.0",
     "@strapi/icons": "^2.0.0",

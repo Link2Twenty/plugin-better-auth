@@ -1,6 +1,4 @@
 import {
-  Alert,
-  Badge,
   Box,
   Button,
   Checkbox,
@@ -9,13 +7,12 @@ import {
   Loader,
   Searchbar,
   SearchForm,
-  Typography,
 } from "@strapi/design-system";
 import { Pencil, Plus, Trash } from "@strapi/icons";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { client } from "../../client";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { withContext } from "../../utils/dashContext";
@@ -24,6 +21,59 @@ import { OrganizationDetail } from "./OrganizationDetail";
 
 const PAGE_SIZE = 25;
 
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+const Wrap = styled.div`
+  padding: 28px 32px;
+  background: #f6f6f9;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const PageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #32324d;
+  letter-spacing: -0.03em;
+`;
+
+const PageSubtitle = styled.p`
+  margin: 0;
+  font-size: 12px;
+  color: #8e8ea9;
+`;
+
+// ─── Table card ───────────────────────────────────────────────────────────────
+
+const TableCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #eaeaef;
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -31,20 +81,21 @@ const Table = styled.table`
 
 const TH = styled.th`
   text-align: left;
-  padding: 10px 16px;
-  border-bottom: 1px solid #dcdce4;
-  font-size: 11px;
-  font-weight: 600;
-  color: #666687;
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8e8ea9;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #eaeaef;
+  background: #fafafa;
   white-space: nowrap;
-  background: #f6f6f9;
+  &:first-child { padding-left: 20px; }
+  &:last-child  { padding-right: 20px; }
 `;
 
 const THCheck = styled(TH)`
   width: 44px;
-  padding-right: 8px;
 `;
 
 const THActions = styled(TH)`
@@ -52,37 +103,86 @@ const THActions = styled(TH)`
 `;
 
 const TD = styled.td`
-  padding: 11px 16px;
+  padding: 11px 14px;
+  font-size: 12px;
+  color: #32324d;
+  border-bottom: 1px solid #f5f5f9;
   vertical-align: middle;
-  border-bottom: 1px solid #eaeaef;
+  &:first-child { padding-left: 20px; }
+  &:last-child  { padding-right: 20px; }
 `;
 
 const TDCheck = styled(TD)`
   width: 44px;
-  padding-right: 8px;
 `;
 
 const TDActions = styled(TD)`
   width: 80px;
 `;
 
-const TR = styled.tr<{ $selected?: boolean }>`
-  background: ${(p) => (p.$selected ? "#F0F0FF" : "white")};
-  transition: background 100ms ease;
-
-  &:hover {
-    background: ${(p) => (p.$selected ? "#E6E5FF" : "#F6F6F9")};
-  }
-
-  &:last-child td {
-    border-bottom: none;
-  }
+const TR = styled.tr<{ $selected?: boolean; $i?: number }>`
+  animation: ${fadeUp} 280ms ease both;
+  animation-delay: ${(p) => (p.$i ?? 0) * 25}ms;
+  background: ${(p) => (p.$selected ? "#f0f0ff" : "transparent")};
+  transition: background 120ms ease;
+  &:hover td { background: ${(p) => (p.$selected ? "#e8e8ff" : "#fafafe")}; }
+  &:last-child td { border-bottom: none; }
 `;
 
-const OrgLogoFallback = styled.div<{ $bg: string; $fg: string }>`
-  width: 28px;
-  height: 28px;
+// ─── Slug chip ────────────────────────────────────────────────────────────────
+
+const SlugChip = styled.span`
+  display: inline-block;
+  background: #f5f5f9;
+  color: #666687;
+  border: 1px solid #eaeaef;
   border-radius: 6px;
+  padding: 2px 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+`;
+
+// ─── Member count chip ────────────────────────────────────────────────────────
+
+const CountChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #f0f0ff;
+  color: #4945ff;
+`;
+
+// ─── Misc text ────────────────────────────────────────────────────────────────
+
+const OrgName = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #32324d;
+`;
+
+const DateText = styled.span`
+  font-size: 11px;
+  color: #b8b8c7;
+  font-variant-numeric: tabular-nums;
+`;
+
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+
+const Toolbar = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+`;
+
+// ─── Org avatar ───────────────────────────────────────────────────────────────
+
+const OrgLogoFallback = styled.div<{ $bg: string; $fg: string }>`
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
   background: ${(p) => p.$bg};
   color: ${(p) => p.$fg};
   display: inline-flex;
@@ -111,9 +211,9 @@ function OrgAvatar({ name, logo }: { name: string; logo?: string | null }) {
         src={logo}
         alt=""
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 6,
+          width: 30,
+          height: 30,
+          borderRadius: 7,
           objectFit: "cover",
           flexShrink: 0,
         }}
@@ -128,6 +228,8 @@ function OrgAvatar({ name, logo }: { name: string; logo?: string | null }) {
     </OrgLogoFallback>
   );
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface Props {
   teamsEnabled: boolean;
@@ -229,22 +331,12 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
   };
 
   return (
-    <Box padding={6} data-testid="organizations-page">
-      <Flex
-        justifyContent="space-between"
-        alignItems="flex-start"
-        paddingBottom={4}
-      >
-        <Box>
-          <Typography variant="beta" textColor="neutral800">
-            Organizations
-          </Typography>
-          <Box paddingTop={1}>
-            <Typography variant="pi" textColor="neutral500">
-              {total.toLocaleString()} total
-            </Typography>
-          </Box>
-        </Box>
+    <Wrap data-testid="organizations-page">
+      <PageHeader>
+        <TitleBlock>
+          <PageTitle>Organizations</PageTitle>
+          <PageSubtitle>{total.toLocaleString()} total</PageSubtitle>
+        </TitleBlock>
         <Button
           startIcon={<Plus />}
           onClick={() => setShowCreate(true)}
@@ -252,29 +344,28 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
         >
           Create organization
         </Button>
-      </Flex>
+      </PageHeader>
 
-      <Flex gap={3} paddingBottom={4} alignItems="flex-end">
-        <Box>
-          <SearchForm onSubmit={handleSearch}>
-            <Searchbar
-              clearLabel="Clear"
-              name="search"
-              placeholder="Search organizations…"
-              value={searchInput}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchInput(e.target.value)
-              }
-              onClear={() => {
-                setSearchInput("");
-                setSearch("");
-                setPage(1);
-              }}
-            >
-              Search organizations
-            </Searchbar>
-          </SearchForm>
-        </Box>
+      <Toolbar>
+        <SearchForm onSubmit={handleSearch}>
+          <Searchbar
+            clearLabel="Clear"
+            name="search"
+            placeholder="Search organizations…"
+            value={searchInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchInput(e.target.value)
+            }
+            onClear={() => {
+              setSearchInput("");
+              setSearch("");
+              setPage(1);
+            }}
+          >
+            Search organizations
+          </Searchbar>
+        </SearchForm>
+
         {someSelected && (
           <Button
             variant="danger-light"
@@ -285,25 +376,17 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
             Delete {selected.size} selected
           </Button>
         )}
-      </Flex>
+      </Toolbar>
 
       {orgsQuery.isError && (
-        <Alert closeLabel="Close" title="Error" variant="danger">
+        <div style={{ color: "#d02b20", fontSize: 12, padding: "8px 0" }}>
           {orgsQuery.error instanceof Error
             ? orgsQuery.error.message
             : "An error occurred"}
-        </Alert>
+        </div>
       )}
 
-      <Box
-        background="neutral0"
-        shadow="filterShadow"
-        hasRadius
-        borderColor="neutral150"
-        borderStyle="solid"
-        borderWidth="1px"
-        style={{ overflow: "hidden" }}
-      >
+      <TableCard>
         {orgsQuery.isLoading ? (
           <Flex justifyContent="center" padding={8}>
             <Loader>Loading organizations…</Loader>
@@ -344,10 +427,11 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                   </TD>
                 </tr>
               ) : (
-                orgs.map((org) => (
+                orgs.map((org, i) => (
                   <TR
                     key={org.id}
                     $selected={selected.has(org.id)}
+                    $i={i}
                     data-testid="org-row"
                   >
                     <TDCheck>
@@ -360,26 +444,19 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
                     <TD>
                       <Flex alignItems="center" gap={2}>
                         <OrgAvatar name={org.name} logo={org.logo} />
-                        <Typography variant="omega" fontWeight="semiBold">
-                          {org.name}
-                        </Typography>
+                        <OrgName>{org.name}</OrgName>
                       </Flex>
                     </TD>
                     <TD>
-                      <Badge
-                        backgroundColor="neutral100"
-                        textColor="neutral600"
-                      >
-                        {org.slug}
-                      </Badge>
+                      <SlugChip>{org.slug}</SlugChip>
                     </TD>
                     <TD>
-                      <Typography variant="omega">{org.memberCount}</Typography>
+                      <CountChip>{org.memberCount}</CountChip>
                     </TD>
                     <TD>
-                      <Typography variant="omega" textColor="neutral500">
+                      <DateText>
                         {new Date(org.createdAt).toLocaleDateString()}
-                      </Typography>
+                      </DateText>
                     </TD>
                     <TDActions>
                       <Flex gap={1} justifyContent="flex-end">
@@ -405,10 +482,10 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
             </tbody>
           </Table>
         )}
-      </Box>
+      </TableCard>
 
       {pageCount > 1 && (
-        <Flex justifyContent="flex-end" paddingTop={4}>
+        <Flex justifyContent="flex-end">
           <Flex gap={2}>
             <Button
               variant="tertiary"
@@ -466,6 +543,6 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
           onCancel={() => setConfirmDeleteMany(false)}
         />
       )}
-    </Box>
+    </Wrap>
   );
 }

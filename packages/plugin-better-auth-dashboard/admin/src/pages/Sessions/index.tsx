@@ -1,18 +1,14 @@
 import {
-  Alert,
-  Badge,
-  Box,
   Button,
   Checkbox,
   Flex,
   IconButton,
   Loader,
-  Typography,
 } from "@strapi/design-system";
 import { Trash } from "@strapi/icons";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { client } from "../../client";
 import { Avatar } from "../../components/Avatar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
@@ -20,19 +16,159 @@ import { withContext } from "../../utils/dashContext";
 
 const PAGE_SIZE = 25;
 
+type UserWithSessions = {
+  id: string;
+  name: string;
+  email: string;
+  sessions: {
+    id: string;
+    ipAddress?: string | null;
+    userAgent?: string | null;
+    createdAt: string;
+    expiresAt: string;
+  }[];
+};
+
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+const Wrap = styled.div`
+  padding: 28px 32px;
+  background: #f6f6f9;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const PageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #32324d;
+  letter-spacing: -0.03em;
+`;
+
+const PageSubtitle = styled.p`
+  margin: 0;
+  font-size: 12px;
+  color: #8e8ea9;
+`;
+
+// ─── Table card ───────────────────────────────────────────────────────────────
+
+const TableCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #eaeaef;
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
+// ─── Column header bar ────────────────────────────────────────────────────────
+
+const ColumnHeader = styled.div`
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #eaeaef;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8ea9;
+`;
+
+const ColumnHeaderRight = styled.div`
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8ea9;
+`;
+
+// ─── User row group ───────────────────────────────────────────────────────────
+
+const UserGroup = styled.div<{ $i?: number }>`
+  border-bottom: 1px solid #eaeaef;
+  animation: ${fadeUp} 280ms ease both;
+  animation-delay: ${(p) => (p.$i ?? 0) * 30}ms;
+  &:last-child { border-bottom: none; }
+`;
+
+const UserRowHeader = styled.div`
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #f5f5f9;
+  cursor: default;
+  &:hover { background: #fafafe; }
+`;
+
+const UserInfo = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const UserName = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #32324d;
+`;
+
+const UserEmail = styled.span`
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  color: #8e8ea9;
+`;
+
+// ─── Session count badge ──────────────────────────────────────────────────────
+
+const SessionCountChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #f0f0ff;
+  color: #4945ff;
+`;
+
+// ─── Session sub-row ──────────────────────────────────────────────────────────
+
 const SessionCard = styled.div`
+  padding: 10px 20px 10px 64px;
+  border-top: 1px solid #f5f5f9;
+  background: #fafafa;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 10px 16px 10px 32px;
-  border-top: 1px solid #eaeaef;
-  background: white;
-  transition: background 100ms ease;
-
-  &:hover {
-    background: #f6f6f9;
-  }
+  &:hover { background: #f5f5ff; }
 `;
 
 const SessionMeta = styled.div`
@@ -43,38 +179,45 @@ const SessionMeta = styled.div`
   min-width: 0;
 `;
 
-const IpText = styled.span`
-  font-size: 12px;
-  font-weight: 600;
-  color: #32324d;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+const IpChip = styled.span`
+  display: inline-block;
   background: #f0f0ff;
-  padding: 1px 5px;
-  border-radius: 3px;
+  color: #4945ff;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
 `;
 
 const TimestampText = styled.span`
   font-size: 11px;
   color: #8e8ea9;
+  font-variant-numeric: tabular-nums;
 `;
 
 const AgentText = styled.span`
   font-size: 11px;
-  color: #8e8ea9;
+  color: #b8b8c7;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  max-width: 480px;
+  max-width: 400px;
 `;
 
-const UserRowHeader = styled.div`
+// ─── Empty / loading ──────────────────────────────────────────────────────────
+
+const EmptyState = styled.div`
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  cursor: default;
+  padding: 48px;
+  font-size: 12px;
+  color: #8e8ea9;
 `;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function SessionsPage() {
   const qc = useQueryClient();
@@ -88,10 +231,11 @@ export function SessionsPage() {
   const sessionsQuery = useQuery({
     queryKey: ["dash-all-sessions", page],
     queryFn: async () => {
-      const result = await client.dash.listAllSessions({});
+      // biome-ignore lint/suspicious/noExplicitAny: listAllSessions is a custom endpoint not in the upstream @better-auth/infra types
+      const result = await (client.dash as any).listAllSessions({});
       if (result.error)
         throw new Error(result.error.message ?? "Failed to load sessions");
-      return result.data ?? [];
+      return (result.data ?? []) as UserWithSessions[];
     },
     keepPreviousData: true,
   });
@@ -149,24 +293,16 @@ export function SessionsPage() {
   };
 
   return (
-    <Box padding={6} data-testid="sessions-page">
-      <Flex
-        justifyContent="space-between"
-        alignItems="flex-start"
-        paddingBottom={4}
-      >
-        <Box>
-          <Typography variant="beta" textColor="neutral800">
-            Sessions
-          </Typography>
-          <Box paddingTop={1}>
-            <Typography variant="pi" textColor="neutral500">
-              {usersWithSessions.length > 0
-                ? `${usersWithSessions.length} user${usersWithSessions.length !== 1 ? "s" : ""} with active sessions`
-                : "Active sessions across all users"}
-            </Typography>
-          </Box>
-        </Box>
+    <Wrap data-testid="sessions-page">
+      <PageHeader>
+        <TitleBlock>
+          <PageTitle>Sessions</PageTitle>
+          <PageSubtitle>
+            {usersWithSessions.length > 0
+              ? `${usersWithSessions.length} user${usersWithSessions.length !== 1 ? "s" : ""} with active sessions`
+              : "Active sessions across all users"}
+          </PageSubtitle>
+        </TitleBlock>
         {someSelected && (
           <Button
             variant="danger-light"
@@ -178,131 +314,93 @@ export function SessionsPage() {
             {selected.size !== 1 ? "s" : ""}
           </Button>
         )}
-      </Flex>
+      </PageHeader>
 
       {sessionsQuery.isError && (
-        <Alert closeLabel="Close" title="Error" variant="danger">
+        <div style={{ color: "#d02b20", fontSize: 12, padding: "8px 0" }}>
           {sessionsQuery.error instanceof Error
             ? sessionsQuery.error.message
             : "An error occurred"}
-        </Alert>
+        </div>
       )}
 
-      <Box
-        background="neutral0"
-        shadow="filterShadow"
-        hasRadius
-        borderColor="neutral150"
-        borderStyle="solid"
-        borderWidth="1px"
-        style={{ overflow: "hidden" }}
-      >
-        {!sessionsQuery.isLoading && usersWithSessions.length > 0 && (
-          <Flex
-            paddingLeft={4}
-            paddingRight={4}
-            paddingTop={3}
-            paddingBottom={3}
-            alignItems="center"
-            gap={3}
-            background="neutral50"
-            borderColor="neutral150"
-            borderStyle="solid"
-            borderWidth="0 0 1px 0"
-          >
-            <Checkbox
-              checked={allSelected}
-              onCheckedChange={handleSelectAll}
-              aria-label="Select all users"
-            />
-            <Typography
-              variant="sigma"
-              textColor="neutral600"
-              style={{ flex: 1 }}
-            >
-              User
-            </Typography>
-            <Typography variant="sigma" textColor="neutral600">
-              Sessions
-            </Typography>
-          </Flex>
-        )}
-
+      <TableCard>
         {sessionsQuery.isLoading ? (
           <Flex justifyContent="center" padding={8}>
             <Loader>Loading sessions…</Loader>
           </Flex>
         ) : usersWithSessions.length === 0 ? (
-          <Flex justifyContent="center" padding={8}>
-            <Typography textColor="neutral500">No active sessions</Typography>
-          </Flex>
+          <EmptyState>No active sessions</EmptyState>
         ) : (
-          usersWithSessions.map((userRow) => (
-            <Box
-              key={userRow.id}
-              borderColor="neutral150"
-              borderStyle="solid"
-              borderWidth="0 0 1px 0"
-              data-testid="session-user-row"
-            >
-              <UserRowHeader>
-                <Checkbox
-                  checked={selected.has(userRow.id)}
-                  onCheckedChange={() => toggleSelect(userRow.id)}
-                  aria-label={`Select ${userRow.name}`}
-                />
-                <Avatar name={userRow.name ?? ""} src={null} size={30} />
-                <Flex direction="column" gap={1} style={{ flex: 1 }}>
-                  <Typography variant="omega" fontWeight="semiBold">
-                    {userRow.name}
-                  </Typography>
-                  <Typography variant="pi" textColor="neutral500">
-                    {userRow.email}
-                  </Typography>
-                </Flex>
-                <Badge backgroundColor="neutral100" textColor="neutral600">
-                  {userRow.sessions.length} session
-                  {userRow.sessions.length !== 1 ? "s" : ""}
-                </Badge>
-              </UserRowHeader>
+          <>
+            <ColumnHeader>
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all users"
+              />
+              <span>User / Sessions</span>
+              <ColumnHeaderRight>Sessions</ColumnHeaderRight>
+            </ColumnHeader>
 
-              {userRow.sessions.map((session) => (
-                <SessionCard key={session.id} data-testid="session-row">
-                  <SessionMeta>
-                    <Flex
-                      gap={2}
-                      alignItems="center"
-                      style={{ flexWrap: "wrap" }}
-                    >
-                      {session.ipAddress && (
-                        <IpText>{session.ipAddress}</IpText>
+            {usersWithSessions.map((userRow, i) => (
+              <UserGroup key={userRow.id} $i={i} data-testid="session-user-row">
+                <UserRowHeader>
+                  <Checkbox
+                    checked={selected.has(userRow.id)}
+                    onCheckedChange={() => toggleSelect(userRow.id)}
+                    aria-label={`Select ${userRow.name}`}
+                  />
+                  <Avatar name={userRow.name ?? ""} src={null} size={30} />
+                  <UserInfo>
+                    <UserName>{userRow.name}</UserName>
+                    <UserEmail>{userRow.email}</UserEmail>
+                  </UserInfo>
+                  <SessionCountChip>
+                    {userRow.sessions.length} session
+                    {userRow.sessions.length !== 1 ? "s" : ""}
+                  </SessionCountChip>
+                </UserRowHeader>
+
+                {userRow.sessions.map((session) => (
+                  <SessionCard key={session.id} data-testid="session-row">
+                    <SessionMeta>
+                      <Flex
+                        gap={2}
+                        alignItems="center"
+                        style={{ flexWrap: "wrap" }}
+                      >
+                        {session.ipAddress && (
+                          <IpChip>{session.ipAddress}</IpChip>
+                        )}
+                        <TimestampText>
+                          Created {new Date(session.createdAt).toLocaleString()}{" "}
+                          · Expires{" "}
+                          {new Date(session.expiresAt).toLocaleString()}
+                        </TimestampText>
+                      </Flex>
+                      {session.userAgent && (
+                        <AgentText>{session.userAgent}</AgentText>
                       )}
-                      <TimestampText>
-                        Created {new Date(session.createdAt).toLocaleString()} ·
-                        Expires {new Date(session.expiresAt).toLocaleString()}
-                      </TimestampText>
-                    </Flex>
-                    {session.userAgent && (
-                      <AgentText>{session.userAgent}</AgentText>
-                    )}
-                  </SessionMeta>
-                  <IconButton
-                    label="Revoke session"
-                    onClick={() => setConfirmRevokeSessionId(session.id)}
-                    style={{ flexShrink: 0 }}
-                    data-testid="revoke-session-btn"
-                  >
-                    <Trash />
-                  </IconButton>
-                </SessionCard>
-              ))}
-            </Box>
-          ))
+                    </SessionMeta>
+                    <IconButton
+                      label="Revoke session"
+                      onClick={() => setConfirmRevokeSessionId(session.id)}
+                      style={{ flexShrink: 0 }}
+                      data-testid="revoke-session-btn"
+                    >
+                      <Trash />
+                    </IconButton>
+                  </SessionCard>
+                ))}
+              </UserGroup>
+            ))}
+          </>
         )}
-      </Box>
+      </TableCard>
 
       {usersWithSessions.length === PAGE_SIZE && (
-        <Flex justifyContent="flex-end" paddingTop={4}>
+        <Flex justifyContent="flex-end">
           <Flex gap={2}>
             <Button
               variant="tertiary"
@@ -344,6 +442,6 @@ export function SessionsPage() {
           onCancel={() => setConfirmRevokeMany(false)}
         />
       )}
-    </Box>
+    </Wrap>
   );
 }

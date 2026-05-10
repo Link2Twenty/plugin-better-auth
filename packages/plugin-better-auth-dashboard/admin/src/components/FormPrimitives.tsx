@@ -133,6 +133,7 @@ export const PreviewPill = styled.div`
 
 /** Linked account row */
 export const AccountRow = styled.div`
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -141,4 +142,40 @@ export const AccountRow = styled.div`
   border: 1px solid #dcdce4;
   border-radius: 8px;
   gap: 12px;
+`;
+
+/** Danger-tinted row for destructive actions */
+export const DangerRow = styled(AccountRow)`
+  background: #fef8f8;
+  border-color: #f5c0b8;
+`;
+
+/** Role badge for organization memberships */
+export const RoleBadge = styled.span<{ $role?: string }>`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: ${(p) =>
+    p.$role === "owner"
+      ? "#f0f0ff"
+      : p.$role === "admin"
+        ? "#eafbe7"
+        : "#f5f5f9"};
+  border: 1px solid
+    ${(p) =>
+      p.$role === "owner"
+        ? "#d9d8ff"
+        : p.$role === "admin"
+          ? "#c6efbd"
+          : "#dcdce4"};
+  color: ${(p) =>
+    p.$role === "owner"
+      ? "#4945ff"
+      : p.$role === "admin"
+        ? "#2e8044"
+        : "#666687"};
 `;

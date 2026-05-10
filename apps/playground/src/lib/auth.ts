@@ -1,7 +1,7 @@
 import { dash } from "@better-auth/infra";
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 import { betterAuth } from "better-auth";
-import { jwt, organization } from "better-auth/plugins";
+import { jwt, organization, twoFactor } from "better-auth/plugins";
 
 export const auth = betterAuth({
   trustedOrigins: ["http://localhost:3000"],
@@ -15,7 +15,12 @@ export const auth = betterAuth({
         process.env.BETTER_AUTH_DASHBOARD_SECRET ||
         "strapi-internal-dashboard-key",
     }),
-    organization(),
+    organization({
+      teams: {
+        enabled: true,
+      },
+    }),
+    twoFactor(),
     jwt(),
   ],
   database: strapiAdapter(),

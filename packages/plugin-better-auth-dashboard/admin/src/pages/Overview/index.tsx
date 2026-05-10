@@ -828,7 +828,7 @@ export function OverviewPage() {
         <StatCardItem
           id="total"
           label="Total Users"
-          value={stats.total}
+          value={stats.total ?? 0}
           sparkline={totalSpark}
           color="#4945FF"
           delay={0}
@@ -836,8 +836,8 @@ export function OverviewPage() {
         <StatCardItem
           id="d-sig"
           label="Daily Sign-ups"
-          value={stats.daily.signUps}
-          pct={stats.daily.percentage}
+          value={stats.daily.signUps ?? 0}
+          pct={stats.daily.percentage ?? undefined}
           sparkline={newSpark}
           color="#5CB176"
           delay={1}
@@ -845,8 +845,8 @@ export function OverviewPage() {
         <StatCardItem
           id="w-sig"
           label="Weekly Sign-ups"
-          value={stats.weekly.signUps}
-          pct={stats.weekly.percentage}
+          value={stats.weekly.signUps ?? 0}
+          pct={stats.weekly.percentage ?? undefined}
           sparkline={newSpark}
           color="#5CB176"
           delay={2}
@@ -854,8 +854,8 @@ export function OverviewPage() {
         <StatCardItem
           id="m-sig"
           label="Monthly Sign-ups"
-          value={stats.monthly.signUps}
-          pct={stats.monthly.percentage}
+          value={stats.monthly.signUps ?? 0}
+          pct={stats.monthly.percentage ?? undefined}
           sparkline={newSpark}
           color="#5CB176"
           delay={3}
@@ -942,8 +942,8 @@ export function OverviewPage() {
         <StatCardItem
           id="d-act"
           label="Daily Active"
-          value={stats.activeUsers.daily.active}
-          pct={stats.activeUsers.daily.percentage}
+          value={stats.activeUsers.daily.active ?? 0}
+          pct={stats.activeUsers.daily.percentage ?? undefined}
           sparkline={activeSpark}
           color="#E57553"
           delay={7}
@@ -951,8 +951,8 @@ export function OverviewPage() {
         <StatCardItem
           id="w-act"
           label="Weekly Active"
-          value={stats.activeUsers.weekly.active}
-          pct={stats.activeUsers.weekly.percentage}
+          value={stats.activeUsers.weekly.active ?? 0}
+          pct={stats.activeUsers.weekly.percentage ?? undefined}
           sparkline={activeSpark}
           color="#E57553"
           delay={8}
@@ -960,8 +960,8 @@ export function OverviewPage() {
         <StatCardItem
           id="m-act"
           label="Monthly Active"
-          value={stats.activeUsers.monthly.active}
-          pct={stats.activeUsers.monthly.percentage}
+          value={stats.activeUsers.monthly.active ?? 0}
+          pct={stats.activeUsers.monthly.percentage ?? undefined}
           sparkline={activeSpark}
           color="#E57553"
           delay={9}

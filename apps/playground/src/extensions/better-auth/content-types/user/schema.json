@@ -71,6 +71,16 @@
     },
     "verified": {
       "type": "boolean"
+    },
+    "twoFactorEnabled": {
+      "type": "boolean",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "default": false
     }
   }
 }

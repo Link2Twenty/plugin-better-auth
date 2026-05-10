@@ -17,6 +17,7 @@ import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import styled from "styled-components";
 import { client } from "../../client";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
@@ -37,6 +38,39 @@ import { MediaPickerField } from "../../components/MediaPickerField";
 import { UserCombobox } from "../../components/UserCombobox";
 import { useModelSchema } from "../../hooks/useModelSchema";
 import { withContext } from "../../utils/dashContext";
+
+// ─── Team row styled components ───────────────────────────────────────────────
+
+const ExpandableRow = styled.div`
+  width: 100%;
+  background: white;
+  border: 1px solid #dcdce4;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const ExpandableRowHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  gap: 12px;
+  cursor: pointer;
+  &:hover {
+    background: #fafafe;
+  }
+`;
+
+const ExpandableRowBody = styled.div`
+  padding: 12px 14px;
+  border-top: 1px solid #eaeaef;
+  background: #fafafe;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 const STANDARD_ORG_FIELDS = new Set([
   "id",
@@ -470,19 +504,9 @@ export function OrganizationDetail({
 
           {/* ── Members ── */}
           <Tabs.Content value="members">
-            <Flex direction="column" gap={4} paddingTop={6}>
-              {/* Add member form */}
-              <Box
-                background="neutral50"
-                padding={4}
-                hasRadius
-                borderColor="neutral150"
-                borderStyle="solid"
-                borderWidth="1px"
-              >
-                <SectionLabel style={{ marginBottom: 12 }}>
-                  Add member
-                </SectionLabel>
+            <Flex direction="column" gap={5} paddingTop={6}>
+              <FormSection>
+                <SectionLabel>Add member</SectionLabel>
                 <Grid.Root gap={3}>
                   <Grid.Item col={8}>
                     <UserCombobox
@@ -514,7 +538,7 @@ export function OrganizationDetail({
                     </Field.Root>
                   </Grid.Item>
                 </Grid.Root>
-                <Box paddingTop={3}>
+                <Box>
                   <Button
                     size="S"
                     startIcon={<Plus />}
@@ -526,91 +550,79 @@ export function OrganizationDetail({
                     Add member
                   </Button>
                 </Box>
-              </Box>
+              </FormSection>
 
-              {/* Member list */}
-              {membersQuery.isLoading ? (
-                <Typography textColor="neutral500">Loading…</Typography>
-              ) : members.length === 0 ? (
-                <Box
-                  background="neutral50"
-                  padding={5}
-                  hasRadius
-                  borderColor="neutral150"
-                  borderStyle="solid"
-                  borderWidth="1px"
-                >
-                  <Flex justifyContent="center">
-                    <Typography textColor="neutral500">
-                      No members yet
-                    </Typography>
-                  </Flex>
-                </Box>
-              ) : (
-                members.map((member) => (
-                  <AccountRow key={member.id} data-testid="member-row">
-                    <Flex direction="column" gap={1} style={{ flex: 1 }}>
-                      <Typography variant="omega" fontWeight="semiBold">
-                        {member.user?.name ?? "Unknown"}
-                      </Typography>
-                      <Typography variant="pi" textColor="neutral500">
-                        {member.user?.email}
-                      </Typography>
-                    </Flex>
-                    <Flex gap={2} alignItems="center">
-                      <Field.Root style={{ width: 110 }}>
-                        <SingleSelect
-                          value={member.role}
-                          onChange={(role: string | number) =>
-                            updateRoleMutation.mutate({
-                              memberId: member.id,
-                              role: String(role),
-                            })
-                          }
-                          size="S"
-                          aria-label="Member role"
+              <FormSection>
+                <SectionLabel>Members ({members.length})</SectionLabel>
+                {membersQuery.isLoading ? (
+                  <Typography textColor="neutral500">Loading…</Typography>
+                ) : members.length === 0 ? (
+                  <Typography variant="pi" textColor="neutral500">
+                    No members yet.
+                  </Typography>
+                ) : (
+                  <Flex direction="column" gap={2}>
+                    {members.map((member) => (
+                      <AccountRow key={member.id} data-testid="member-row">
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                          style={{ flex: 1 }}
                         >
-                          <SingleSelectOption value="member">
-                            Member
-                          </SingleSelectOption>
-                          <SingleSelectOption value="admin">
-                            Admin
-                          </SingleSelectOption>
-                          <SingleSelectOption value="owner">
-                            Owner
-                          </SingleSelectOption>
-                        </SingleSelect>
-                      </Field.Root>
-                      <IconButton
-                        label="Remove member"
-                        onClick={() => setConfirmRemoveMemberId(member.id)}
-                        data-testid="remove-member-btn"
-                      >
-                        <Trash />
-                      </IconButton>
-                    </Flex>
-                  </AccountRow>
-                ))
-              )}
+                          <Typography variant="omega" fontWeight="semiBold">
+                            {member.user?.name ?? "Unknown"}
+                          </Typography>
+                          <Typography variant="pi" textColor="neutral500">
+                            {member.user?.email}
+                          </Typography>
+                        </Flex>
+                        <Flex gap={2} alignItems="center">
+                          <Field.Root style={{ width: 110 }}>
+                            <SingleSelect
+                              value={member.role}
+                              onChange={(role: string | number) =>
+                                updateRoleMutation.mutate({
+                                  memberId: member.id,
+                                  role: String(role),
+                                })
+                              }
+                              size="S"
+                              aria-label="Member role"
+                            >
+                              <SingleSelectOption value="member">
+                                Member
+                              </SingleSelectOption>
+                              <SingleSelectOption value="admin">
+                                Admin
+                              </SingleSelectOption>
+                              <SingleSelectOption value="owner">
+                                Owner
+                              </SingleSelectOption>
+                            </SingleSelect>
+                          </Field.Root>
+                          <IconButton
+                            label="Remove member"
+                            onClick={() => setConfirmRemoveMemberId(member.id)}
+                            data-testid="remove-member-btn"
+                          >
+                            <Trash />
+                          </IconButton>
+                        </Flex>
+                      </AccountRow>
+                    ))}
+                  </Flex>
+                )}
+              </FormSection>
             </Flex>
           </Tabs.Content>
 
           {/* ── Teams ── */}
           {teamsEnabled && (
             <Tabs.Content value="teams">
-              <Flex direction="column" gap={4} paddingTop={6}>
-                {/* Create team */}
-                <Box
-                  background="neutral50"
-                  padding={4}
-                  hasRadius
-                  borderColor="neutral150"
-                  borderStyle="solid"
-                  borderWidth="1px"
-                >
-                  <SectionLabel style={{ marginBottom: 12 }}>
-                    Create team
-                  </SectionLabel>
+              <Flex direction="column" gap={5} paddingTop={6}>
+                <FormSection>
+                  <SectionLabel>Create team</SectionLabel>
                   <Flex gap={2} alignItems="flex-end">
                     <Box style={{ flex: 1 }}>
                       <Field.Root>
@@ -633,80 +645,78 @@ export function OrganizationDetail({
                       Create
                     </Button>
                   </Flex>
-                </Box>
+                </FormSection>
 
-                {teamsQuery.isLoading ? (
-                  <Typography textColor="neutral500">Loading…</Typography>
-                ) : teams.length === 0 ? (
-                  <Box
-                    background="neutral50"
-                    padding={5}
-                    hasRadius
-                    borderColor="neutral150"
-                    borderStyle="solid"
-                    borderWidth="1px"
-                  >
-                    <Flex justifyContent="center">
-                      <Typography textColor="neutral500">
-                        No teams yet
-                      </Typography>
+                <FormSection>
+                  <SectionLabel>Teams ({teams.length})</SectionLabel>
+                  {teamsQuery.isLoading ? (
+                    <Typography textColor="neutral500">Loading…</Typography>
+                  ) : teams.length === 0 ? (
+                    <Typography variant="pi" textColor="neutral500">
+                      No teams yet.
+                    </Typography>
+                  ) : (
+                    <Flex direction="column" gap={2}>
+                      {teams.map((team) => (
+                        <TeamRow
+                          key={team.id}
+                          team={team}
+                          organizationId={organizationId}
+                          onDelete={() => setConfirmDeleteTeamId(team.id)}
+                        />
+                      ))}
                     </Flex>
-                  </Box>
-                ) : (
-                  teams.map((team) => (
-                    <TeamRow
-                      key={team.id}
-                      team={team}
-                      organizationId={organizationId}
-                      onDelete={() => setConfirmDeleteTeamId(team.id)}
-                    />
-                  ))
-                )}
+                  )}
+                </FormSection>
               </Flex>
             </Tabs.Content>
           )}
 
           {/* ── SSO ── */}
           <Tabs.Content value="sso">
-            <Flex direction="column" gap={3} paddingTop={6}>
-              {ssoQuery.isLoading ? (
-                <Typography textColor="neutral500">Loading…</Typography>
-              ) : ssoProviders.length === 0 ? (
-                <Box
-                  background="neutral50"
-                  padding={5}
-                  hasRadius
-                  borderColor="neutral150"
-                  borderStyle="solid"
-                  borderWidth="1px"
-                >
-                  <Flex justifyContent="center">
-                    <Typography textColor="neutral500">
-                      No SSO providers configured.
-                    </Typography>
+            <Flex direction="column" gap={5} paddingTop={6}>
+              <FormSection>
+                <SectionLabel>SSO providers</SectionLabel>
+                {ssoQuery.isLoading ? (
+                  <Typography textColor="neutral500">Loading…</Typography>
+                ) : ssoProviders.length === 0 ? (
+                  <Typography variant="pi" textColor="neutral500">
+                    No SSO providers configured.
+                  </Typography>
+                ) : (
+                  <Flex direction="column" gap={2}>
+                    {ssoProviders.map((provider) => (
+                      <AccountRow
+                        key={provider.id}
+                        data-testid="sso-provider-row"
+                      >
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                          style={{ flex: 1 }}
+                        >
+                          <ProviderBadge>{provider.providerId}</ProviderBadge>
+                          <Typography variant="pi" textColor="neutral500">
+                            {provider.domain}
+                          </Typography>
+                          <Typography variant="pi" textColor="neutral500">
+                            Issuer: {provider.issuer}
+                          </Typography>
+                        </Flex>
+                        <IconButton
+                          label="Delete SSO provider"
+                          onClick={() =>
+                            setConfirmDeleteSsoId(provider.providerId)
+                          }
+                        >
+                          <Trash />
+                        </IconButton>
+                      </AccountRow>
+                    ))}
                   </Flex>
-                </Box>
-              ) : (
-                ssoProviders.map((provider) => (
-                  <AccountRow key={provider.id} data-testid="sso-provider-row">
-                    <Flex direction="column" gap={1} style={{ flex: 1 }}>
-                      <ProviderBadge>{provider.providerId}</ProviderBadge>
-                      <Typography variant="pi" textColor="neutral500">
-                        {provider.domain}
-                      </Typography>
-                      <Typography variant="pi" textColor="neutral500">
-                        Issuer: {provider.issuer}
-                      </Typography>
-                    </Flex>
-                    <IconButton
-                      label="Delete SSO provider"
-                      onClick={() => setConfirmDeleteSsoId(provider.providerId)}
-                    >
-                      <Trash />
-                    </IconButton>
-                  </AccountRow>
-                ))
-              )}
+                )}
+              </FormSection>
             </Flex>
           </Tabs.Content>
         </Tabs.Root>
@@ -815,94 +825,94 @@ function TeamRow({
   });
 
   return (
-    <Box
-      background="neutral0"
-      hasRadius
-      borderColor="neutral150"
-      borderStyle="solid"
-      borderWidth="1px"
-      data-testid="team-row"
-    >
-      <Flex
-        padding={3}
-        justifyContent="space-between"
-        alignItems="center"
-        style={{ cursor: "pointer" }}
-        onClick={() => setExpanded((e) => !e)}
-      >
-        <Flex alignItems="center" gap={2}>
+    <ExpandableRow data-testid="team-row">
+      <ExpandableRowHeader onClick={() => setExpanded((e) => !e)}>
+        <Flex
+          direction="column"
+          gap={1}
+          alignItems="flex-start"
+          style={{ flex: 1 }}
+        >
           <Typography variant="omega" fontWeight="semiBold">
             {team.name}
           </Typography>
+          <Typography variant="pi" textColor="neutral500">
+            {expanded ? "Collapse" : "Expand"} ·{" "}
+            {teamMembersQuery.data?.length ?? "—"} members
+          </Typography>
+        </Flex>
+        <Flex gap={2} alignItems="center">
           <Typography variant="pi" textColor="neutral400">
             {expanded ? "▲" : "▼"}
           </Typography>
+          <Box onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <IconButton label="Delete team" onClick={onDelete}>
+              <Trash />
+            </IconButton>
+          </Box>
         </Flex>
-        <Box onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-          <IconButton label="Delete team" onClick={onDelete}>
-            <Trash />
-          </IconButton>
-        </Box>
-      </Flex>
+      </ExpandableRowHeader>
 
       {expanded && (
-        <Box
-          padding={3}
-          borderColor="neutral150"
-          borderStyle="solid"
-          borderWidth="1px 0 0 0"
-        >
-          <Flex direction="column" gap={3}>
-            <Flex gap={2} alignItems="flex-end">
-              <Box style={{ flex: 1 }}>
-                <UserCombobox
-                  label="Add member to team"
-                  value={addUserId}
-                  onChange={setAddUserId}
-                />
-              </Box>
-              <Button
-                size="S"
-                startIcon={<Plus />}
-                disabled={!addUserId}
-                loading={addTeamMemberMutation.isLoading}
-                onClick={() => addTeamMemberMutation.mutate()}
-              >
-                Add
-              </Button>
-            </Flex>
+        <ExpandableRowBody>
+          <Flex gap={2} alignItems="flex-end">
+            <Box style={{ flex: 1 }}>
+              <UserCombobox
+                label="Add member to team"
+                value={addUserId}
+                onChange={setAddUserId}
+              />
+            </Box>
+            <Button
+              size="S"
+              startIcon={<Plus />}
+              disabled={!addUserId}
+              loading={addTeamMemberMutation.isLoading}
+              onClick={() => addTeamMemberMutation.mutate()}
+            >
+              Add
+            </Button>
+          </Flex>
 
-            {teamMembersQuery.isLoading ? (
-              <Typography variant="pi" textColor="neutral500">
-                Loading…
-              </Typography>
-            ) : (teamMembersQuery.data ?? []).length === 0 ? (
-              <Typography variant="pi" textColor="neutral500">
-                No members in this team
-              </Typography>
-            ) : (
-              // biome-ignore lint/suspicious/noExplicitAny: team member shape varies by config
-              (teamMembersQuery.data ?? []).map((tm: any) => (
-                <Flex
-                  key={tm.id}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography variant="pi">
-                    {tm.user?.name ?? tm.userId}
-                    {tm.user?.email ? ` — ${tm.user.email}` : ""}
-                  </Typography>
+          {teamMembersQuery.isLoading ? (
+            <Typography variant="pi" textColor="neutral500">
+              Loading…
+            </Typography>
+          ) : (teamMembersQuery.data ?? []).length === 0 ? (
+            <Typography variant="pi" textColor="neutral500">
+              No members in this team.
+            </Typography>
+          ) : (
+            <Flex direction="column" gap={2}>
+              {/* biome-ignore lint/suspicious/noExplicitAny: team member shape varies by config */}
+              {(teamMembersQuery.data ?? []).map((tm: any) => (
+                <AccountRow key={tm.id}>
+                  <Flex
+                    direction="column"
+                    gap={1}
+                    alignItems="flex-start"
+                    style={{ flex: 1 }}
+                  >
+                    <Typography variant="omega" fontWeight="semiBold">
+                      {tm.user?.name ?? tm.userId}
+                    </Typography>
+                    {tm.user?.email && (
+                      <Typography variant="pi" textColor="neutral500">
+                        {tm.user.email}
+                      </Typography>
+                    )}
+                  </Flex>
                   <IconButton
                     label="Remove from team"
                     onClick={() => setConfirmRemoveTeamMemberId(tm.userId)}
                   >
                     <Trash />
                   </IconButton>
-                </Flex>
-              ))
-            )}
-          </Flex>
-        </Box>
+                </AccountRow>
+              ))}
+            </Flex>
+          )}
+        </ExpandableRowBody>
       )}
 
       {confirmRemoveTeamMemberId && (
@@ -917,6 +927,6 @@ function TeamRow({
           onCancel={() => setConfirmRemoveTeamMemberId(null)}
         />
       )}
-    </Box>
+    </ExpandableRow>
   );
 }

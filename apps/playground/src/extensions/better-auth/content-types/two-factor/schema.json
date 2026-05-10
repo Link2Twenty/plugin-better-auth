@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "ba_session",
+  "collectionName": "ba_two_factor",
   "info": {
-    "singularName": "session",
-    "pluralName": "sessions",
-    "displayName": "Sessions"
+    "singularName": "two-factor",
+    "pluralName": "two-factors",
+    "displayName": "Two Factors"
   },
   "options": {
     "draftAndPublish": false
@@ -18,8 +18,8 @@
     }
   },
   "attributes": {
-    "expiresAt": {
-      "type": "datetime",
+    "secret": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -28,7 +28,7 @@
       },
       "required": true
     },
-    "token": {
+    "backupCodes": {
       "type": "text",
       "configurable": false,
       "pluginOptions": {
@@ -36,26 +36,7 @@
           "managed": true
         }
       },
-      "required": true,
-      "unique": true
-    },
-    "ipAddress": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
-    },
-    "userAgent": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
+      "required": true
     },
     "userId": {
       "type": "integer",
@@ -67,23 +48,15 @@
       },
       "required": true
     },
-    "activeOrganizationId": {
-      "type": "string",
+    "verified": {
+      "type": "boolean",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
           "managed": true
         }
-      }
-    },
-    "activeTeamId": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
+      },
+      "default": true
     }
   }
 }

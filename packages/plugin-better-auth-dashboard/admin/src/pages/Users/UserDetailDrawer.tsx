@@ -7,6 +7,7 @@ import {
   Field,
   Flex,
   Grid,
+  Modal,
   Tabs,
   TextInput,
   Typography,
@@ -15,6 +16,7 @@ import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import styled from "styled-components";
 import { client } from "../../client";
 import { Avatar } from "../../components/Avatar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
@@ -22,6 +24,7 @@ import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
 import {
   AccountRow,
+  DangerRow,
   EditLayout,
   EditSidebar,
   FormSection,
@@ -31,6 +34,7 @@ import {
   MonoChip,
   PreviewPill,
   ProviderBadge,
+  RoleBadge,
   SectionLabel,
   WarnCard,
 } from "../../components/FormPrimitives";
@@ -38,6 +42,62 @@ import {
 import { MediaPickerField } from "../../components/MediaPickerField";
 import { useModelSchema } from "../../hooks/useModelSchema";
 import { withContext } from "../../utils/dashContext";
+
+// ─── 2FA styled components ────────────────────────────────────────────────────
+
+const TwoFaChip = styled.span<{ $enabled: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: ${(p) => (p.$enabled ? "#eafbe7" : "#f0f0ff")};
+  color: ${(p) => (p.$enabled ? "#5cb176" : "#8e8ea9")};
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: ${(p) => (p.$enabled ? "#5cb176" : "#b8b8c7")};
+  }
+`;
+
+const BackupCodeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+`;
+
+const BackupCodeItem = styled.span`
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid #eaeaef;
+  border-radius: 6px;
+  color: #32324d;
+  letter-spacing: 0.05em;
+  text-align: center;
+`;
+
+const ReadOnlyCodeInput = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #eaeaef;
+  border-radius: 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  color: #32324d;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+`;
 
 const STANDARD_FIELDS = new Set([
   "id",
@@ -56,6 +116,7 @@ interface Props {
   userId: string;
   banEnabled: boolean;
   emailVerificationEnabled: boolean;
+  twoFactorEnabled: boolean;
   onClose: () => void;
 }
 
@@ -63,6 +124,7 @@ export function UserDetailDrawer({
   userId,
   banEnabled,
   emailVerificationEnabled,
+  twoFactorEnabled,
   onClose,
 }: Props) {
   const qc = useQueryClient();
@@ -107,6 +169,21 @@ export function UserDetailDrawer({
   const [confirmUnlinkAccountId, setConfirmUnlinkAccountId] = useState<
     string | null
   >(null);
+  const [confirmDisable2FA, setConfirmDisable2FA] = useState(false);
+  const [showTotpModal, setShowTotpModal] = useState(false);
+  const [showBackupCodesModal, setShowBackupCodesModal] = useState(false);
+  const [confirmRegenerateBackupCodes, setConfirmRegenerateBackupCodes] =
+    useState(false);
+  const [twoFactorData, setTwoFactorData] = useState<{
+    totpURI: string;
+    secret: string;
+    backupCodes: string[];
+  } | null>(null);
+  const [totpUriData, setTotpUriData] = useState<{
+    totpURI: string;
+    secret: string;
+  } | null>(null);
+  const [backupCodesData, setBackupCodesData] = useState<string[] | null>(null);
 
   const user = userQuery.data;
   const displayName = editName ?? user?.name ?? "";
@@ -326,6 +403,140 @@ export function UserDetailDrawer({
     },
   });
 
+  const enableTwoFactorMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.enableTwoFactor(
+        {},
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to enable 2FA");
+      return result.data;
+    },
+    onSuccess: (data) => {
+      if (data) setTwoFactorData(data);
+      qc.invalidateQueries({ queryKey: ["dash-user", userId] });
+      toggleNotification({
+        type: "success",
+        message: "Two-factor authentication enabled",
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to enable 2FA",
+      });
+    },
+  });
+
+  const disableTwoFactorMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.disableTwoFactor(
+        {},
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to disable 2FA");
+      return result.data;
+    },
+    onSuccess: () => {
+      setConfirmDisable2FA(false);
+      setTwoFactorData(null);
+      setTotpUriData(null);
+      setBackupCodesData(null);
+      qc.invalidateQueries({ queryKey: ["dash-user", userId] });
+      toggleNotification({
+        type: "success",
+        message: "Two-factor authentication disabled",
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to disable 2FA",
+      });
+    },
+  });
+
+  const viewTotpUriMutation = useMutation({
+    mutationFn: async () => {
+      const result = await (client.dash as any).viewTwoFactorTotpUri(
+        {},
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to load TOTP URI");
+      return result.data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        setTotpUriData(data);
+        setShowTotpModal(true);
+      }
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to load TOTP URI",
+      });
+    },
+  });
+
+  const viewBackupCodesMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.viewBackupCodes(
+        {},
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Failed to load backup codes");
+      return result.data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        setBackupCodesData(data.backupCodes);
+        setShowBackupCodesModal(true);
+      }
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to load backup codes",
+      });
+    },
+  });
+
+  const generateBackupCodesMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.generateBackupCodes(
+        {},
+        withContext({ userId }),
+      );
+      if (result.error)
+        throw new Error(
+          result.error.message ?? "Failed to generate backup codes",
+        );
+      return result.data;
+    },
+    onSuccess: (data) => {
+      setConfirmRegenerateBackupCodes(false);
+      if (data) {
+        setBackupCodesData(data.backupCodes);
+        setShowBackupCodesModal(true);
+      }
+      toggleNotification({
+        type: "success",
+        message: "New backup codes generated",
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to generate backup codes",
+      });
+    },
+  });
+
   const hasEdits =
     editName !== undefined ||
     editEmail !== undefined ||
@@ -452,14 +663,6 @@ export function UserDetailDrawer({
                       }
                     />
                   </Field.Root>
-                  <MediaPickerField
-                    label="Avatar URL"
-                    name="image"
-                    value={displayImage}
-                    onChange={setEditImage}
-                    placeholder="https://example.com/avatar.png"
-                    hint="Optional — publicly accessible image URL"
-                  />
                   <Checkbox
                     checked={displayEmailVerified}
                     onCheckedChange={(checked: boolean) =>
@@ -468,6 +671,14 @@ export function UserDetailDrawer({
                   >
                     Mark email as verified
                   </Checkbox>
+                  <MediaPickerField
+                    label="Avatar URL"
+                    name="image"
+                    value={displayImage}
+                    onChange={setEditImage}
+                    placeholder="https://example.com/avatar.png"
+                    hint="Optional — publicly accessible image URL"
+                  />
                 </FormSection>
 
                 <CustomFieldsSection
@@ -547,41 +758,35 @@ export function UserDetailDrawer({
           <Tabs.Content value="security">
             <Flex direction="column" gap={5} paddingTop={6}>
               {/* Password */}
-              <Box>
-                <SectionLabel style={{ marginBottom: 10 }}>
-                  Set password
-                </SectionLabel>
-                <Flex direction="column" gap={3}>
-                  <Field.Root hint="The user will be able to sign in with this new password">
-                    <Field.Label>New password</Field.Label>
-                    <TextInput
-                      type="password"
-                      value={newPassword}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setNewPassword(e.target.value)
-                      }
-                      placeholder="Enter a strong password…"
-                    />
-                    <Field.Hint />
-                  </Field.Root>
-                  <Box>
-                    <Button
-                      disabled={!newPassword}
-                      loading={passwordMutation.isLoading}
-                      onClick={() => passwordMutation.mutate()}
-                    >
-                      Set password
-                    </Button>
-                  </Box>
-                </Flex>
-              </Box>
+              <FormSection>
+                <SectionLabel>Password</SectionLabel>
+                <Field.Root hint="The user will be able to sign in with this new password">
+                  <Field.Label>New password</Field.Label>
+                  <TextInput
+                    type="password"
+                    value={newPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setNewPassword(e.target.value)
+                    }
+                    placeholder="Enter a strong password…"
+                  />
+                  <Field.Hint />
+                </Field.Root>
+                <Box>
+                  <Button
+                    disabled={!newPassword}
+                    loading={passwordMutation.isLoading}
+                    onClick={() => passwordMutation.mutate()}
+                  >
+                    Set password
+                  </Button>
+                </Box>
+              </FormSection>
 
               {/* Linked accounts */}
-              {user?.account && user.account.length > 0 && (
-                <Box>
-                  <SectionLabel style={{ marginBottom: 10 }}>
-                    Linked accounts
-                  </SectionLabel>
+              <FormSection>
+                <SectionLabel>Linked accounts</SectionLabel>
+                {user?.account && user.account.length > 0 ? (
                   <Flex direction="column" gap={2}>
                     {user.account.map((acc) => (
                       <AccountRow key={acc.id}>
@@ -598,13 +803,182 @@ export function UserDetailDrawer({
                       </AccountRow>
                     ))}
                   </Flex>
-                </Box>
-              )}
+                ) : (
+                  <Typography variant="pi" textColor="neutral500">
+                    No linked OAuth accounts.
+                  </Typography>
+                )}
+              </FormSection>
 
-              {(!user?.account || user.account.length === 0) && (
-                <Typography variant="pi" textColor="neutral500">
-                  No linked OAuth accounts.
-                </Typography>
+              {/* Two-factor authentication */}
+              {twoFactorEnabled && (
+                <FormSection>
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <SectionLabel style={{ margin: 0 }}>
+                      Two-factor authentication
+                    </SectionLabel>
+                    <TwoFaChip
+                      $enabled={
+                        !!(user as Record<string, unknown>)?.twoFactorEnabled
+                      }
+                    >
+                      {(user as Record<string, unknown>)?.twoFactorEnabled
+                        ? "Enabled"
+                        : "Not enabled"}
+                    </TwoFaChip>
+                  </Flex>
+
+                  {(user as Record<string, unknown>)?.twoFactorEnabled ? (
+                    <Flex direction="column" gap={2}>
+                      {/* TOTP row */}
+                      <AccountRow>
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                        >
+                          <Typography variant="omega" fontWeight="semiBold">
+                            TOTP authenticator
+                          </Typography>
+                          <Typography variant="pi" textColor="neutral500">
+                            View the URI and secret for this user's
+                            authenticator app.
+                          </Typography>
+                        </Flex>
+                        <Button
+                          variant="secondary"
+                          size="S"
+                          loading={viewTotpUriMutation.isLoading}
+                          onClick={() => viewTotpUriMutation.mutate()}
+                        >
+                          {totpUriData ? "Refresh" : "View"}
+                        </Button>
+                      </AccountRow>
+
+                      {/* Backup codes row */}
+                      <AccountRow>
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                        >
+                          <Typography variant="omega" fontWeight="semiBold">
+                            Backup codes
+                          </Typography>
+                          <Typography variant="pi" textColor="neutral500">
+                            View or regenerate the user's recovery codes.
+                          </Typography>
+                        </Flex>
+                        <Flex gap={2}>
+                          <Button
+                            variant="secondary"
+                            size="S"
+                            loading={viewBackupCodesMutation.isLoading}
+                            onClick={() => viewBackupCodesMutation.mutate()}
+                          >
+                            {backupCodesData ? "Refresh" : "View"}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="S"
+                            onClick={() =>
+                              setConfirmRegenerateBackupCodes(true)
+                            }
+                          >
+                            Regenerate
+                          </Button>
+                        </Flex>
+                      </AccountRow>
+
+                      {/* Disable row */}
+                      <DangerRow>
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                        >
+                          <Typography
+                            variant="omega"
+                            fontWeight="semiBold"
+                            textColor="danger600"
+                          >
+                            Disable two-factor authentication
+                          </Typography>
+                          <Typography variant="pi" textColor="danger500">
+                            The user will no longer need a second factor to sign
+                            in.
+                          </Typography>
+                        </Flex>
+                        <Button
+                          variant="danger-light"
+                          size="S"
+                          onClick={() => setConfirmDisable2FA(true)}
+                        >
+                          Disable 2FA
+                        </Button>
+                      </DangerRow>
+                    </Flex>
+                  ) : (
+                    <Flex direction="column" gap={2}>
+                      {twoFactorData && (
+                        <Flex
+                          direction="column"
+                          gap={3}
+                          style={{ padding: "2px 4px" }}
+                        >
+                          <Typography variant="pi" textColor="neutral500">
+                            Scan the TOTP URI with an authenticator app, or
+                            enter the secret key manually.
+                          </Typography>
+                          <Field.Root>
+                            <Field.Label>TOTP URI</Field.Label>
+                            <ReadOnlyCodeInput>
+                              {twoFactorData.totpURI}
+                            </ReadOnlyCodeInput>
+                          </Field.Root>
+                          <Field.Root>
+                            <Field.Label>Secret key</Field.Label>
+                            <ReadOnlyCodeInput>
+                              {twoFactorData.secret}
+                            </ReadOnlyCodeInput>
+                          </Field.Root>
+                          <Flex direction="column" gap={2}>
+                            <SectionLabel>Backup codes</SectionLabel>
+                            <BackupCodeGrid>
+                              {twoFactorData.backupCodes.map((code) => (
+                                <BackupCodeItem key={code}>
+                                  {code}
+                                </BackupCodeItem>
+                              ))}
+                            </BackupCodeGrid>
+                          </Flex>
+                        </Flex>
+                      )}
+
+                      <AccountRow>
+                        <Flex
+                          direction="column"
+                          gap={1}
+                          alignItems="flex-start"
+                        >
+                          <Typography variant="omega" fontWeight="semiBold">
+                            Enable two-factor authentication
+                          </Typography>
+                          <Typography variant="pi" textColor="neutral500">
+                            Add an extra layer of security to this account.
+                          </Typography>
+                        </Flex>
+                        <Button
+                          size="S"
+                          loading={enableTwoFactorMutation.isLoading}
+                          onClick={() => enableTwoFactorMutation.mutate()}
+                        >
+                          Enable 2FA
+                        </Button>
+                      </AccountRow>
+                    </Flex>
+                  )}
+                </FormSection>
               )}
             </Flex>
           </Tabs.Content>
@@ -733,21 +1107,11 @@ export function UserDetailDrawer({
 
           {/* ── Sessions ── */}
           <Tabs.Content value="sessions">
-            <Flex direction="column" gap={4} paddingTop={6}>
-              <Box
-                background="neutral50"
-                padding={4}
-                hasRadius
-                borderColor="neutral150"
-                borderStyle="solid"
-                borderWidth="1px"
-              >
-                <Flex
-                  justifyContent="space-between"
-                  alignItems="center"
-                  gap={4}
-                >
-                  <Flex direction="column" gap={1}>
+            <Flex direction="column" gap={5} paddingTop={6}>
+              <FormSection>
+                <SectionLabel>Session management</SectionLabel>
+                <AccountRow>
+                  <Flex direction="column" gap={1} alignItems="flex-start">
                     <Typography variant="omega" fontWeight="semiBold">
                       Revoke all sessions
                     </Typography>
@@ -763,61 +1127,51 @@ export function UserDetailDrawer({
                   >
                     Revoke all
                   </Button>
-                </Flex>
-              </Box>
+                </AccountRow>
+              </FormSection>
             </Flex>
           </Tabs.Content>
 
           {/* ── Organizations ── */}
           <Tabs.Content value="organizations">
-            <Flex direction="column" gap={3} paddingTop={6}>
-              {orgsQuery.isLoading ? (
-                <Typography textColor="neutral500">Loading…</Typography>
-              ) : (orgsQuery.data ?? []).length === 0 ? (
-                <Box
-                  background="neutral50"
-                  padding={6}
-                  hasRadius
-                  borderColor="neutral150"
-                  borderStyle="solid"
-                  borderWidth="1px"
-                >
-                  <Flex justifyContent="center">
-                    <Typography textColor="neutral500">
-                      Not a member of any organizations.
-                    </Typography>
+            <Flex direction="column" gap={5} paddingTop={6}>
+              <FormSection>
+                <SectionLabel>Memberships</SectionLabel>
+                {orgsQuery.isLoading ? (
+                  <Typography textColor="neutral500">Loading…</Typography>
+                ) : (orgsQuery.data ?? []).length === 0 ? (
+                  <Typography variant="pi" textColor="neutral500">
+                    Not a member of any organizations.
+                  </Typography>
+                ) : (
+                  <Flex direction="column" gap={2}>
+                    {(orgsQuery.data ?? []).map((org) =>
+                      org ? (
+                        <AccountRow key={org.id}>
+                          <Flex
+                            direction="column"
+                            gap={1}
+                            alignItems="flex-start"
+                          >
+                            <Typography variant="omega" fontWeight="semiBold">
+                              {org.name}
+                            </Typography>
+                            <Flex gap={2} alignItems="center">
+                              <RoleBadge $role={org.role}>{org.role}</RoleBadge>
+                              {org.teams.length > 0 && (
+                                <Typography variant="pi" textColor="neutral500">
+                                  {org.teams.length} team
+                                  {org.teams.length !== 1 ? "s" : ""}
+                                </Typography>
+                              )}
+                            </Flex>
+                          </Flex>
+                        </AccountRow>
+                      ) : null,
+                    )}
                   </Flex>
-                </Box>
-              ) : (
-                (orgsQuery.data ?? []).map((org) =>
-                  org ? (
-                    <Box
-                      key={org.id}
-                      padding={4}
-                      background="neutral0"
-                      hasRadius
-                      borderColor="neutral150"
-                      borderStyle="solid"
-                      borderWidth="1px"
-                    >
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Flex direction="column" gap={1}>
-                          <Typography variant="omega" fontWeight="semiBold">
-                            {org.name}
-                          </Typography>
-                          <Typography variant="pi" textColor="neutral500">
-                            {org.role.charAt(0).toUpperCase() +
-                              org.role.slice(1)}
-                            {org.teams.length > 0
-                              ? ` · ${org.teams.length} team${org.teams.length !== 1 ? "s" : ""}`
-                              : ""}
-                          </Typography>
-                        </Flex>
-                      </Flex>
-                    </Box>
-                  ) : null,
-                )
-              )}
+                )}
+              </FormSection>
             </Flex>
           </Tabs.Content>
         </Tabs.Root>
@@ -855,6 +1209,104 @@ export function UserDetailDrawer({
           onConfirm={() => unlinkAccountMutation.mutate(confirmUnlinkAccountId)}
           onCancel={() => setConfirmUnlinkAccountId(null)}
         />
+      )}
+
+      {confirmDisable2FA && (
+        <ConfirmDialog
+          title="Disable two-factor authentication"
+          message="Are you sure you want to disable 2FA for this user? They will no longer need a second factor to sign in."
+          confirmLabel="Disable 2FA"
+          loading={disableTwoFactorMutation.isLoading}
+          onConfirm={() => disableTwoFactorMutation.mutate()}
+          onCancel={() => setConfirmDisable2FA(false)}
+        />
+      )}
+
+      {confirmRegenerateBackupCodes && (
+        <ConfirmDialog
+          title="Regenerate backup codes"
+          message="This will invalidate all existing backup codes. New codes will be shown once after generation. Are you sure?"
+          confirmLabel="Regenerate"
+          loading={generateBackupCodesMutation.isLoading}
+          onConfirm={() => generateBackupCodesMutation.mutate()}
+          onCancel={() => setConfirmRegenerateBackupCodes(false)}
+        />
+      )}
+
+      {showTotpModal && totpUriData && (
+        <Modal.Root
+          defaultOpen
+          onOpenChange={(open: boolean) => !open && setShowTotpModal(false)}
+        >
+          <Modal.Content>
+            <Modal.Header>
+              <Typography variant="beta" tag="h2">
+                TOTP authenticator
+              </Typography>
+            </Modal.Header>
+            <Modal.Body>
+              <Flex direction="column" gap={4}>
+                <Typography variant="omega" textColor="neutral600">
+                  Share these details with the user to set up their
+                  authenticator app.
+                </Typography>
+                <Field.Root>
+                  <Field.Label>TOTP URI</Field.Label>
+                  <ReadOnlyCodeInput>{totpUriData.totpURI}</ReadOnlyCodeInput>
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label>Secret key</Field.Label>
+                  <ReadOnlyCodeInput>{totpUriData.secret}</ReadOnlyCodeInput>
+                </Field.Root>
+              </Flex>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="tertiary"
+                onClick={() => setShowTotpModal(false)}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal.Root>
+      )}
+
+      {showBackupCodesModal && backupCodesData && (
+        <Modal.Root
+          defaultOpen
+          onOpenChange={(open: boolean) =>
+            !open && setShowBackupCodesModal(false)
+          }
+        >
+          <Modal.Content>
+            <Modal.Header>
+              <Typography variant="beta" tag="h2">
+                Backup codes
+              </Typography>
+            </Modal.Header>
+            <Modal.Body>
+              <Flex direction="column" gap={4}>
+                <Typography variant="omega" textColor="neutral600">
+                  Each code can only be used once. Store them somewhere safe.
+                </Typography>
+                <BackupCodeGrid>
+                  {backupCodesData.map((code) => (
+                    <BackupCodeItem key={code}>{code}</BackupCodeItem>
+                  ))}
+                </BackupCodeGrid>
+              </Flex>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="tertiary"
+                onClick={() => setShowBackupCodesModal(false)}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal.Root>
       )}
     </Drawer>
   );

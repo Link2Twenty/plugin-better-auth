@@ -1,7 +1,4 @@
 import {
-  Alert,
-  Badge,
-  Box,
   Button,
   Checkbox,
   Flex,
@@ -10,13 +7,12 @@ import {
   Pagination,
   Searchbar,
   SearchForm,
-  Typography,
 } from "@strapi/design-system";
 import { Pencil, Plus, Trash } from "@strapi/icons";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { client } from "../../client";
 import { Avatar } from "../../components/Avatar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
@@ -29,6 +25,59 @@ import { UserDetailDrawer } from "./UserDetailDrawer";
 
 const PAGE_SIZE = 25;
 
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+const Wrap = styled.div`
+  padding: 28px 32px;
+  background: #f6f6f9;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const PageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #32324d;
+  letter-spacing: -0.03em;
+`;
+
+const PageSubtitle = styled.p`
+  margin: 0;
+  font-size: 12px;
+  color: #8e8ea9;
+`;
+
+// ─── Table card ───────────────────────────────────────────────────────────────
+
+const TableCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #eaeaef;
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -36,20 +85,21 @@ const Table = styled.table`
 
 const TH = styled.th`
   text-align: left;
-  padding: 10px 16px;
-  border-bottom: 1px solid #dcdce4;
-  font-size: 11px;
-  font-weight: 600;
-  color: #666687;
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8e8ea9;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #eaeaef;
+  background: #fafafa;
   white-space: nowrap;
-  background: #f6f6f9;
+  &:first-child { padding-left: 20px; }
+  &:last-child  { padding-right: 20px; }
 `;
 
 const THCheck = styled(TH)`
   width: 44px;
-  padding-right: 8px;
 `;
 
 const THActions = styled(TH)`
@@ -57,32 +107,101 @@ const THActions = styled(TH)`
 `;
 
 const TD = styled.td`
-  padding: 11px 16px;
+  padding: 11px 14px;
+  font-size: 12px;
+  color: #32324d;
+  border-bottom: 1px solid #f5f5f9;
   vertical-align: middle;
-  border-bottom: 1px solid #eaeaef;
+  &:first-child { padding-left: 20px; }
+  &:last-child  { padding-right: 20px; }
 `;
 
 const TDCheck = styled(TD)`
   width: 44px;
-  padding-right: 8px;
 `;
 
 const TDActions = styled(TD)`
   width: 80px;
 `;
 
-const TR = styled.tr<{ $selected?: boolean }>`
-  background: ${(p) => (p.$selected ? "#F0F0FF" : "white")};
-  transition: background 100ms ease;
+const TR = styled.tr<{ $selected?: boolean; $i?: number }>`
+  animation: ${fadeUp} 280ms ease both;
+  animation-delay: ${(p) => (p.$i ?? 0) * 25}ms;
+  background: ${(p) => (p.$selected ? "#f0f0ff" : "transparent")};
+  transition: background 120ms ease;
+  &:hover td { background: ${(p) => (p.$selected ? "#e8e8ff" : "#fafafe")}; }
+  &:last-child td { border-bottom: none; }
+`;
 
-  &:hover {
-    background: ${(p) => (p.$selected ? "#E6E5FF" : "#F6F6F9")};
-  }
+// ─── Status chips ─────────────────────────────────────────────────────────────
 
-  &:last-child td {
-    border-bottom: none;
+const StatusChip = styled.span<{
+  $variant: "verified" | "unverified" | "banned";
+}>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: ${(p) =>
+    p.$variant === "verified"
+      ? "#eafbe7"
+      : p.$variant === "banned"
+        ? "#fcecea"
+        : "#f0f0ff"};
+  color: ${(p) =>
+    p.$variant === "verified"
+      ? "#5cb176"
+      : p.$variant === "banned"
+        ? "#d02b20"
+        : "#8e8ea9"};
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: ${(p) =>
+      p.$variant === "verified"
+        ? "#5cb176"
+        : p.$variant === "banned"
+          ? "#d02b20"
+          : "#b8b8c7"};
   }
 `;
+
+// ─── Misc text ────────────────────────────────────────────────────────────────
+
+const MonoText = styled.span`
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  color: #8e8ea9;
+`;
+
+const DateText = styled.span`
+  font-size: 11px;
+  color: #b8b8c7;
+  font-variant-numeric: tabular-nums;
+`;
+
+const UserName = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #32324d;
+`;
+
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+
+const Toolbar = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface Props {
   config: DashConfig;
@@ -93,6 +212,7 @@ export function UsersPage({ config }: Props) {
   const banEnabled = hasPlugin(config, "admin");
   const emailVerificationEnabled =
     config.emailVerification.sendVerificationEmailEnabled;
+  const twoFactorEnabled = hasPlugin(config, "two-factor");
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -190,23 +310,15 @@ export function UsersPage({ config }: Props) {
   };
 
   return (
-    <Box padding={6} data-testid="users-page">
-      <Flex
-        justifyContent="space-between"
-        alignItems="flex-start"
-        paddingBottom={4}
-      >
-        <Box>
-          <Typography variant="beta" textColor="neutral800">
-            Users
-          </Typography>
-          <Box paddingTop={1}>
-            <Typography variant="pi" textColor="neutral500">
-              {total.toLocaleString()} total
-              {data?.onlineUsers ? ` · ${data.onlineUsers} online` : ""}
-            </Typography>
-          </Box>
-        </Box>
+    <Wrap data-testid="users-page">
+      <PageHeader>
+        <TitleBlock>
+          <PageTitle>Users</PageTitle>
+          <PageSubtitle>
+            {total.toLocaleString()} total
+            {data?.onlineUsers ? ` · ${data.onlineUsers} online` : ""}
+          </PageSubtitle>
+        </TitleBlock>
         <Button
           startIcon={<Plus />}
           onClick={() => setShowCreate(true)}
@@ -214,30 +326,28 @@ export function UsersPage({ config }: Props) {
         >
           Create user
         </Button>
-      </Flex>
+      </PageHeader>
 
-      <Flex gap={3} paddingBottom={4} alignItems="flex-end">
-        <Box>
-          <SearchForm onSubmit={handleSearch}>
-            <Searchbar
-              clearLabel="Clear"
-              name="search"
-              placeholder="Search by email…"
-              value={searchInput}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchInput(e.target.value)
-              }
-              onClear={() => {
-                setSearchInput("");
-                setSearch("");
-                setPage(1);
-              }}
-              data-testid="user-search"
-            >
-              Search users
-            </Searchbar>
-          </SearchForm>
-        </Box>
+      <Toolbar>
+        <SearchForm onSubmit={handleSearch}>
+          <Searchbar
+            clearLabel="Clear"
+            name="search"
+            placeholder="Search by email…"
+            value={searchInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchInput(e.target.value)
+            }
+            onClear={() => {
+              setSearchInput("");
+              setSearch("");
+              setPage(1);
+            }}
+            data-testid="user-search"
+          >
+            Search users
+          </Searchbar>
+        </SearchForm>
 
         {someSelected && (
           <Flex gap={2}>
@@ -260,23 +370,15 @@ export function UsersPage({ config }: Props) {
             )}
           </Flex>
         )}
-      </Flex>
+      </Toolbar>
 
       {isError && (
-        <Alert closeLabel="Close" title="Error" variant="danger">
+        <div style={{ color: "#d02b20", fontSize: 12, padding: "8px 0" }}>
           {(error as Error)?.message}
-        </Alert>
+        </div>
       )}
 
-      <Box
-        background="neutral0"
-        shadow="filterShadow"
-        hasRadius
-        borderColor="neutral150"
-        borderStyle="solid"
-        borderWidth="1px"
-        style={{ overflow: "hidden" }}
-      >
+      <TableCard>
         {isLoading ? (
           <Flex justifyContent="center" padding={8}>
             <Loader>Loading users…</Loader>
@@ -317,10 +419,11 @@ export function UsersPage({ config }: Props) {
                   </TD>
                 </tr>
               ) : (
-                users.map((user) => (
+                users.map((user, i) => (
                   <TR
                     key={user.id}
                     $selected={selected.has(user.id)}
+                    $i={i}
                     data-testid="user-row"
                   >
                     <TDCheck>
@@ -337,47 +440,30 @@ export function UsersPage({ config }: Props) {
                           src={user.image}
                           size={28}
                         />
-                        <Typography variant="omega" fontWeight="semiBold">
-                          {user.name}
-                        </Typography>
+                        <UserName>{user.name}</UserName>
                       </Flex>
                     </TD>
                     <TD>
-                      <Typography variant="omega" textColor="neutral600">
-                        {user.email}
-                      </Typography>
+                      <MonoText>{user.email}</MonoText>
                     </TD>
                     <TD>
                       <Flex gap={1}>
                         {user.emailVerified ? (
-                          <Badge
-                            backgroundColor="success100"
-                            textColor="success600"
-                          >
-                            Verified
-                          </Badge>
+                          <StatusChip $variant="verified">Verified</StatusChip>
                         ) : (
-                          <Badge
-                            backgroundColor="warning100"
-                            textColor="warning600"
-                          >
+                          <StatusChip $variant="unverified">
                             Unverified
-                          </Badge>
+                          </StatusChip>
                         )}
                         {user.banned && (
-                          <Badge
-                            backgroundColor="danger100"
-                            textColor="danger600"
-                          >
-                            Banned
-                          </Badge>
+                          <StatusChip $variant="banned">Banned</StatusChip>
                         )}
                       </Flex>
                     </TD>
                     <TD>
-                      <Typography variant="omega" textColor="neutral500">
+                      <DateText>
                         {new Date(user.createdAt).toLocaleDateString()}
-                      </Typography>
+                      </DateText>
                     </TD>
                     <TDActions>
                       <Flex gap={1} justifyContent="flex-end">
@@ -403,10 +489,10 @@ export function UsersPage({ config }: Props) {
             </tbody>
           </Table>
         )}
-      </Box>
+      </TableCard>
 
       {pageCount > 1 && (
-        <Flex justifyContent="flex-end" paddingTop={4}>
+        <Flex justifyContent="flex-end">
           <Pagination
             activePage={page}
             pageCount={pageCount}
@@ -423,6 +509,7 @@ export function UsersPage({ config }: Props) {
           userId={detailUserId}
           banEnabled={banEnabled}
           emailVerificationEnabled={emailVerificationEnabled}
+          twoFactorEnabled={twoFactorEnabled}
           onClose={() => setDetailUserId(null)}
         />
       )}
@@ -460,6 +547,6 @@ export function UsersPage({ config }: Props) {
           onCancel={() => setConfirmBanMany(false)}
         />
       )}
-    </Box>
+    </Wrap>
   );
 }

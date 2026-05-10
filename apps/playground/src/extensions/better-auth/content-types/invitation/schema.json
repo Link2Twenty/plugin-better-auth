@@ -77,6 +77,15 @@
         }
       },
       "required": true
+    },
+    "teamId": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     }
   }
 }
