@@ -23,7 +23,7 @@ const EntryRow = styled.div`
   width: 100%;
   box-sizing: border-box;
   background: #ffffff;
-  border: 1px solid ${({ theme }) => (theme as Record<string, Record<string, string>>).colors?.neutral200 ?? "#dcdce4"};
+  border: 1px solid ${({ theme }) => (theme as unknown as Record<string, Record<string, string>>).colors?.neutral200 ?? "#dcdce4"};
   border-radius: 4px;
   min-width: 0;
 `;
@@ -41,7 +41,10 @@ interface SelectedDoc {
   label: string;
 }
 
-function normalizeValue(val: unknown, cache: Map<string, string>): SelectedDoc[] {
+function normalizeValue(
+  val: unknown,
+  cache: Map<string, string>,
+): SelectedDoc[] {
   if (!val) return [];
 
   // Strapi Document Service set-format written by this component on change
@@ -190,7 +193,11 @@ export function RelationField({
         </Combobox>
       )}
       {currentDocs.length > 0 && (
-        <Flex direction="column" gap={1} style={{ marginTop: 8, width: "100%" }}>
+        <Flex
+          direction="column"
+          gap={1}
+          style={{ marginTop: 8, width: "100%" }}
+        >
           {currentDocs.map((doc) => (
             <EntryRow key={doc.documentId}>
               <Typography

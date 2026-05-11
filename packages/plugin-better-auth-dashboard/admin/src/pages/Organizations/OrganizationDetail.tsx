@@ -152,6 +152,33 @@ export function OrganizationDetail({
     },
   });
 
+  const invitationsQuery = useQuery({
+    queryKey: ["dash-org-invitations", organizationId],
+    queryFn: async () => {
+      const result = await client.dash.organization[
+        organizationId as ":id"
+      ].invitations({}, withContext({ organizationId }));
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return (result.data ?? []) as Array<{
+        id: string;
+        organizationId: string;
+        email: string;
+        role: string;
+        status: "pending" | "accepted" | "rejected" | "canceled";
+        inviterId: string;
+        expiresAt: Date;
+        createdAt: Date;
+        teamId?: string | null;
+        user: {
+          id: string;
+          name: string;
+          email: string;
+          image: string | null;
+        } | null;
+      }>;
+    },
+  });
+
   const [activeTab, setActiveTab] = useState("details");
   const [editName, setEditName] = useState<string | undefined>(undefined);
   const [editSlug, setEditSlug] = useState<string | undefined>(undefined);
@@ -166,6 +193,13 @@ export function OrganizationDetail({
   const [confirmDeleteSsoId, setConfirmDeleteSsoId] = useState<string | null>(
     null,
   );
+
+  // Invite member form
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
+  const [confirmCancelInvitationId, setConfirmCancelInvitationId] = useState<
+    string | null
+  >(null);
 
   const handleExtraChange = (name: string, value: unknown) => {
     setEditExtra((prev) => ({ ...prev, [name]: value }));
@@ -353,9 +387,77 @@ export function OrganizationDetail({
     },
   });
 
+  const inviteMemberMutation = useMutation({
+    mutationFn: async () => {
+      const result = await client.dash.organization.inviteMember(
+        { email: inviteEmail, role: inviteRole, invitedBy: "" } as never,
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+      return result.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ["dash-org-invitations", organizationId],
+      });
+      setInviteEmail("");
+      setInviteRole("member");
+      toggleNotification({ type: "success", message: "Invitation sent" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to invite",
+      });
+    },
+  });
+
+  const cancelInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const result = await client.dash.organization.cancelInvitation(
+        { invitationId } as never,
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+    },
+    onSuccess: () => {
+      setConfirmCancelInvitationId(null);
+      qc.invalidateQueries({
+        queryKey: ["dash-org-invitations", organizationId],
+      });
+      toggleNotification({ type: "success", message: "Invitation cancelled" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to cancel",
+      });
+    },
+  });
+
+  const resendInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const result = await client.dash.organization.resendInvitation(
+        { invitationId } as never,
+        withContext({ organizationId }),
+      );
+      if (result.error) throw new Error(result.error.message ?? "Failed");
+    },
+    onSuccess: () => {
+      toggleNotification({ type: "success", message: "Invitation resent" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to resend",
+      });
+    },
+  });
+
   const members = membersQuery.data ?? [];
   const teams = teamsQuery.data ?? [];
   const ssoProviders = ssoQuery.data ?? [];
+  const invitations = invitationsQuery.data ?? [];
 
   const hasOrgEdits =
     editName !== undefined ||
@@ -421,6 +523,9 @@ export function OrganizationDetail({
             {teamsEnabled && (
               <Tabs.Trigger value="teams">Teams ({teams.length})</Tabs.Trigger>
             )}
+            <Tabs.Trigger value="invitations">
+              Invitations ({invitations.length})
+            </Tabs.Trigger>
             <Tabs.Trigger value="sso">SSO ({ssoProviders.length})</Tabs.Trigger>
           </Tabs.List>
 
@@ -719,6 +824,141 @@ export function OrganizationDetail({
               </FormSection>
             </Flex>
           </Tabs.Content>
+
+          {/* ── Invitations ── */}
+          <Tabs.Content value="invitations">
+            <Flex direction="column" gap={5} paddingTop={6}>
+              <FormSection>
+                <SectionLabel>Invite member by email</SectionLabel>
+                <Grid.Root gap={3}>
+                  <Grid.Item col={8}>
+                    <Field.Root>
+                      <Field.Label>Email address</Field.Label>
+                      <TextInput
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setInviteEmail(e.target.value)
+                        }
+                        placeholder="user@example.com"
+                      />
+                    </Field.Root>
+                  </Grid.Item>
+                  <Grid.Item col={4}>
+                    <Field.Root>
+                      <Field.Label>Role</Field.Label>
+                      <SingleSelect
+                        value={inviteRole}
+                        onChange={(v: string | number) =>
+                          setInviteRole(String(v))
+                        }
+                        aria-label="Invite role"
+                      >
+                        <SingleSelectOption value="member">
+                          Member
+                        </SingleSelectOption>
+                        <SingleSelectOption value="admin">
+                          Admin
+                        </SingleSelectOption>
+                        <SingleSelectOption value="owner">
+                          Owner
+                        </SingleSelectOption>
+                      </SingleSelect>
+                    </Field.Root>
+                  </Grid.Item>
+                </Grid.Root>
+                <Box>
+                  <Button
+                    size="S"
+                    startIcon={<Plus />}
+                    disabled={!inviteEmail}
+                    loading={inviteMemberMutation.isLoading}
+                    onClick={() => inviteMemberMutation.mutate()}
+                  >
+                    Send invitation
+                  </Button>
+                </Box>
+              </FormSection>
+
+              <FormSection>
+                <SectionLabel>Invitations ({invitations.length})</SectionLabel>
+                {invitationsQuery.isLoading ? (
+                  <Typography textColor="neutral500">Loading…</Typography>
+                ) : invitations.length === 0 ? (
+                  <Typography variant="pi" textColor="neutral500">
+                    No invitations yet.
+                  </Typography>
+                ) : (
+                  <Flex direction="column" gap={2}>
+                    {invitations.map((inv) => {
+                      const statusColor: Record<string, string> = {
+                        pending: "#f59e0b",
+                        accepted: "#5cb176",
+                        rejected: "#d02b20",
+                        canceled: "#8e8ea9",
+                      };
+                      const color = statusColor[inv.status] ?? "#8e8ea9";
+                      const isPending = inv.status === "pending";
+                      return (
+                        <AccountRow key={inv.id}>
+                          <Flex
+                            direction="column"
+                            gap={1}
+                            alignItems="flex-start"
+                            style={{ flex: 1 }}
+                          >
+                            <Typography variant="omega" fontWeight="semiBold">
+                              {inv.user?.name ?? inv.email}
+                            </Typography>
+                            <Typography variant="pi" textColor="neutral500">
+                              {inv.email} · role: {inv.role}
+                            </Typography>
+                            <Typography variant="pi" textColor="neutral500">
+                              Expires{" "}
+                              {new Date(inv.expiresAt).toLocaleDateString()}
+                            </Typography>
+                          </Flex>
+                          <Flex gap={2} alignItems="center">
+                            <MonoChip
+                              style={{
+                                color,
+                                borderColor: color,
+                                background: `${color}18`,
+                              }}
+                            >
+                              {inv.status}
+                            </MonoChip>
+                            {isPending && (
+                              <>
+                                <Button
+                                  size="S"
+                                  variant="secondary"
+                                  loading={resendInvitationMutation.isLoading}
+                                  onClick={() =>
+                                    resendInvitationMutation.mutate(inv.id)
+                                  }
+                                >
+                                  Resend
+                                </Button>
+                                <IconButton
+                                  label="Cancel invitation"
+                                  onClick={() =>
+                                    setConfirmCancelInvitationId(inv.id)
+                                  }
+                                >
+                                  <Trash />
+                                </IconButton>
+                              </>
+                            )}
+                          </Flex>
+                        </AccountRow>
+                      );
+                    })}
+                  </Flex>
+                )}
+              </FormSection>
+            </Flex>
+          </Tabs.Content>
         </Tabs.Root>
       )}
 
@@ -752,6 +992,19 @@ export function OrganizationDetail({
           loading={deleteSsoMutation.isLoading}
           onConfirm={() => deleteSsoMutation.mutate(confirmDeleteSsoId)}
           onCancel={() => setConfirmDeleteSsoId(null)}
+        />
+      )}
+
+      {confirmCancelInvitationId && (
+        <ConfirmDialog
+          title="Cancel invitation"
+          message="Are you sure you want to cancel this invitation? The invite link will no longer work."
+          confirmLabel="Cancel invitation"
+          loading={cancelInvitationMutation.isLoading}
+          onConfirm={() =>
+            cancelInvitationMutation.mutate(confirmCancelInvitationId)
+          }
+          onCancel={() => setConfirmCancelInvitationId(null)}
         />
       )}
     </Drawer>
