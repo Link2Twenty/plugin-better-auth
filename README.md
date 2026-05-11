@@ -8,6 +8,7 @@ A monorepo of Strapi v5 plugins for modern authentication and Content API author
 | Package | Description |
 | ------- | ----------- |
 | [`plugin-better-auth`](./packages/plugin-better-auth) | Better Auth database adapter for Strapi |
+| [`plugin-better-auth-dashboard`](./packages/plugin-better-auth-dashboard) | Admin panel dashboard for Better Auth |
 | [`plugin-api-permissions`](./packages/plugin-api-permissions) | Auth-agnostic Content API RBAC |
 
 ## Contributing

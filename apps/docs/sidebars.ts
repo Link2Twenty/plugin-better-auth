@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
         'better-auth/client-setup',
         'better-auth/server-usage',
         'better-auth/plugins',
+        'better-auth/dashboard',
       ],
     },
     {

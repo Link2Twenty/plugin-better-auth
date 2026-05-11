@@ -110,6 +110,7 @@ npx auth generate
 
 ## Resources
 
+- [Plugin Documentation](https://strapi-community.github.io/plugin-better-auth/)
 - [Better Auth Documentation](https://better-auth.com)
 - [Better Auth Database Adapters](https://better-auth.com/docs/concepts/database)
 - [Creating Custom Adapters](https://better-auth.com/docs/guides/create-a-db-adapter)
