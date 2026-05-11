@@ -241,7 +241,10 @@ export function OrganizationDetail({
         body,
       );
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await qc.invalidateQueries({
+        queryKey: ["dash-strapi-org", organizationId],
+      });
       qc.invalidateQueries({ queryKey: ["dash-org", organizationId] });
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
       setEditName(undefined);

@@ -316,10 +316,10 @@ export function UserDetailDrawer({
         body,
       );
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["dash-strapi-user", userId] });
       qc.invalidateQueries({ queryKey: ["dash-user", userId] });
       qc.invalidateQueries({ queryKey: ["dash-users"] });
-      qc.invalidateQueries({ queryKey: ["dash-strapi-user", userId] });
       setEditName(undefined);
       setEditEmail(undefined);
       setEditEmailVerified(undefined);
