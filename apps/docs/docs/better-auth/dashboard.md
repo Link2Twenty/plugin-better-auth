@@ -8,8 +8,6 @@ sidebar_position: 2
 
 A pre-built dashboard can be installed separately that runs inside your Strapi admin panel. See usage information like DAU, manage sessions, disable 2FA and much more.
 
-![Dashboard overview page showing metrics, growth chart, and retention analysis](/img/dashboard/overview.png)
-
 ## Installation
 
 The additional dashboard plugin requires you to have the Better Auth plugin already installed and configured.
