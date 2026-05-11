@@ -1,5 +1,6 @@
 import { PluginIcon } from "./components/PluginIcon";
 import { PLUGIN_ID } from "./pluginId";
+import { addEditViewSidePanel } from "./utils/editViewPanelRegistry";
 import { captureApp } from "./utils/strapiApp";
 
 export default {
@@ -18,8 +19,20 @@ export default {
     };
     // biome-ignore lint/suspicious/noExplicitAny: Strapi app bridge type
     library: any;
+    registerPlugin: (config: {
+      id: string;
+      name: string;
+      // biome-ignore lint/suspicious/noExplicitAny: plugin API shape is open-ended
+      apis: Record<string, any>;
+    }) => void;
   }) {
     captureApp(app);
+
+    app.registerPlugin({
+      id: PLUGIN_ID,
+      name: "Auth Dashboard",
+      apis: { addEditViewSidePanel },
+    });
 
     app.addMenuLink({
       to: `/plugins/${PLUGIN_ID}`,

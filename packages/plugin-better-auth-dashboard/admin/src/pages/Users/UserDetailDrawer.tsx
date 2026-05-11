@@ -25,6 +25,7 @@ import { Avatar } from "../../components/Avatar";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
+import { EditViewSidePanels } from "../../components/EditViewSidePanels";
 import {
   AccountRow,
   DangerRow,
@@ -41,7 +42,6 @@ import {
   SectionLabel,
   WarnCard,
 } from "../../components/FormPrimitives";
-
 import { MediaPickerField } from "../../components/MediaPickerField";
 import { useModelSchema } from "../../hooks/useModelSchema";
 import { withContext } from "../../utils/dashContext";
@@ -874,6 +874,14 @@ export function UserDetailDrawer({
                     </Flex>
                   </Box>
                 )}
+
+                <EditViewSidePanels
+                  model="plugin::better-auth.user"
+                  documentId={
+                    strapiUserQuery.data?.documentId as string | undefined
+                  }
+                  document={strapiUserQuery.data ?? undefined}
+                />
               </EditSidebar>
             </EditLayout>
           </Tabs.Content>

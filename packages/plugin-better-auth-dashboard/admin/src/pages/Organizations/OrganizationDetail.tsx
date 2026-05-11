@@ -22,6 +22,7 @@ import { client } from "../../client";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Drawer } from "../../components/Drawer";
 import { CustomFieldsSection } from "../../components/DynamicField";
+import { EditViewSidePanels } from "../../components/EditViewSidePanels";
 import {
   AccountRow,
   EditLayout,
@@ -247,6 +248,7 @@ export function OrganizationDetail({
       });
       qc.invalidateQueries({ queryKey: ["dash-org", organizationId] });
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      qc.invalidateQueries({ queryKey: ["dash-strapi-org", organizationId] });
       setEditName(undefined);
       setEditSlug(undefined);
       setEditLogo(undefined);
@@ -622,6 +624,13 @@ export function OrganizationDetail({
                     </MetaItem>
                   </div>
                 </FormSection>
+                <EditViewSidePanels
+                  model="plugin::better-auth.organization"
+                  documentId={
+                    strapiOrgQuery.data?.documentId as string | undefined
+                  }
+                  document={strapiOrgQuery.data ?? undefined}
+                />
               </EditSidebar>
             </EditLayout>
           </Tabs.Content>
