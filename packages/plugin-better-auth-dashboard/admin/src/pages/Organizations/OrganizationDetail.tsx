@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@strapi/design-system";
 import { Plus, Trash } from "@strapi/icons";
-import { useNotification } from "@strapi/strapi/admin";
+import { useFetchClient, useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -97,6 +97,7 @@ export function OrganizationDetail({
   const schemaQuery = useModelSchema("organization");
   const qc = useQueryClient();
   const { toggleNotification } = useNotification();
+  const { get, put } = useFetchClient();
 
   const orgQuery = useQuery({
     queryKey: ["dash-org", organizationId],
@@ -179,6 +180,19 @@ export function OrganizationDetail({
     },
   });
 
+  const strapiOrgQuery = useQuery({
+    queryKey: ["dash-strapi-org", organizationId],
+    enabled: !!orgQuery.data,
+    queryFn: async () => {
+      const { data } = await get<{ results: Record<string, unknown>[] }>(
+        `/better-auth-dashboard/db?uid=plugin::better-auth.organization&filters[id][$eq]=${organizationId}&pagination[pageSize]=1`,
+      );
+      return (
+        (data as { results?: Record<string, unknown>[] }).results?.[0] ?? null
+      );
+    },
+  });
+
   const [activeTab, setActiveTab] = useState("details");
   const [editName, setEditName] = useState<string | undefined>(undefined);
   const [editSlug, setEditSlug] = useState<string | undefined>(undefined);
@@ -217,13 +231,15 @@ export function OrganizationDetail({
       if (editName !== undefined) body.name = editName;
       if (editSlug !== undefined) body.slug = editSlug;
       if (editLogo !== undefined) body.logo = editLogo;
-      const result = await client.dash.organization.update(
-        body as never,
-        withContext({ organizationId }),
+
+      const documentId = strapiOrgQuery.data?.documentId as string | undefined;
+      if (!documentId)
+        throw new Error("Could not resolve documentId for organization");
+
+      await put(
+        `/better-auth-dashboard/db/${documentId}?uid=plugin::better-auth.organization`,
+        body,
       );
-      if (result.error)
-        throw new Error(result.error.message ?? "Update failed");
-      return result.data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-org", organizationId] });

@@ -86,6 +86,43 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::test.test"
+    },
+    "role": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "banned": {
+      "type": "boolean",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      },
+      "default": false
+    },
+    "banReason": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "banExpires": {
+      "type": "datetime",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     }
   }
 }

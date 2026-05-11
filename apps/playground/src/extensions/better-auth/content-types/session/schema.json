@@ -84,6 +84,15 @@
           "managed": true
         }
       }
+    },
+    "impersonatedBy": {
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
     }
   }
 }

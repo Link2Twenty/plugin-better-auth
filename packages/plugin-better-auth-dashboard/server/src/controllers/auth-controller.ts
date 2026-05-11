@@ -106,15 +106,17 @@ const proxyController = () => ({
       ctx.set(key, value);
     });
 
-    // Get response body
+    // Get response body — read as text first to avoid JSON.parse errors on empty bodies
+    // (e.g. deleteUser returns undefined, which better-call serializes as content-type:json + no body)
     const contentType = response.headers.get("content-type");
+    const text = await response.text();
 
-    if (contentType?.includes("application/json")) {
-      ctx.body = await response.json();
-    } else if (contentType?.includes("text/")) {
-      ctx.body = await response.text();
+    if (!text) {
+      ctx.body = {};
+    } else if (contentType?.includes("application/json")) {
+      ctx.body = JSON.parse(text);
     } else {
-      ctx.body = await response.text();
+      ctx.body = text;
     }
   },
 });

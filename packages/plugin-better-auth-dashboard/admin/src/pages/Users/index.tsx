@@ -4,11 +4,11 @@ import {
   Flex,
   IconButton,
   Loader,
-  Pagination,
   Searchbar,
   SearchForm,
 } from "@strapi/design-system";
 import { Pencil, Plus, Trash } from "@strapi/icons";
+import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
@@ -209,6 +209,7 @@ interface Props {
 
 export function UsersPage({ config }: Props) {
   const qc = useQueryClient();
+  const { toggleNotification } = useNotification();
   const banEnabled = hasPlugin(config, "admin");
   const emailVerificationEnabled =
     config.emailVerification.sendVerificationEmailEnabled;
@@ -245,6 +246,13 @@ export function UsersPage({ config }: Props) {
       setConfirmDelete(null);
       qc.invalidateQueries({ queryKey: ["dash-users"] });
       qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
+      toggleNotification({ type: "success", message: "User deleted" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete user",
+      });
     },
   });
 
@@ -258,11 +266,21 @@ export function UsersPage({ config }: Props) {
         throw new Error(result.error.message ?? "Delete failed");
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, userIds) => {
       setConfirmDeleteMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-users"] });
       qc.invalidateQueries({ queryKey: ["dash-user-stats"] });
+      toggleNotification({
+        type: "success",
+        message: `${userIds.length} user${userIds.length !== 1 ? "s" : ""} deleted`,
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete users",
+      });
     },
   });
 
@@ -275,10 +293,20 @@ export function UsersPage({ config }: Props) {
       if (result.error) throw new Error(result.error.message ?? "Ban failed");
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, userIds) => {
       setConfirmBanMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-users"] });
+      toggleNotification({
+        type: "success",
+        message: `${userIds.length} user${userIds.length !== 1 ? "s" : ""} banned`,
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to ban users",
+      });
     },
   });
 
@@ -493,12 +521,24 @@ export function UsersPage({ config }: Props) {
 
       {pageCount > 1 && (
         <Flex justifyContent="flex-end">
-          <Pagination
-            activePage={page}
-            pageCount={pageCount}
-            // @ts-expect-error
-            onChangePage={setPage}
-          />
+          <Flex gap={2}>
+            <Button
+              variant="tertiary"
+              size="S"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="tertiary"
+              size="S"
+              disabled={page >= pageCount}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </Flex>
         </Flex>
       )}
 

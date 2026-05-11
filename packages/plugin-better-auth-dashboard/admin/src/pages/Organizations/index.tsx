@@ -9,6 +9,7 @@ import {
   SearchForm,
 } from "@strapi/design-system";
 import { Pencil, Plus, Trash } from "@strapi/icons";
+import { useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -237,6 +238,7 @@ interface Props {
 
 export function OrganizationsPage({ teamsEnabled }: Props) {
   const qc = useQueryClient();
+  const { toggleNotification } = useNotification();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -279,6 +281,13 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
     onSuccess: () => {
       setConfirmDelete(null);
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      toggleNotification({ type: "success", message: "Organization deleted" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete organization",
+      });
     },
   });
 
@@ -292,10 +301,20 @@ export function OrganizationsPage({ teamsEnabled }: Props) {
         throw new Error(result.error.message ?? "Delete failed");
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, organizationIds) => {
       setConfirmDeleteMany(false);
       setSelected(new Set());
       qc.invalidateQueries({ queryKey: ["dash-organizations"] });
+      toggleNotification({
+        type: "success",
+        message: `${organizationIds.length} organization${organizationIds.length !== 1 ? "s" : ""} deleted`,
+      });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to delete organizations",
+      });
     },
   });
 

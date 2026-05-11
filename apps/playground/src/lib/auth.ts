@@ -1,7 +1,7 @@
 import { dash } from "@better-auth/infra";
 import { strapiAdapter } from "@strapi-community/plugin-better-auth";
 import { betterAuth } from "better-auth";
-import { jwt, organization, twoFactor } from "better-auth/plugins";
+import { admin, jwt, organization, twoFactor } from "better-auth/plugins";
 
 export const auth = betterAuth({
   trustedOrigins: ["http://localhost:3000"],
@@ -22,6 +22,7 @@ export const auth = betterAuth({
     }),
     twoFactor(),
     jwt(),
+    admin(),
   ],
   database: strapiAdapter(),
   account: {

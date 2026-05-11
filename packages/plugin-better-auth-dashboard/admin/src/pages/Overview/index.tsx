@@ -841,6 +841,15 @@ type StrapiSession = {
   expiresAt: string;
 };
 
+type ActiveUser = {
+  id: number;
+  documentId: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  createdAt: string;
+};
+
 type RetentionRow = {
   n: number;
   label: string;
@@ -974,6 +983,47 @@ export function OverviewPage() {
     },
   });
 
+  // Derive ordered unique userIds from sessions for the "recently active" feed
+  const sessionsRaw = sessionsQuery.data ?? [];
+  const activeUserIds: string[] = [];
+  const lastActiveByUserId = new Map<string, string>();
+  for (const s of sessionsRaw) {
+    if (!lastActiveByUserId.has(s.userId)) {
+      lastActiveByUserId.set(s.userId, s.createdAt);
+      activeUserIds.push(s.userId);
+    }
+  }
+
+  const activeUsersQuery = useQuery({
+    queryKey: ["dash-active-users", activeUserIds],
+    queryFn: async () => {
+      if (activeUserIds.length === 0) return [];
+      const params = new URLSearchParams({ uid: "plugin::better-auth.user" });
+      for (let i = 0; i < activeUserIds.length; i++) {
+        params.set(`filters[id][$in][${i}]`, activeUserIds[i]);
+      }
+      params.set("pagination[pageSize]", "12");
+      const { data } = await get<{ results: ActiveUser[] }>(
+        `/better-auth-dashboard/db?${params}`,
+      );
+      return (data as { results?: ActiveUser[] }).results ?? [];
+    },
+    enabled: feedMode === "active" && activeUserIds.length > 0,
+  });
+
+  // Match FeedCard height to ChartCard height via ResizeObserver
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartHeight, setChartHeight] = useState(0);
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) setChartHeight(entry.contentRect.height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (statsQuery.isLoading) {
     return (
       <Flex
@@ -993,8 +1043,16 @@ export function OverviewPage() {
   const graphData = (graphQuery.data?.data ?? []) as GraphRow[];
   const rtnData = (retentionQuery.data?.data ?? []) as RetentionRow[];
   const users = (usersQuery.data?.users ?? []) as User[];
-  const sessions = sessionsQuery.data ?? [];
   const orgCount = (orgsQuery.data as any)?.total ?? 0;
+
+  // Build sorted active users (session order preserved, joined with user docs)
+  const activeUserMap = new Map<string, ActiveUser>();
+  for (const u of activeUsersQuery.data ?? []) {
+    activeUserMap.set(String(u.id), u);
+  }
+  const sortedActiveUsers = activeUserIds
+    .map((uid) => activeUserMap.get(uid))
+    .filter((u): u is ActiveUser => u !== undefined);
 
   const totalSpark = graphData.map((d) => d.totalUsers);
   const newSpark = graphData.map((d) => d.newUsers);
@@ -1101,7 +1159,7 @@ export function OverviewPage() {
       </SectionDivider>
 
       <TwoPanel>
-        <ChartCard $delay={5}>
+        <ChartCard ref={chartRef} $delay={5}>
           <ChartHeader>
             <ChartTitle>User Growth</ChartTitle>
             <SeriesRow>
@@ -1141,10 +1199,13 @@ export function OverviewPage() {
           )}
         </ChartCard>
 
-        <FeedCard $delay={6}>
+        <FeedCard
+          $delay={6}
+          style={chartHeight > 0 ? { height: chartHeight } : undefined}
+        >
           <FeedHead>
             <span>
-              {feedMode === "signups" ? "Recent Sign-ups" : "Recent Active"}
+              {feedMode === "signups" ? "Recent Sign-ups" : "Recently Active"}
             </span>
             <FeedSelect
               value={feedMode}
@@ -1153,7 +1214,7 @@ export function OverviewPage() {
               }
             >
               <option value="signups">Recent Sign-ups</option>
-              <option value="active">Recent Active</option>
+              <option value="active">Recently Active</option>
             </FeedSelect>
           </FeedHead>
           <FeedScroll>
@@ -1178,35 +1239,31 @@ export function OverviewPage() {
                   </FeedItem>
                 ))
               )
-            ) : sessionsQuery.isLoading ? (
+            ) : activeUsersQuery.isLoading || sessionsQuery.isLoading ? (
               <Flex justifyContent="center" padding={4}>
                 <Loader>Loading…</Loader>
               </Flex>
-            ) : sessions.length === 0 ? (
-              <Empty>No sessions yet</Empty>
+            ) : sortedActiveUsers.length === 0 ? (
+              <Empty>No recent activity</Empty>
             ) : (
-              sessions.map((s) => (
-                <FeedItem key={s.documentId}>
+              sortedActiveUsers.map((u) => (
+                <FeedItem key={u.documentId}>
                   <FeedTop>
-                    <FeedName
-                      title={s.userAgent ?? undefined}
-                      style={{ fontFamily: T.mono, fontSize: 10 }}
-                    >
-                      {s.ipAddress ?? "—"}
-                    </FeedName>
-                    <FeedMeta>{relTime(s.createdAt)}</FeedMeta>
+                    <Flex alignItems="center" gap={1} style={{ minWidth: 0 }}>
+                      <Avatar
+                        name={u.name}
+                        src={u.image ?? undefined}
+                        size={20}
+                      />
+                      <FeedName title={u.name}>{u.name}</FeedName>
+                    </Flex>
+                    <FeedMeta>
+                      {relTime(
+                        lastActiveByUserId.get(String(u.id)) ?? u.createdAt,
+                      )}
+                    </FeedMeta>
                   </FeedTop>
-                  <FeedEmail
-                    title={s.userAgent ?? undefined}
-                    style={{
-                      fontSize: 9,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {s.userAgent ?? "Unknown agent"}
-                  </FeedEmail>
+                  <FeedEmail title={u.email}>{u.email}</FeedEmail>
                 </FeedItem>
               ))
             )}

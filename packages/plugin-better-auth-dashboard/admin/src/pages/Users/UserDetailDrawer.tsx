@@ -109,9 +109,10 @@ const SessionCard = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f9;
-  &:last-child { border-bottom: none; }
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid #eaeaef;
+  border-radius: 8px;
 `;
 
 const SessionMeta = styled.div`
@@ -261,6 +262,7 @@ export function UserDetailDrawer({
   const [confirmRevokeSessionId, setConfirmRevokeSessionId] = useState<
     string | null
   >(null);
+  const [confirmBan, setConfirmBan] = useState(false);
   const [confirmUnban, setConfirmUnban] = useState(false);
   const [confirmUnlinkAccountId, setConfirmUnlinkAccountId] = useState<
     string | null
@@ -299,41 +301,20 @@ export function UserDetailDrawer({
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const baBody: Record<string, unknown> = {};
-      if (editName !== undefined) baBody.name = editName;
-      if (editEmail !== undefined) baBody.email = editEmail;
+      const body: Record<string, unknown> = { ...editExtra };
+      if (editName !== undefined) body.name = editName;
+      if (editEmail !== undefined) body.email = editEmail;
       if (editEmailVerified !== undefined)
-        baBody.emailVerified = editEmailVerified;
-      if (editImage !== undefined) baBody.image = editImage;
+        body.emailVerified = editEmailVerified;
+      if (editImage !== undefined) body.image = editImage;
 
-      const ops: Promise<unknown>[] = [];
+      const documentId = strapiUserQuery.data?.documentId as string | undefined;
+      if (!documentId) throw new Error("Could not resolve documentId for user");
 
-      if (Object.keys(baBody).length > 0) {
-        ops.push(
-          client.dash
-            .updateUser(baBody as never, withContext({ userId }))
-            .then((result) => {
-              if (result.error)
-                throw new Error(result.error.message ?? "Update failed");
-            }),
-        );
-      }
-
-      if (Object.keys(editExtra).length > 0) {
-        const documentId = strapiUserQuery.data?.documentId as
-          | string
-          | undefined;
-        if (!documentId)
-          throw new Error("Could not resolve documentId for user");
-        ops.push(
-          put(
-            `/better-auth-dashboard/db/${documentId}?uid=plugin::better-auth.user`,
-            editExtra,
-          ),
-        );
-      }
-
-      await Promise.all(ops);
+      await put(
+        `/better-auth-dashboard/db/${documentId}?uid=plugin::better-auth.user`,
+        body,
+      );
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-user", userId] });
@@ -418,6 +399,7 @@ export function UserDetailDrawer({
       return result.data;
     },
     onSuccess: () => {
+      setConfirmBan(false);
       qc.invalidateQueries({ queryKey: ["dash-user", userId] });
       qc.invalidateQueries({ queryKey: ["dash-users"] });
       setBanReason("");
@@ -1128,9 +1110,10 @@ export function UserDetailDrawer({
           {/* ── Ban ── */}
           {banEnabled && (
             <Tabs.Content value="ban">
-              <Flex direction="column" gap={4} paddingTop={6}>
+              <Flex direction="column" gap={5} paddingTop={6}>
                 {user?.banned ? (
-                  <>
+                  <FormSection>
+                    <SectionLabel>Ban status</SectionLabel>
                     <WarnCard>
                       <Typography
                         variant="omega"
@@ -1144,7 +1127,7 @@ export function UserDetailDrawer({
                           Reason: {user.banReason}
                         </Typography>
                       )}
-                      {user.banExpires && (
+                      {user.banExpires ? (
                         <Typography variant="pi" textColor="danger600">
                           Expires:{" "}
                           {new Date(user.banExpires).toLocaleDateString(
@@ -1157,8 +1140,7 @@ export function UserDetailDrawer({
                             },
                           )}
                         </Typography>
-                      )}
-                      {!user.banExpires && (
+                      ) : (
                         <Typography variant="pi" textColor="danger600">
                           Duration: Permanent
                         </Typography>
@@ -1172,26 +1154,25 @@ export function UserDetailDrawer({
                         Lift ban
                       </Button>
                     </Box>
-                  </>
+                  </FormSection>
                 ) : (
-                  <>
+                  <FormSection>
+                    <SectionLabel>Apply ban</SectionLabel>
+                    <Field.Root
+                      hint="Optional — will be shown to the user"
+                      style={{ width: "100%" }}
+                    >
+                      <Field.Label>Reason</Field.Label>
+                      <TextInput
+                        value={banReason}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setBanReason(e.target.value)
+                        }
+                        placeholder="e.g. Violated terms of service"
+                      />
+                      <Field.Hint />
+                    </Field.Root>
                     <Grid.Root gap={4}>
-                      <Grid.Item col={12}>
-                        <Field.Root
-                          hint="Optional — will be shown to the user"
-                          style={{ width: "100%" }}
-                        >
-                          <Field.Label>Reason</Field.Label>
-                          <TextInput
-                            value={banReason}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>,
-                            ) => setBanReason(e.target.value)}
-                            placeholder="e.g. Violated terms of service"
-                          />
-                          <Field.Hint />
-                        </Field.Root>
-                      </Grid.Item>
                       <Grid.Item col={6}>
                         <Field.Root
                           hint="Leave empty for a permanent ban"
@@ -1210,38 +1191,28 @@ export function UserDetailDrawer({
                         </Field.Root>
                       </Grid.Item>
                       <Grid.Item col={6}>
-                        {banExpiryPreview ? (
-                          <Flex
-                            direction="column"
-                            justifyContent="flex-end"
-                            style={{ height: "100%", paddingBottom: 4 }}
-                          >
-                            <PreviewPill>
-                              ⏱ Expires {banExpiryPreview}
-                            </PreviewPill>
-                          </Flex>
-                        ) : (
-                          <Flex
-                            direction="column"
-                            justifyContent="flex-end"
-                            style={{ height: "100%", paddingBottom: 4 }}
-                          >
-                            <PreviewPill>♾ Permanent ban</PreviewPill>
-                          </Flex>
-                        )}
+                        <Flex
+                          direction="column"
+                          justifyContent="flex-end"
+                          style={{ height: "100%", paddingBottom: 4 }}
+                        >
+                          <PreviewPill>
+                            {banExpiryPreview
+                              ? `⏱ Expires ${banExpiryPreview}`
+                              : "♾ Permanent ban"}
+                          </PreviewPill>
+                        </Flex>
                       </Grid.Item>
                     </Grid.Root>
-
                     <Box>
                       <Button
                         variant="danger"
-                        loading={banMutation.isLoading}
-                        onClick={() => banMutation.mutate()}
+                        onClick={() => setConfirmBan(true)}
                       >
                         Ban user
                       </Button>
                     </Box>
-                  </>
+                  </FormSection>
                 )}
               </Flex>
             </Tabs.Content>
@@ -1283,11 +1254,15 @@ export function UserDetailDrawer({
                     No active sessions.
                   </Typography>
                 ) : (
-                  <Flex direction="column" gap={0} alignItems="stretch">
+                  <Flex direction="column" gap={2} alignItems="stretch">
                     {(sessionsQuery.data ?? []).map((session) => (
                       <SessionCard key={session.documentId}>
                         <SessionMeta>
-                          <Flex gap={2} alignItems="center" style={{ flexWrap: "wrap" }}>
+                          <Flex
+                            gap={2}
+                            alignItems="center"
+                            style={{ flexWrap: "wrap" }}
+                          >
                             {session.ipAddress && (
                               <IpChip>{session.ipAddress}</IpChip>
                             )}
@@ -1383,6 +1358,22 @@ export function UserDetailDrawer({
           loading={revokeSessionMutation.isLoading}
           onConfirm={() => revokeSessionMutation.mutate(confirmRevokeSessionId)}
           onCancel={() => setConfirmRevokeSessionId(null)}
+        />
+      )}
+
+      {confirmBan && (
+        <ConfirmDialog
+          title="Ban user"
+          message={
+            banReason
+              ? `Ban this user for the following reason: "${banReason}"? They will be prevented from signing in.`
+              : "Are you sure you want to ban this user? They will be prevented from signing in."
+          }
+          confirmLabel="Ban user"
+          variant="danger"
+          loading={banMutation.isLoading}
+          onConfirm={() => banMutation.mutate()}
+          onCancel={() => setConfirmBan(false)}
         />
       )}
 
