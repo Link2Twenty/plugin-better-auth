@@ -62,6 +62,10 @@ export function useModelSchema(model: "user" | "organization") {
             attr.target.startsWith("admin::"))
         )
           continue;
+        const baOptions = attr.pluginOptions?.["better-auth"] as
+          | { managed?: boolean }
+          | undefined;
+        if (baOptions?.managed === true) continue;
         attributes[name] = attr;
       }
       return attributes;

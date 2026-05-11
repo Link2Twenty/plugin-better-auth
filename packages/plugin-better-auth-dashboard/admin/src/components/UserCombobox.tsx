@@ -36,7 +36,7 @@ export function UserCombobox({
 
       const result = await client.dash.listUsers({
         query: {
-          limit: 20,
+          limit: search ? 100 : 20,
           offset: 0,
           sortBy: "createdAt",
           sortOrder: "desc",

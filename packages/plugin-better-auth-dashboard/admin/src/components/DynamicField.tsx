@@ -12,6 +12,7 @@ import {
 import type React from "react";
 import type { StrapiAttribute } from "../hooks/useModelSchema";
 import { FormSection, SectionLabel } from "./FormPrimitives";
+import { RelationField } from "./RelationField";
 
 export interface AdditionalFieldDef {
   name: string;
@@ -187,21 +188,14 @@ export function DynamicField({
 
   if (type === "relation") {
     return (
-      <Field.Root
-        style={fieldStyle}
-        hint={`Relation → ${attribute.target ?? "unknown"}`}
-      >
-        <Field.Label>{label}</Field.Label>
-        <TextInput
-          value={value != null ? String(value) : ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChange(name, e.target.value)
-          }
-          disabled={readOnly}
-          placeholder="ID…"
-        />
-        <Field.Hint />
-      </Field.Root>
+      <RelationField
+        name={name}
+        label={label}
+        attribute={attribute}
+        value={value}
+        onChange={onChange}
+        readOnly={readOnly}
+      />
     );
   }
 

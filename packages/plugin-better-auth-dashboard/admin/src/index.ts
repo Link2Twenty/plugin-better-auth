@@ -1,3 +1,4 @@
+import { PluginIcon } from "./components/PluginIcon";
 import { PLUGIN_ID } from "./pluginId";
 import { captureApp } from "./utils/strapiApp";
 
@@ -22,7 +23,7 @@ export default {
 
     app.addMenuLink({
       to: `/plugins/${PLUGIN_ID}`,
-      icon: () => null,
+      icon: PluginIcon,
       intlLabel: {
         id: `${PLUGIN_ID}.plugin.name`,
         defaultMessage: "Auth Dashboard",

@@ -51,5 +51,23 @@ export default () => ({
         prefix: "",
       },
     },
+    {
+      method: "GET",
+      path: "/better-auth-dashboard/db",
+      handler: "db-controller.list",
+      config: {
+        policies: [],
+        prefix: "",
+      },
+    },
+    {
+      method: "PUT",
+      path: "/better-auth-dashboard/db/:documentId",
+      handler: "db-controller.update",
+      config: {
+        policies: [],
+        prefix: "",
+      },
+    },
   ],
 });

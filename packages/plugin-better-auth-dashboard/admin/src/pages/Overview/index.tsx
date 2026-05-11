@@ -6,6 +6,7 @@ import {
   SingleSelectOption,
   Typography,
 } from "@strapi/design-system";
+import { useFetchClient } from "@strapi/strapi/admin";
 import { useState } from "react";
 import { useQuery } from "react-query";
 import styled, { keyframes } from "styled-components";
@@ -42,7 +43,8 @@ const MainRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 12px;
-  @media (max-width: 960px) { grid-template-columns: 1fr; }
+  align-items: stretch;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
 `;
 
 const ActiveRow = styled.div`
@@ -80,6 +82,76 @@ const Card = styled.div<{ $delay?: number; $accent?: string }>`
     border-color: #c0bfff;
     box-shadow: 0 2px 16px rgba(73,69,255,0.08);
   }
+`;
+
+// ─── Session feed card ────────────────────────────────────────────────────────
+
+const FeedCard = styled(Card)`
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const FeedScroll = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+`;
+
+const FeedHeader = styled.div`
+  padding: 16px 16px 10px;
+  border-bottom: 1px solid #f0f0f5;
+  font-size: 12px;
+  font-weight: 700;
+  color: #32324d;
+  flex-shrink: 0;
+`;
+
+const FeedList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const FeedItem = styled.div`
+  padding: 10px 14px;
+  border-bottom: 1px solid #f5f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  &:last-child { border-bottom: none; }
+`;
+
+const FeedTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+`;
+
+const FeedIp = styled.span`
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: #4945ff;
+  background: #f0f0ff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+`;
+
+const FeedTime = styled.span`
+  font-size: 10px;
+  color: #b8b8c7;
+  white-space: nowrap;
+`;
+
+const FeedAgent = styled.span`
+  font-size: 10px;
+  color: #8e8ea9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
 `;
 
 // ─── Stat card internals ─────────────────────────────────────────────────────
@@ -178,72 +250,6 @@ const HoverInfo = styled.div`
   min-height: 16px;
 `;
 
-// ─── Activity / Sessions feed ────────────────────────────────────────────────
-
-const FeedCard = styled(Card)`
-  display: flex;
-  flex-direction: column;
-  max-height: 380px;
-`;
-
-const FeedHeader = styled.div`
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid #f0f0f7;
-  flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8e8ea9;
-`;
-
-const FeedList = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 6px 0;
-  &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: #d9d8ff; border-radius: 2px; }
-`;
-
-const FeedItem = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 9px 18px;
-  &:hover { background: #fafafe; }
-`;
-
-const FeedContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const FeedName = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #32324d;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const FeedSub = styled.div`
-  font-size: 10px;
-  color: #8e8ea9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
-`;
-
-const FeedTime = styled.div`
-  font-size: 10px;
-  color: #b8b8c7;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  margin-top: 1px;
-`;
 
 // ─── Recent users table ──────────────────────────────────────────────────────
 
@@ -288,26 +294,108 @@ const TD = styled.td`
   &:last-child  { padding-right: 20px; }
 `;
 
-const StatusChip = styled.span<{ $verified: boolean; $banned?: boolean }>`
-  display: inline-flex;
+
+// ─── Retention chart ─────────────────────────────────────────────────────────
+
+const RetentionCard = styled(Card)`
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const RetentionRow = styled.div`
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 20px;
+  gap: 10px;
+`;
+
+const RetentionLabel = styled.span`
+  font-size: 10px;
+  color: #8e8ea9;
+  min-width: 88px;
+  text-align: right;
+  white-space: nowrap;
+`;
+
+const RetentionSize = styled.span`
+  font-size: 9px;
+  color: #b8b8c7;
+  min-width: 52px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+`;
+
+const RetentionTrack = styled.div`
+  flex: 1;
+  height: 12px;
+  background: #f0f0f5;
+  border-radius: 3px;
+  overflow: hidden;
+`;
+
+const RetentionBar = styled.div<{ $rate: number; $hue: number }>`
+  width: ${(p) => Math.max(p.$rate, 1)}%;
+  height: 100%;
+  background: hsl(${(p) => p.$hue}, 60%, 46%);
+  border-radius: 3px;
+  transition: width 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+`;
+
+const RetentionPct = styled.span<{ $hue: number }>`
   font-size: 10px;
   font-weight: 700;
-  background: ${(p) => (p.$banned ? "#fcecea" : p.$verified ? "#eafbe7" : "#f0f0ff")};
-  color: ${(p) => (p.$banned ? "#d02b20" : p.$verified ? "#5cb176" : "#8e8ea9")};
-
-  &::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: ${(p) => (p.$banned ? "#d02b20" : p.$verified ? "#5cb176" : "#b8b8c7")};
-  }
+  color: hsl(${(p) => p.$hue}, 60%, 40%);
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 `;
+
+type RetentionDataRow = {
+  n: number;
+  label: string;
+  cohortStart: string;
+  cohortEnd: string;
+  activeStart: string;
+  activeEnd: string;
+  cohortSize: number;
+  retentionRate: number;
+};
+
+function rateHue(rate: number) {
+  if (rate >= 70) return 142;
+  if (rate >= 40) return 38;
+  return 4;
+}
+
+function RetentionChart({ data }: { data: RetentionDataRow[] }) {
+  if (data.length === 0) {
+    return (
+      <Empty>
+        <div style={{ fontSize: 22 }}>📉</div>
+        <div>No retention data for this period</div>
+      </Empty>
+    );
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      {data.map((row) => {
+        const hue = rateHue(row.retentionRate);
+        return (
+          <RetentionRow key={row.n} title={`${row.cohortStart} – ${row.cohortEnd} → active ${row.activeStart} – ${row.activeEnd}`}>
+            <RetentionLabel>{row.label}</RetentionLabel>
+            <RetentionSize>{row.cohortSize.toLocaleString()} users</RetentionSize>
+            <RetentionTrack>
+              <RetentionBar $rate={row.retentionRate} $hue={hue} />
+            </RetentionTrack>
+            <RetentionPct $hue={hue}>{row.retentionRate.toFixed(1)}%</RetentionPct>
+          </RetentionRow>
+        );
+      })}
+    </div>
+  );
+}
 
 // ─── Section divider ─────────────────────────────────────────────────────────
 
@@ -627,16 +715,6 @@ function AreaChart({
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
-function relTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const m = Math.floor((Date.now() - d.getTime()) / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
 function fmtDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(undefined, {
     month: "short",
@@ -644,6 +722,26 @@ function fmtDate(date: string | Date): string {
     year: "numeric",
   });
 }
+
+function relTime(date: string | Date): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+type StrapiSession = {
+  id: number;
+  documentId: string;
+  userId: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt: string;
+  expiresAt: string;
+};
 
 // ─── StatCardItem ────────────────────────────────────────────────────────────
 
@@ -689,11 +787,6 @@ function StatCardItem({
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-type Session = {
-  id: string;
-  createdAt: string;
-  user?: { name?: string; email?: string; image?: string };
-};
 type User = {
   id: string;
   name: string;
@@ -704,11 +797,15 @@ type User = {
   createdAt: string;
 };
 
+const USERS_PAGE_SIZE = 8;
+
 export function OverviewPage() {
+  const { get } = useFetchClient();
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">(
     "weekly",
   );
   const [hovIdx, setHovIdx] = useState<number | null>(null);
+  const [usersPage] = useState(1);
 
   const statsQuery = useQuery({
     queryKey: ["dash-user-stats"],
@@ -728,26 +825,41 @@ export function OverviewPage() {
     },
   });
 
-  const sessionsQuery = useQuery({
-    queryKey: ["dash-recent-sessions"],
+  const retentionQuery = useQuery({
+    queryKey: ["dash-user-retention", period],
     queryFn: async () => {
-      const r = await (client.dash as any).listAllSessions({
-        query: { page: 1, limit: 10 },
-      });
+      const r = await (client.dash as any).userRetentionData({ query: { period } });
       if (r.error) throw new Error(r.error.message ?? "Failed");
       return r.data;
     },
   });
 
   const usersQuery = useQuery({
-    queryKey: ["dash-recent-users"],
+    queryKey: ["dash-recent-users", usersPage],
     queryFn: async () => {
-      const r = await (client.dash as any).listUsers({
-        query: { page: 1, limit: 8, search: "" },
+      const r = await client.dash.listUsers({
+        query: {
+          limit: USERS_PAGE_SIZE,
+          offset: (usersPage - 1) * USERS_PAGE_SIZE,
+          sortBy: "createdAt",
+          sortOrder: "desc",
+        },
       });
       if (r.error) throw new Error(r.error.message ?? "Failed");
       return r.data;
     },
+    keepPreviousData: true,
+  });
+
+  const sessionsQuery = useQuery({
+    queryKey: ["dash-recent-sessions"],
+    queryFn: async () => {
+      const { data } = await get<{ results: StrapiSession[] }>(
+        "/better-auth-dashboard/db?uid=plugin::better-auth.session&pagination[pageSize]=10&sort[0]=createdAt:desc",
+      );
+      return (data as { results?: StrapiSession[] }).results ?? [];
+    },
+    refetchInterval: 30_000,
   });
 
   const orgsQuery = useQuery({
@@ -773,9 +885,10 @@ export function OverviewPage() {
   if (!stats) return null;
 
   const graphData = (graphQuery.data?.data ?? []) as GraphRow[];
-  const sessions = ((sessionsQuery.data as any)?.sessions ?? []) as Session[];
-  const recentUsers = ((usersQuery.data as any)?.users ?? []) as User[];
+  const recentUsers = (usersQuery.data?.users ?? []) as User[];
   const orgCount: number = (orgsQuery.data as any)?.total ?? 0;
+  const recentSessions = sessionsQuery.data ?? [];
+  const retentionData = (retentionQuery.data?.data ?? []) as RetentionDataRow[];
 
   const totalSpark = graphData.map((d) => d.totalUsers);
   const newSpark = graphData.map((d) => d.newUsers);
@@ -904,32 +1017,42 @@ export function OverviewPage() {
         </ChartCard>
 
         <FeedCard $delay={6}>
-          <FeedHeader>Recent Sessions</FeedHeader>
-          <FeedList>
-            {sessionsQuery.isLoading ? (
-              <Empty>
+          <FeedHeader>Recent Users</FeedHeader>
+          <FeedScroll>
+            {usersQuery.isLoading ? (
+              <Flex justifyContent="center" padding={4}>
                 <Loader>Loading…</Loader>
-              </Empty>
-            ) : sessions.length === 0 ? (
-              <Empty>No recent sessions</Empty>
+              </Flex>
+            ) : recentUsers.length === 0 ? (
+              <Flex justifyContent="center" padding={4}>
+                <Typography variant="pi" textColor="neutral500">
+                  No users yet
+                </Typography>
+              </Flex>
             ) : (
-              sessions.map((s) => (
-                <FeedItem key={s.id}>
-                  <Avatar
-                    name={s.user?.name ?? "?"}
-                    src={s.user?.image}
-                    size={28}
-                  />
-                  <FeedContent>
-                    <FeedName>{s.user?.name ?? "Unknown"}</FeedName>
-                    <FeedSub>{s.user?.email ?? ""}</FeedSub>
-                    <FeedTime>{relTime(s.createdAt)}</FeedTime>
-                  </FeedContent>
-                </FeedItem>
-              ))
+              <FeedList>
+                {recentUsers.map((u) => (
+                  <FeedItem key={u.id}>
+                    <FeedTop>
+                      <Flex alignItems="center" gap={1} style={{ minWidth: 0 }}>
+                        <Avatar name={u.name} src={u.image} size={20} />
+                        <FeedAgent
+                          title={u.name}
+                          style={{ color: "#32324d", fontWeight: 600 }}
+                        >
+                          {u.name}
+                        </FeedAgent>
+                      </Flex>
+                      <FeedTime>{relTime(u.createdAt)}</FeedTime>
+                    </FeedTop>
+                    <FeedAgent title={u.email}>{u.email}</FeedAgent>
+                  </FeedItem>
+                ))}
+              </FeedList>
             )}
-          </FeedList>
+          </FeedScroll>
         </FeedCard>
+
       </MainRow>
 
       {/* Active users */}
@@ -968,9 +1091,33 @@ export function OverviewPage() {
         />
       </ActiveRow>
 
-      {/* Recent users table */}
+      {/* User Retention */}
       <Divider>
-        <DivLabel>Recent Users</DivLabel>
+        <DivLabel>User Retention</DivLabel>
+        <DivLine />
+      </Divider>
+
+      <RetentionCard $delay={10}>
+        <ChartHeader>
+          <ChartTitle>Cohort Retention</ChartTitle>
+          <LegendRow>
+            <LegendItem><LegendDot $c="hsl(142,60%,46%)" />≥70%</LegendItem>
+            <LegendItem><LegendDot $c="hsl(38,60%,46%)" />40–70%</LegendItem>
+            <LegendItem><LegendDot $c="hsl(4,60%,46%)" />&lt;40%</LegendItem>
+          </LegendRow>
+        </ChartHeader>
+        {retentionQuery.isLoading ? (
+          <Flex justifyContent="center" alignItems="center" style={{ minHeight: 80 }}>
+            <Loader>Loading…</Loader>
+          </Flex>
+        ) : (
+          <RetentionChart data={retentionData} />
+        )}
+      </RetentionCard>
+
+      {/* Recent sessions table */}
+      <Divider>
+        <DivLabel>Recent Sessions</DivLabel>
         <DivLine />
       </Divider>
 
@@ -979,71 +1126,55 @@ export function OverviewPage() {
           <Table>
             <thead>
               <tr>
-                {["User", "Email", "Joined", "Status"].map((h) => (
+                {["IP Address", "User Agent", "Created", "Expires"].map((h) => (
                   <TH key={h}>{h}</TH>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {usersQuery.isLoading ? (
+              {sessionsQuery.isLoading ? (
                 <tr>
                   <TD colSpan={4} style={{ textAlign: "center", padding: 28 }}>
-                    <Loader>Loading users…</Loader>
+                    <Loader>Loading sessions…</Loader>
                   </TD>
                 </tr>
-              ) : recentUsers.length === 0 ? (
+              ) : recentSessions.length === 0 ? (
                 <tr>
                   <TD
                     colSpan={4}
-                    style={{
-                      textAlign: "center",
-                      padding: 28,
-                      color: "#8e8ea9",
-                    }}
+                    style={{ textAlign: "center", padding: 28, color: "#8e8ea9" }}
                   >
-                    No users yet
+                    No sessions yet
                   </TD>
                 </tr>
               ) : (
-                recentUsers.map((u) => (
-                  <TR key={u.id}>
+                recentSessions.map((s) => (
+                  <TR key={s.documentId}>
                     <TD>
-                      <Flex alignItems="center" gap={2}>
-                        <Avatar name={u.name} src={u.image} size={26} />
-                        <span style={{ fontWeight: 600, fontSize: 12 }}>
-                          {u.name}
-                        </span>
-                      </Flex>
-                    </TD>
-                    <TD
-                      style={{
-                        color: "#8e8ea9",
-                        fontFamily: "monospace",
-                        fontSize: 11,
-                      }}
-                    >
-                      {u.email}
+                      {s.ipAddress ? (
+                        <FeedIp>{s.ipAddress}</FeedIp>
+                      ) : (
+                        <span style={{ color: "#b8b8c7" }}>—</span>
+                      )}
                     </TD>
                     <TD
                       style={{
                         color: "#8e8ea9",
                         fontSize: 11,
+                        maxWidth: 320,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                       }}
+                      title={s.userAgent ?? undefined}
                     >
-                      {fmtDate(u.createdAt)}
+                      {s.userAgent ?? "—"}
                     </TD>
-                    <TD>
-                      <StatusChip
-                        $verified={u.emailVerified}
-                        $banned={u.banned}
-                      >
-                        {u.banned
-                          ? "Banned"
-                          : u.emailVerified
-                            ? "Verified"
-                            : "Unverified"}
-                      </StatusChip>
+                    <TD style={{ color: "#8e8ea9", fontSize: 11, whiteSpace: "nowrap" }}>
+                      {fmtDate(s.createdAt)}
+                    </TD>
+                    <TD style={{ color: "#8e8ea9", fontSize: 11, whiteSpace: "nowrap" }}>
+                      {fmtDate(s.expiresAt)}
                     </TD>
                   </TR>
                 ))

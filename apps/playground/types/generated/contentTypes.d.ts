@@ -1166,7 +1166,7 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
   };
   pluginOptions: {
     'content-manager': {
-      visible: true;
+      visible: false;
     };
     'content-type-builder': {
       visible: true;
@@ -1216,6 +1216,7 @@ export interface PluginBetterAuthUser extends Struct.CollectionTypeSchema {
       'manyToMany',
       'plugin::api-permissions.role'
     >;
+    test: Schema.Attribute.Relation<'oneToOne', 'api::test.test'>;
     twoFactorEnabled: Schema.Attribute.Boolean &
       Schema.Attribute.SetPluginOptions<{
         'better-auth': {

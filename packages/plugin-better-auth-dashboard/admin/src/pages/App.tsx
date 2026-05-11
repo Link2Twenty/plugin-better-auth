@@ -12,8 +12,8 @@ import { client } from "../client";
 import { hasPlugin, useDashConfig } from "../hooks/useDashConfig";
 import { OrganizationsPage } from "./Organizations";
 import { OverviewPage } from "./Overview";
-import { SessionsPage } from "./Sessions";
 import { UsersPage } from "./Users";
+import { PluginIcon } from "../components/PluginIcon";
 
 const Accent = styled.div`
   height: 3px;
@@ -24,8 +24,7 @@ const Accent = styled.div`
 const BrandIcon = styled.div`
   width: 30px;
   height: 30px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #4945ff 0%, #7b79ff 100%);
+  background: black;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,7 +113,9 @@ export function App() {
               paddingBottom={4}
             >
               <Flex gap={2} alignItems="center">
-                <BrandIcon>BA</BrandIcon>
+                <BrandIcon>
+                  <PluginIcon />
+                </BrandIcon>
                 <Box>
                   <Typography variant="beta" textColor="neutral800">
                     Better Auth
@@ -143,9 +144,6 @@ export function App() {
                   Organizations
                 </Tabs.Trigger>
               )}
-              <Tabs.Trigger value="sessions" data-testid="nav-sessions">
-                Sessions
-              </Tabs.Trigger>
             </Tabs.List>
           </Box>
         </Box>
@@ -161,9 +159,6 @@ export function App() {
             <OrganizationsPage teamsEnabled={teamsEnabled} />
           </Tabs.Content>
         )}
-        <Tabs.Content value="sessions" data-testid="tab-sessions">
-          <SessionsPage />
-        </Tabs.Content>
       </Tabs.Root>
     </Box>
   );

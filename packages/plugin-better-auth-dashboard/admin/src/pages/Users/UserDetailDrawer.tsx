@@ -7,12 +7,15 @@ import {
   Field,
   Flex,
   Grid,
+  IconButton,
+  Loader,
   Modal,
   Tabs,
   TextInput,
   Typography,
 } from "@strapi/design-system";
-import { useNotification } from "@strapi/strapi/admin";
+import { Trash } from "@strapi/icons";
+import { useFetchClient, useNotification } from "@strapi/strapi/admin";
 import type React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -99,6 +102,53 @@ const ReadOnlyCodeInput = styled.div`
   overflow-wrap: anywhere;
 `;
 
+// ─── Session sub-row (per-user sessions tab) ──────────────────────────────────
+
+const SessionCard = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f9;
+  &:last-child { border-bottom: none; }
+`;
+
+const SessionMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const IpChip = styled.span`
+  display: inline-block;
+  background: #f0f0ff;
+  color: #4945ff;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
+`;
+
+const TimestampText = styled.span`
+  font-size: 11px;
+  color: #8e8ea9;
+`;
+
+const AgentText = styled.span`
+  font-size: 11px;
+  color: #b8b8c7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+`;
+
+// ─── Standard field set ───────────────────────────────────────────────────────
+
 const STANDARD_FIELDS = new Set([
   "id",
   "name",
@@ -129,6 +179,7 @@ export function UserDetailDrawer({
 }: Props) {
   const qc = useQueryClient();
   const { toggleNotification } = useNotification();
+  const { get, put } = useFetchClient();
   const schemaQuery = useModelSchema("user");
 
   const userQuery = useQuery({
@@ -153,6 +204,48 @@ export function UserDetailDrawer({
     },
   });
 
+  type StrapiSession = {
+    id: number;
+    documentId: string;
+    userId: string;
+    ipAddress?: string | null;
+    userAgent?: string | null;
+    createdAt: string;
+    expiresAt: string;
+  };
+
+  const sessionsQuery = useQuery({
+    queryKey: ["dash-user-sessions", userId],
+    queryFn: async () => {
+      const { data } = await get<{ results: StrapiSession[] }>(
+        `/better-auth-dashboard/db?uid=plugin::better-auth.session&filters[userId][$eq]=${userId}&sort[0]=createdAt:desc&pagination[pageSize]=50`,
+      );
+      return (data as { results?: StrapiSession[] }).results ?? [];
+    },
+  });
+
+  const strapiUserQuery = useQuery({
+    queryKey: ["dash-strapi-user", userId],
+    enabled: !!schemaQuery.data,
+    queryFn: async () => {
+      const relationFields = Object.entries(schemaQuery.data!)
+        .filter(([, attr]) => attr.type === "relation")
+        .map(([fieldName]) => fieldName);
+
+      const populateParam =
+        relationFields.length > 0
+          ? `&populate=${encodeURIComponent(relationFields.join(","))}`
+          : "";
+
+      const { data } = await get<{ results: Record<string, unknown>[] }>(
+        `/better-auth-dashboard/db?uid=plugin::better-auth.user&filters[id][$eq]=${userId}&pagination[pageSize]=1${populateParam}`,
+      );
+      return (
+        (data as { results?: Record<string, unknown>[] }).results?.[0] ?? null
+      );
+    },
+  });
+
   const [activeTab, setActiveTab] = useState("profile");
   const [editName, setEditName] = useState<string | undefined>(undefined);
   const [editEmail, setEditEmail] = useState<string | undefined>(undefined);
@@ -165,6 +258,9 @@ export function UserDetailDrawer({
   const [banReason, setBanReason] = useState("");
   const [banExpiresDays, setBanExpiresDays] = useState("");
   const [confirmRevokeAll, setConfirmRevokeAll] = useState(false);
+  const [confirmRevokeSessionId, setConfirmRevokeSessionId] = useState<
+    string | null
+  >(null);
   const [confirmUnban, setConfirmUnban] = useState(false);
   const [confirmUnlinkAccountId, setConfirmUnlinkAccountId] = useState<
     string | null
@@ -197,29 +293,52 @@ export function UserDetailDrawer({
   };
 
   const extraData: Record<string, unknown> = {
-    ...(user as Record<string, unknown> | undefined),
+    ...(strapiUserQuery.data ?? {}),
     ...editExtra,
   };
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const body: Record<string, unknown> = { ...editExtra };
-      if (editName !== undefined) body.name = editName;
-      if (editEmail !== undefined) body.email = editEmail;
+      const baBody: Record<string, unknown> = {};
+      if (editName !== undefined) baBody.name = editName;
+      if (editEmail !== undefined) baBody.email = editEmail;
       if (editEmailVerified !== undefined)
-        body.emailVerified = editEmailVerified;
-      if (editImage !== undefined) body.image = editImage;
-      const result = await client.dash.updateUser(
-        body as never,
-        withContext({ userId }),
-      );
-      if (result.error)
-        throw new Error(result.error.message ?? "Update failed");
-      return result.data;
+        baBody.emailVerified = editEmailVerified;
+      if (editImage !== undefined) baBody.image = editImage;
+
+      const ops: Promise<unknown>[] = [];
+
+      if (Object.keys(baBody).length > 0) {
+        ops.push(
+          client.dash
+            .updateUser(baBody as never, withContext({ userId }))
+            .then((result) => {
+              if (result.error)
+                throw new Error(result.error.message ?? "Update failed");
+            }),
+        );
+      }
+
+      if (Object.keys(editExtra).length > 0) {
+        const documentId = strapiUserQuery.data?.documentId as
+          | string
+          | undefined;
+        if (!documentId)
+          throw new Error("Could not resolve documentId for user");
+        ops.push(
+          put(
+            `/better-auth-dashboard/db/${documentId}?uid=plugin::better-auth.user`,
+            editExtra,
+          ),
+        );
+      }
+
+      await Promise.all(ops);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dash-user", userId] });
       qc.invalidateQueries({ queryKey: ["dash-users"] });
+      qc.invalidateQueries({ queryKey: ["dash-strapi-user", userId] });
       setEditName(undefined);
       setEditEmail(undefined);
       setEditEmailVerified(undefined);
@@ -235,6 +354,28 @@ export function UserDetailDrawer({
       toggleNotification({
         type: "danger",
         message: err.message ?? "Update failed",
+      });
+    },
+  });
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const result = await client.dash.sessions.revoke(
+        {},
+        withContext({ sessionId }),
+      );
+      if (result.error)
+        throw new Error(result.error.message ?? "Revoke failed");
+    },
+    onSuccess: () => {
+      setConfirmRevokeSessionId(null);
+      qc.invalidateQueries({ queryKey: ["dash-user-sessions", userId] });
+      toggleNotification({ type: "success", message: "Session revoked" });
+    },
+    onError: (err: Error) => {
+      toggleNotification({
+        type: "danger",
+        message: err.message ?? "Failed to revoke session",
       });
     },
   });
@@ -460,6 +601,7 @@ export function UserDetailDrawer({
 
   const viewTotpUriMutation = useMutation({
     mutationFn: async () => {
+      // biome-ignore lint/suspicious/noExplicitAny: viewTwoFactorTotpUri is not typed in @better-auth/infra
       const result = await (client.dash as any).viewTwoFactorTotpUri(
         {},
         withContext({ userId }),
@@ -1129,6 +1271,51 @@ export function UserDetailDrawer({
                   </Button>
                 </AccountRow>
               </FormSection>
+
+              <FormSection>
+                <SectionLabel>Active sessions</SectionLabel>
+                {sessionsQuery.isLoading ? (
+                  <Flex justifyContent="center" padding={4}>
+                    <Loader>Loading sessions…</Loader>
+                  </Flex>
+                ) : (sessionsQuery.data ?? []).length === 0 ? (
+                  <Typography variant="pi" textColor="neutral500">
+                    No active sessions.
+                  </Typography>
+                ) : (
+                  <Flex direction="column" gap={0} alignItems="stretch">
+                    {(sessionsQuery.data ?? []).map((session) => (
+                      <SessionCard key={session.documentId}>
+                        <SessionMeta>
+                          <Flex gap={2} alignItems="center" style={{ flexWrap: "wrap" }}>
+                            {session.ipAddress && (
+                              <IpChip>{session.ipAddress}</IpChip>
+                            )}
+                            <TimestampText>
+                              Created{" "}
+                              {new Date(session.createdAt).toLocaleString()} ·
+                              Expires{" "}
+                              {new Date(session.expiresAt).toLocaleString()}
+                            </TimestampText>
+                          </Flex>
+                          {session.userAgent && (
+                            <AgentText>{session.userAgent}</AgentText>
+                          )}
+                        </SessionMeta>
+                        <IconButton
+                          label="Revoke session"
+                          onClick={() =>
+                            setConfirmRevokeSessionId(String(session.id))
+                          }
+                          style={{ flexShrink: 0 }}
+                        >
+                          <Trash />
+                        </IconButton>
+                      </SessionCard>
+                    ))}
+                  </Flex>
+                )}
+              </FormSection>
             </Flex>
           </Tabs.Content>
 
@@ -1185,6 +1372,17 @@ export function UserDetailDrawer({
           loading={revokeAllMutation.isLoading}
           onConfirm={() => revokeAllMutation.mutate()}
           onCancel={() => setConfirmRevokeAll(false)}
+        />
+      )}
+
+      {confirmRevokeSessionId && (
+        <ConfirmDialog
+          title="Revoke session"
+          message="Are you sure you want to revoke this session? The user will be signed out on this device."
+          confirmLabel="Revoke"
+          loading={revokeSessionMutation.isLoading}
+          onConfirm={() => revokeSessionMutation.mutate(confirmRevokeSessionId)}
+          onCancel={() => setConfirmRevokeSessionId(null)}
         />
       )}
 

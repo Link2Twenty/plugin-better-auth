@@ -11,7 +11,7 @@
   },
   "pluginOptions": {
     "content-manager": {
-      "visible": true
+      "visible": false
     },
     "content-type-builder": {
       "visible": true
@@ -69,9 +69,6 @@
       "required": true,
       "unique": true
     },
-    "verified": {
-      "type": "boolean"
-    },
     "twoFactorEnabled": {
       "type": "boolean",
       "configurable": false,
@@ -81,6 +78,14 @@
         }
       },
       "default": false
+    },
+    "verified": {
+      "type": "boolean"
+    },
+    "test": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::test.test"
     }
   }
 }
