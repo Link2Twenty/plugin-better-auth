@@ -343,7 +343,7 @@ export function UserDetailDrawer({
     mutationFn: async (sessionId: string) => {
       const result = await client.dash.sessions.revoke(
         {},
-        withContext({ sessionId }),
+        withContext({ sessionId, userId }),
       );
       if (result.error)
         throw new Error(result.error.message ?? "Revoke failed");

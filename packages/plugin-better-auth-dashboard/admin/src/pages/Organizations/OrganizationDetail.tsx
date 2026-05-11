@@ -221,7 +221,7 @@ export function OrganizationDetail({
 
   const org = orgQuery.data;
   const extraData: Record<string, unknown> = {
-    ...(org as Record<string, unknown> | undefined),
+    ...(strapiOrgQuery.data ?? {}),
     ...editExtra,
   };
 

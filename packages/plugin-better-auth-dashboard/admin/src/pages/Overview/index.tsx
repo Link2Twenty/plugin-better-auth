@@ -834,10 +834,11 @@ type User = {
 type StrapiSession = {
   id: number;
   documentId: string;
-  userId: string;
+  userId: number;
   ipAddress?: string | null;
   userAgent?: string | null;
   createdAt: string;
+  updatedAt: string;
   expiresAt: string;
 };
 
@@ -965,7 +966,7 @@ export function OverviewPage() {
     queryKey: ["dash-recent-sessions"],
     queryFn: async () => {
       const { data } = await get<{ results: StrapiSession[] }>(
-        "/better-auth-dashboard/db?uid=plugin::better-auth.session&pagination[pageSize]=12&sort[0]=createdAt:desc",
+        "/better-auth-dashboard/db?uid=plugin::better-auth.session&pagination[pageSize]=12&sort[0]=updatedAt:desc",
       );
       return (data as { results?: StrapiSession[] }).results ?? [];
     },
@@ -988,9 +989,10 @@ export function OverviewPage() {
   const activeUserIds: string[] = [];
   const lastActiveByUserId = new Map<string, string>();
   for (const s of sessionsRaw) {
-    if (!lastActiveByUserId.has(s.userId)) {
-      lastActiveByUserId.set(s.userId, s.createdAt);
-      activeUserIds.push(s.userId);
+    const uid = String(s.userId);
+    if (!lastActiveByUserId.has(uid)) {
+      lastActiveByUserId.set(uid, s.updatedAt ?? s.createdAt);
+      activeUserIds.push(uid);
     }
   }
 
