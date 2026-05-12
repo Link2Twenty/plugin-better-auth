@@ -66,11 +66,9 @@ export async function stopStrapi() {
       "database.connection.connection.filename",
     );
 
-    assert(typeof tmpDbFile === "string");
-
     await instance.destroy();
 
-    if (fs.existsSync(tmpDbFile)) {
+    if (typeof tmpDbFile === "string" && fs.existsSync(tmpDbFile)) {
       fs.unlinkSync(tmpDbFile);
     }
 
