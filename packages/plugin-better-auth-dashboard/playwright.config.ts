@@ -1,7 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.STRAPI_BASE_URL ?? "http://localhost:1337";
+const PORT = process.env.STRAPI_PORT ?? String(10000 + (process.pid % 50000));
+const baseURL =
+  process.env.PLAYWRIGHT_TEST_BASE_URL ??
+  process.env.STRAPI_BASE_URL ??
+  `http://localhost:${PORT}`;
+process.env.PLAYWRIGHT_TEST_BASE_URL ??= baseURL;
 const databaseFilename = `.tmp/playwright-${process.pid}.db`;
+process.env.PLAYWRIGHT_DATABASE_FILENAME ??= databaseFilename;
 
 export default defineConfig({
   testDir: "./admin/test",
@@ -17,18 +23,22 @@ export default defineConfig({
   },
   webServer: {
     command: "cd ../../apps/playground/ && pnpm run dev",
-    url: "http://localhost:1337",
     reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
     env: {
+      PORT,
       APP_KEYS: "test-app-key-1,test-app-key-2,test-app-key-3,test-app-key-4",
       API_TOKEN_SALT: "test-api-token-salt",
       ADMIN_JWT_SECRET: "test-admin-jwt-secret",
       TRANSFER_TOKEN_SALT: "test-transfer-token-salt",
       ENCRYPTION_KEY: "test-encryption-key-1234567890",
       JWT_SECRET: "test-jwt-secret",
-      BETTER_AUTH_URL: "http://localhost:1337",
+      BETTER_AUTH_URL: baseURL,
+      STRAPI_URL: `http://localhost:${PORT}`,
       DATABASE_FILENAME: databaseFilename,
     },
+    // Strapi logs "Strapi started successfully" to stdout after the HTTP server
+    // is fully ready (including after any hot-reload recompile).
     wait: {
       stdout: /Strapi started successfully/,
     },
