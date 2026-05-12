@@ -15,11 +15,12 @@ env:
 
 jobs:
   install:
-    name: 'install'
+    name: 'install (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
-    outputs:
-      integration-matrix: ${{ steps.discover.outputs.integration }}
-      e2e-matrix: ${{ steps.discover.outputs.e2e }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -28,7 +29,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Cache dependencies
         id: dependencies-cache
@@ -39,13 +40,10 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: pnpm install
-      - name: Discover test packages
-        id: discover
-        run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
 
   build:
     needs: [install]
@@ -73,7 +71,7 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Cache build outputs
         id: build-cache
         uses: actions/cache@v4
@@ -112,7 +110,7 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run linting
         run: pnpm run lint
 
@@ -142,7 +140,7 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
@@ -155,11 +153,12 @@ jobs:
 
   test-integration-sqlite:
     needs: [install, build, lint, typescript]
-    name: 'test:integration (${{ matrix.name }}, sqlite, node ${{ matrix.nodeVersion }})'
+    name: 'test:integration (sqlite, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+      matrix:
+        node-version: [22, 24]
     env:
       DATABASE_CLIENT: sqlite
     steps:
@@ -170,7 +169,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -180,24 +179,25 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm --filter='${{ matrix.package }}' run test:integration
+        run: pnpm run test:integration
 
   test-integration-postgres:
     needs: [install, build, lint, typescript]
-    name: 'test:integration (${{ matrix.name }}, postgres, node ${{ matrix.nodeVersion }})'
+    name: 'test:integration (postgres, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+      matrix:
+        node-version: [22, 24]
     services:
       postgres:
         image: postgres:16
@@ -227,7 +227,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -237,24 +237,25 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm --filter='${{ matrix.package }}' run test:integration
+        run: pnpm run test:integration
 
   test-integration-mysql:
     needs: [install, build, lint, typescript]
-    name: 'test:integration (${{ matrix.name }}, mysql, node ${{ matrix.nodeVersion }})'
+    name: 'test:integration (mysql, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+      matrix:
+        node-version: [22, 24]
     services:
       mysql:
         image: mysql:8
@@ -285,7 +286,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -295,24 +296,25 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm --filter='${{ matrix.package }}' run test:integration
+        run: pnpm run test:integration
 
   test-e2e-sqlite:
     needs: [install, build, lint, typescript]
-    name: 'test:e2e (${{ matrix.name }}, sqlite, node ${{ matrix.nodeVersion }})'
+    name: 'test:e2e (sqlite, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+      matrix:
+        node-version: [22, 24]
     env:
       DATABASE_CLIENT: sqlite
     steps:
@@ -323,7 +325,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -333,30 +335,31 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+        run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-sqlite
+          name: playwright-report-node${{ matrix.node-version }}-sqlite
           path: '**/playwright-report/'
           retention-days: 30
 
   test-e2e-postgres:
     needs: [install, build, lint, typescript]
-    name: 'test:e2e (${{ matrix.name }}, postgres, node ${{ matrix.nodeVersion }})'
+    name: 'test:e2e (postgres, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+      matrix:
+        node-version: [22, 24]
     services:
       postgres:
         image: postgres:16
@@ -386,7 +389,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -396,30 +399,31 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+        run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-postgres
+          name: playwright-report-node${{ matrix.node-version }}-postgres
           path: '**/playwright-report/'
           retention-days: 30
 
   test-e2e-mysql:
     needs: [install, build, lint, typescript]
-    name: 'test:e2e (${{ matrix.name }}, mysql, node ${{ matrix.nodeVersion }})'
+    name: 'test:e2e (mysql, node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+      matrix:
+        node-version: [22, 24]
     services:
       mysql:
         image: mysql:8
@@ -450,7 +454,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.nodeVersion }}
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -460,19 +464,19 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Restore build outputs
         uses: actions/cache@v4
         with:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+        run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-mysql
+          name: playwright-report-node${{ matrix.node-version }}-mysql
           path: '**/playwright-report/'
           retention-days: 30
