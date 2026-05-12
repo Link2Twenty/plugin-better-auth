@@ -1,8 +1,11 @@
 import fs from 'fs';
 
+const NODE_VERSIONS = [22, 24];
+
 interface MatrixEntry {
   name: string;
   package: string;
+  nodeVersion: number;
 }
 
 function getMatrix(script: string): string {
@@ -14,7 +17,9 @@ function getMatrix(script: string): string {
       if (!fs.existsSync(pkgJsonPath)) continue;
       const json = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
       if (json.scripts?.[script]) {
-        result.push({ name: pkg, package: json.name });
+        for (const nodeVersion of NODE_VERSIONS) {
+          result.push({ name: pkg, package: json.name, nodeVersion });
+        }
       }
     }
   }

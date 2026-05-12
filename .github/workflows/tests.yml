@@ -49,8 +49,12 @@ jobs:
 
   build:
     needs: [install]
-    name: 'build'
+    name: 'build (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -59,7 +63,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -77,15 +81,19 @@ jobs:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run build
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm run build
 
   lint:
     needs: [install, build]
-    name: 'lint'
+    name: 'lint (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -94,7 +102,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -110,8 +118,12 @@ jobs:
 
   typescript:
     needs: [install, build]
-    name: 'typescript'
+    name: 'typescript (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -120,7 +132,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -137,17 +149,19 @@ jobs:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run TypeScript checks
         run: pnpm run check-types
 
-  test-integration:
+  test-integration-sqlite:
     needs: [install, build, lint, typescript]
-    name: 'test:integration (${{ matrix.name }})'
+    name: 'test:integration (${{ matrix.name }}, sqlite, node ${{ matrix.nodeVersion }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+    env:
+      DATABASE_CLIENT: sqlite
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -156,7 +170,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.nodeVersion }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -173,17 +187,134 @@ jobs:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
         run: pnpm --filter='${{ matrix.package }}' run test:integration
 
-  test-e2e:
+  test-integration-postgres:
     needs: [install, build, lint, typescript]
-    name: 'test:e2e (${{ matrix.name }})'
+    name: 'test:integration (${{ matrix.name }}, postgres, node ${{ matrix.nodeVersion }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: strapi
+          POSTGRES_PASSWORD: strapi
+          POSTGRES_DB: strapi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: strapi_test
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: strapi
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.nodeVersion }}
+          cache: 'pnpm'
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+      - name: Run integration tests
+        run: pnpm --filter='${{ matrix.package }}' run test:integration
+
+  test-integration-mysql:
+    needs: [install, build, lint, typescript]
+    name: 'test:integration (${{ matrix.name }}, mysql, node ${{ matrix.nodeVersion }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: strapi_test
+          MYSQL_USER: strapi
+          MYSQL_PASSWORD: strapi
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_CLIENT: mysql
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_NAME: strapi_test
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: strapi
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.nodeVersion }}
+          cache: 'pnpm'
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+      - name: Run integration tests
+        run: pnpm --filter='${{ matrix.package }}' run test:integration
+
+  test-e2e-sqlite:
+    needs: [install, build, lint, typescript]
+    name: 'test:e2e (${{ matrix.name }}, sqlite, node ${{ matrix.nodeVersion }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+    env:
+      DATABASE_CLIENT: sqlite
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -192,7 +323,7 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.nodeVersion }}
           cache: 'pnpm'
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -209,12 +340,139 @@ jobs:
           path: |
             packages/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
         run: pnpm --filter='${{ matrix.package }}' run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}
+          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-sqlite
+          path: '**/playwright-report/'
+          retention-days: 30
+
+  test-e2e-postgres:
+    needs: [install, build, lint, typescript]
+    name: 'test:e2e (${{ matrix.name }}, postgres, node ${{ matrix.nodeVersion }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: strapi
+          POSTGRES_PASSWORD: strapi
+          POSTGRES_DB: strapi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: strapi_test
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: strapi
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.nodeVersion }}
+          cache: 'pnpm'
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+      - name: Run e2e tests
+        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-postgres
+          path: '**/playwright-report/'
+          retention-days: 30
+
+  test-e2e-mysql:
+    needs: [install, build, lint, typescript]
+    name: 'test:e2e (${{ matrix.name }}, mysql, node ${{ matrix.nodeVersion }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: strapi_test
+          MYSQL_USER: strapi
+          MYSQL_PASSWORD: strapi
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_CLIENT: mysql
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_NAME: strapi_test
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: strapi
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.nodeVersion }}
+          cache: 'pnpm'
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.nodeVersion }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+      - name: Run e2e tests
+        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ matrix.name }}-node${{ matrix.nodeVersion }}-mysql
           path: '**/playwright-report/'
           retention-days: 30
