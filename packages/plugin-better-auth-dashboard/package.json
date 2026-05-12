@@ -46,7 +46,8 @@
     "test:ts:server": "cd server && tsc --noEmit",
     "test:ts:admin": "cd admin && tsc --noEmit",
     "check-types": "pnpm run test:ts:server && pnpm run test:ts:admin",
-    "lint": "biome check --fix"
+    "lint": "biome check --fix",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",

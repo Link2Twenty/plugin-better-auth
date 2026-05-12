@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "strapi_admin_refresh",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiZGNhNTU2OGRjNTE1OWNhNmI5ZjNlYWUxMDVlMjBmM2UiLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NTE1NjM1Nn0.s-yDybsdhm4K8iLCsTSTI8WnUdzo0wXEOyLZeB-VQRw",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiMzQyZTJiZTBkMGQyN2M4MGEyYTcyNmFmNTgxYmIyOTkiLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODU4Mzc2OH0.BEr1n_f7dYYYiqCgkAFvF2aMk2N0d3HUGmoHc_9hacw",
       "domain": "localhost",
       "path": "/admin",
       "expires": -1,
@@ -12,7 +12,7 @@
     },
     {
       "name": "strapi_admin_refresh.sig",
-      "value": "Rmbf_nPRC1jlhdyjRI7zK5pT_9k",
+      "value": "baMiQkGwcSB3gjAGRs-5RNua_sY",
       "domain": "localhost",
       "path": "/admin",
       "expires": -1,
@@ -22,7 +22,7 @@
     },
     {
       "name": "jwtToken",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiZGNhNTU2OGRjNTE1OWNhNmI5ZjNlYWUxMDVlMjBmM2UiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc1MTQ5MTU2LCJleHAiOjE3NzUxNTA5NTZ9.ZwqoVGip6PBVVVDZo8HGJBGAHSNCZ0KaJdFws0olzZI",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwic2Vzc2lvbklkIjoiMzQyZTJiZTBkMGQyN2M4MGEyYTcyNmFmNTgxYmIyOTkiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc4NTc2NTY4LCJleHAiOjE3Nzg1NzgzNjh9.A4F0KWawnd5AE5kRgqNJAgRQgKXbIGIqlrH5URoDkaA",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -41,7 +41,7 @@
         },
         {
           "name": "strapi.admin.deviceId",
-          "value": "5415ea23-b745-4154-a2e1-0dbdb384f906"
+          "value": "16bf64fb-593c-4858-9a99-1cc957710ded"
         },
         {
           "name": "STRAPI_FREE_TRIAL_ENDS_AT:23af2388-24b4-4e7f-974d-cb0aaa908364",

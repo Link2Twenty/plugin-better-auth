@@ -84,6 +84,7 @@ export function CreateOrganizationDialog({ teamsEnabled, onClose }: Props) {
         loading={createMutation.isLoading}
         disabled={!name || !slug || !ownerId}
         onClick={() => createMutation.mutate()}
+        data-testid="create-org-submit"
       >
         Create organization
       </Button>
