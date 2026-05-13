@@ -1,7 +1,6 @@
-import { existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig, devices, expect, test as setup } from "@playwright/test";
-import { test as teardown } from "@playwright/test";
+import { setupDb } from "./db";
 
 export function createPlaywrightConfig(options: { testDir: string }) {
   const PORT = process.env.STRAPI_PORT ?? String(10000 + (process.pid % 50000));
@@ -11,25 +10,7 @@ export function createPlaywrightConfig(options: { testDir: string }) {
     `http://localhost:${PORT}`;
   process.env.PLAYWRIGHT_TEST_BASE_URL ??= baseURL;
 
-  const dbClient = process.env.DATABASE_CLIENT ?? "sqlite";
-
-  const dbEnv: Record<string, string> =
-    dbClient === "sqlite"
-      ? (() => {
-          const filename = `.tmp/playwright-${process.pid}.db`;
-          process.env.PLAYWRIGHT_DATABASE_FILENAME ??= filename;
-          return { DATABASE_CLIENT: "sqlite", DATABASE_FILENAME: filename };
-        })()
-      : {
-          DATABASE_CLIENT: dbClient,
-          DATABASE_HOST: process.env.DATABASE_HOST ?? "127.0.0.1",
-          DATABASE_PORT:
-            process.env.DATABASE_PORT ??
-            (dbClient === "postgres" ? "5432" : "3306"),
-          DATABASE_NAME: process.env.DATABASE_NAME ?? "strapi",
-          DATABASE_USERNAME: process.env.DATABASE_USERNAME ?? "strapi",
-          DATABASE_PASSWORD: process.env.DATABASE_PASSWORD ?? "strapi",
-        };
+  const dbEnv = setupDb(String(process.pid));
 
   return defineConfig({
     testDir: options.testDir,
@@ -71,11 +52,6 @@ export function createPlaywrightConfig(options: { testDir: string }) {
       {
         name: "setup",
         testMatch: "**/setup/auth.setup.ts",
-        teardown: "teardown",
-      },
-      {
-        name: "teardown",
-        testMatch: "**/teardown/db.teardown.ts",
       },
       {
         name: "chromium",
@@ -105,16 +81,5 @@ export function registerAuthSetup(authFilePath: string) {
     await expect(page).toHaveURL(/\/admin(?!\/auth)/);
 
     await page.context().storageState({ path: authFilePath });
-  });
-}
-
-export function registerDbTeardown(playgroundDirPath: string) {
-  teardown("delete database", async () => {
-    const dbFilename = process.env.PLAYWRIGHT_DATABASE_FILENAME;
-    if (!dbFilename) return;
-    const dbPath = join(playgroundDirPath, dbFilename);
-    if (existsSync(dbPath)) {
-      rmSync(dbPath);
-    }
   });
 }

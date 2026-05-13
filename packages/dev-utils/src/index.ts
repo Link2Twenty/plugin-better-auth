@@ -6,8 +6,4 @@ export {
   stopStrapi,
 } from "./strapi";
 
-export {
-  createPlaywrightConfig,
-  registerAuthSetup,
-  registerDbTeardown,
-} from "./playwright";
+export { createPlaywrightConfig, registerAuthSetup } from "./playwright";

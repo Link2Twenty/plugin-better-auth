@@ -25,15 +25,11 @@ Destroys the running Strapi instance and cleans up any temporary SQLite database
 
 #### `createPlaywrightConfig(options)`
 
-Returns a Playwright `defineConfig` preconfigured for this monorepo — starts the playground as a web server, sets up the `setup` / `teardown` / `chromium` project structure, and handles per-process SQLite filenames for sqlite or passes through connection env vars for postgres/mysql.
+Returns a Playwright `defineConfig` preconfigured for this monorepo — starts the playground as a web server, sets up the `setup` / `chromium` project structure, handles per-process SQLite filenames or ephemeral postgres/mysql databases, and registers `globalTeardown` to clean up the SQLite file after the run.
 
 #### `registerAuthSetup(authFilePath)`
 
 Playwright setup step that registers the Strapi admin account and saves storage state to `authFilePath`.
-
-#### `registerDbTeardown(playgroundDirPath)`
-
-Playwright teardown step that deletes the temporary SQLite database file after a test run.
 
 #### `cleanupDir(dir)`
 
@@ -64,7 +60,15 @@ DATABASE_CLIENT=postgres with-db <command>
 DATABASE_CLIENT=mysql    with-db <command>
 ```
 
-Set `WITH_DB_SKIP_DOCKER=1` to skip Docker (useful when a database is already running).
+**Ephemeral databases** — when `DATABASE_NAME` is not set, each test process (`setupStrapi` for integration tests, `createPlaywrightConfig` for e2e tests) automatically creates its own isolated database named `strapi_<PID>`. On exit, `with-db` bulk-drops all `strapi_<digits>*` databases and stops the service. In CI (no Docker), the service container is destroyed at job end so no explicit cleanup is needed.
+
+To use a persistent, named database (e.g. for `pnpm dev:postgres`), set `DATABASE_NAME` explicitly:
+
+```bash
+DATABASE_CLIENT=postgres DATABASE_NAME=strapi with-db <command>
+```
+
+Set `WITH_DB_SKIP_DOCKER=1` to skip Docker entirely (useful when a database is already running).
 
 ### Integration tests
 
@@ -85,10 +89,6 @@ export default createPlaywrightConfig({ testDir: "./admin/test" });
 // setup/auth.setup.ts
 import { registerAuthSetup } from "@strapi-community/dev-utils";
 registerAuthSetup(`${__dirname}/../.auth/user.json`);
-
-// teardown/db.teardown.ts
-import { registerDbTeardown } from "@strapi-community/dev-utils";
-registerDbTeardown(path.resolve(__dirname, "../../../../../apps/playground"));
 ```
 
 ## Docker Compose

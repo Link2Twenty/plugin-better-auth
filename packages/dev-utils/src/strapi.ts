@@ -1,10 +1,10 @@
-import fs from "node:fs";
 import fspromises from "node:fs/promises";
 import { createRequire } from "node:module";
 import net from "node:net";
-import path, { resolve } from "node:path";
+import path from "node:path";
 import { threadId } from "node:worker_threads";
 import type { Core } from "@strapi/strapi";
+import { setupDb } from "./db";
 
 // Packages in this monorepo live at packages/<name>; playground is at apps/playground
 export const playgroundDir = path.resolve(process.cwd(), "../../apps/playground");
@@ -25,14 +25,11 @@ export function getFreePort(): Promise<number> {
 }
 
 // threadId is unique per worker thread within a process; safe for parallel test files
-const instanceId = `${process.pid}-${threadId}`;
+const instanceId = `${process.pid}_${threadId}`;
 
 let instance: Core.Strapi | undefined;
 
 export async function setupStrapi() {
-  const databaseFilename = `.tmp/vitest-${instanceId}.db`;
-  const databasePath = path.join(playgroundDir, databaseFilename);
-
   const port = await getFreePort();
 
   process.env.APP_KEYS ??=
@@ -44,9 +41,8 @@ export async function setupStrapi() {
   process.env.JWT_SECRET ??= "test-jwt-secret";
   process.env.BETTER_AUTH_URL = `http://localhost:${port}`;
   process.env.PORT = String(port);
-  process.env.DATABASE_FILENAME = databaseFilename;
 
-  await fspromises.rm(databasePath, { force: true });
+  setupDb(instanceId);
 
   if (!instance) {
     const appContext = await compileStrapi({
@@ -61,20 +57,7 @@ export async function setupStrapi() {
 
 export async function stopStrapi() {
   if (instance) {
-    const tmpDbFile = instance.config.get(
-      "database.connection.connection.filename",
-    );
-
     await instance.destroy();
-
-    if (
-      tmpDbFile &&
-      typeof tmpDbFile === "string" &&
-      fs.existsSync(tmpDbFile)
-    ) {
-      fs.unlinkSync(tmpDbFile);
-    }
-
     instance = undefined;
   }
 }
@@ -94,7 +77,7 @@ export const cleanupDir = async (dir: string) => {
     const dirContent = await fspromises.readdir(dir);
     const validFilenames = dirContent.filter((f) => f !== "build");
     for (const filename of validFilenames) {
-      await fspromises.rm(resolve(dir, filename), { recursive: true });
+      await fspromises.rm(path.resolve(dir, filename), { recursive: true });
     }
   } catch {
     return;
