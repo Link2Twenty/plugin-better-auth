@@ -43,7 +43,7 @@ jobs:
           key: ${{ runner.os }}-node${{ matrix.node-version }}-deps-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
-        run: pnpm install --config.inject-workspace-packages=true
+        run: pnpm install --config.inject-workspace-packages=true --no-frozen-lockfile
 
   build:
     needs: [install]
