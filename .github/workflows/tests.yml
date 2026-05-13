@@ -118,7 +118,7 @@ jobs:
             apps/*/dist
           key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run TypeScript checks
-        run: pnpm run check-types
+        run: pnpm run lint:ts
 
   test-integration-sqlite:
     needs: [setup, lint, typescript]
