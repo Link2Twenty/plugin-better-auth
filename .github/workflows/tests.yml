@@ -21,6 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22, 24]
+    env:
+      PNPM_CONFIG_INJECT_WORKSPACE_PACKAGES: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
