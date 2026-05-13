@@ -44,7 +44,9 @@ export function createPlaywrightConfig(options: { testDir: string }) {
       screenshot: "only-on-failure",
     },
     webServer: {
-      command: "cd ../../apps/playground/ && pnpm run dev",
+      command: process.env.CI
+        ? "cd ../../apps/playground/ && pnpm run start"
+        : "cd ../../apps/playground/ && pnpm run dev",
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       env: {

@@ -1,12 +1,4 @@
-import { existsSync, rmSync } from "node:fs";
-import { join } from "node:path";
-import { test as teardown } from "@playwright/test";
+import path from "node:path";
+import { registerDbTeardown } from "@strapi-community/test-utils";
 
-teardown("delete database", async () => {
-  const dbFilename = process.env.PLAYWRIGHT_DATABASE_FILENAME;
-  if (!dbFilename) return;
-  const dbPath = join(__dirname, "../../../../../apps/playground", dbFilename);
-  if (existsSync(dbPath)) {
-    rmSync(dbPath);
-  }
-});
+registerDbTeardown(path.resolve(__dirname, "../../../../../apps/playground"));
