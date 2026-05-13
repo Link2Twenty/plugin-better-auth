@@ -4,10 +4,15 @@ import {
   numberIdTestSuite,
   testAdapter,
 } from "@better-auth/test-utils/adapter";
+import {
+  cleanupDir,
+  playgroundDir,
+  setupStrapi,
+  stopStrapi,
+} from "@strapi-community/test-utils";
 import { getAuthTables } from "better-auth/db";
 import { strapiAdapter } from "../src/adapter";
 import { updateStrapiSchema } from "../src/adapter/transformers";
-import { cleanupDir, playgroundDir, setupStrapi, stopStrapi } from "./utils";
 
 const { execute } = await testAdapter({
   adapter: (_options) => {

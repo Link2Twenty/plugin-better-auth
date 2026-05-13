@@ -43,6 +43,7 @@
   "devDependencies": {
     "@better-auth/test-utils": "catalog:better-auth",
     "@biomejs/biome": "^2.3.11",
+    "@strapi-community/test-utils": "workspace:*",
     "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/typescript-utils": "catalog:strapi",
     "@types/koa": "^3.0.1",

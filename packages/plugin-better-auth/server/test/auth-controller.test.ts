@@ -1,7 +1,7 @@
+import { setupStrapi, stopStrapi } from "@strapi-community/test-utils";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { getPluginService } from "../src/utils";
-import { setupStrapi, stopStrapi } from "./utils";
 
 const BASE = "/api/auth";
 

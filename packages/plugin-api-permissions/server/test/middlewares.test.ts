@@ -1,6 +1,6 @@
+import { setupStrapi, stopStrapi } from "@strapi-community/test-utils";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getUserUID, ROLE_UID } from "../src/utils";
-import { setupStrapi, stopStrapi } from "./utils";
 
 beforeAll(async () => {
   await setupStrapi();
