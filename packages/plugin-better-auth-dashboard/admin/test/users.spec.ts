@@ -28,10 +28,14 @@ test.describe("Users page", () => {
   });
 
   test("shows empty state when no users exist", async ({ page }) => {
-    const userRows = page.getByTestId("user-row");
-    const count = await userRows.count();
+    const empty = page.getByTestId("users-empty");
+    const firstRow = page.getByTestId("user-row").first();
+    // Wait for loading to finish — the spinner hides both rows and the empty state
+    await expect(empty.or(firstRow)).toBeVisible({ timeout: 10_000 });
+
+    const count = await page.getByTestId("user-row").count();
     if (count === 0) {
-      await expect(page.getByTestId("users-empty")).toBeVisible();
+      await expect(empty).toBeVisible();
     }
   });
 

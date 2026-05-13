@@ -36,7 +36,7 @@ export function createPlaywrightConfig(options: { testDir: string }) {
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
-    workers: 1,
+    workers: 10,
     reporter: "html",
     use: {
       baseURL,
