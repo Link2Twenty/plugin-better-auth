@@ -2,9 +2,10 @@
   "name": "@strapi-community/plugin-better-auth",
   "private": true,
   "scripts": {
-    "postinstall": "playwright install --with-deps",
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:postgres": "DATABASE_CLIENT=postgres with-db turbo dev",
+    "dev:mysql": "DATABASE_CLIENT=mysql with-db turbo dev",
     "lint": "turbo lint",
     "test:integration": "turbo test:integration",
     "test:e2e": "turbo test:e2e",
@@ -13,7 +14,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@playwright/test": "catalog:playwright",
+    "@strapi-community/test-utils": "workspace:*",
     "@types/node": "^22.0.0",
     "husky": "9.1.7",
     "lint-staged": "^16.4.0",
