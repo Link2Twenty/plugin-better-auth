@@ -39,10 +39,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Install dependencies
         if: steps.setup-cache.outputs.cache-hit != 'true'
         run: pnpm install --config.inject-workspace-packages=true --no-frozen-lockfile
@@ -75,10 +77,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run linting
         run: pnpm run lint
 
@@ -107,10 +111,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run TypeScript checks
         run: pnpm run check-types
 
@@ -141,10 +147,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run integration tests
         run: pnpm run test:integration
 
@@ -194,10 +202,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run integration tests
         run: pnpm run test:integration
 
@@ -248,10 +258,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run integration tests
         run: pnpm run test:integration
 
@@ -282,10 +294,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run e2e tests
         run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
@@ -341,10 +355,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run e2e tests
         run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
@@ -401,10 +417,12 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run e2e tests
         run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4

@@ -9,6 +9,12 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "lint:ts:admin": {
+      "dependsOn": ["^lint:ts:admin"]
+    },
+    "lint:ts:server": {
+      "dependsOn": ["^lint:ts:server"]
+    },
     "test:integration": {
       "cache": false,
       "passThroughEnv": [
@@ -45,9 +51,6 @@
         "DATABASE_PASSWORD",
         "DATABASE_FILENAME"
       ]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
     }
   }
 }
