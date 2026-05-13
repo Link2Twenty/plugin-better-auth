@@ -156,27 +156,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22, 24]
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: strapi
-          POSTGRES_PASSWORD: strapi
-          POSTGRES_DB: strapi_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: localhost
-      DATABASE_PORT: 5432
-      DATABASE_NAME: strapi_test
-      DATABASE_USERNAME: strapi
-      DATABASE_PASSWORD: strapi
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -199,7 +178,7 @@ jobs:
             apps/*/dist
           key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm run test:integration
+        run: pnpm run test:integration:postgres
 
   test-integration-mysql:
     needs: [setup, lint, typescript]
@@ -209,28 +188,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22, 24]
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: strapi_test
-          MYSQL_USER: strapi
-          MYSQL_PASSWORD: strapi
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_CLIENT: mysql
-      DATABASE_HOST: 127.0.0.1
-      DATABASE_PORT: 3306
-      DATABASE_NAME: strapi_test
-      DATABASE_USERNAME: strapi
-      DATABASE_PASSWORD: strapi
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -253,7 +210,7 @@ jobs:
             apps/*/dist
           key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm run test:integration
+        run: pnpm run test:integration:mysql
 
   test-e2e-sqlite:
     needs: [setup, lint, typescript]
@@ -303,27 +260,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22, 24]
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: strapi
-          POSTGRES_PASSWORD: strapi
-          POSTGRES_DB: strapi_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: localhost
-      DATABASE_PORT: 5432
-      DATABASE_NAME: strapi_test
-      DATABASE_USERNAME: strapi
-      DATABASE_PASSWORD: strapi
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -346,7 +282,7 @@ jobs:
             apps/*/dist
           key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:postgres
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -362,28 +298,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [22, 24]
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: strapi_test
-          MYSQL_USER: strapi
-          MYSQL_PASSWORD: strapi
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_CLIENT: mysql
-      DATABASE_HOST: 127.0.0.1
-      DATABASE_PORT: 3306
-      DATABASE_NAME: strapi_test
-      DATABASE_USERNAME: strapi
-      DATABASE_PASSWORD: strapi
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -406,7 +320,7 @@ jobs:
             apps/*/dist
           key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:mysql
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
