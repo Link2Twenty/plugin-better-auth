@@ -40,7 +40,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "cd ../../apps/playground/ && pnpm run dev",
+    command: "cd ../../apps/playground/ && pnpm run strapi develop",
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: {
