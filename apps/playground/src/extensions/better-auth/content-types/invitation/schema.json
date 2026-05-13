@@ -39,7 +39,16 @@
       "required": true
     },
     "role": {
-      "type": "string",
+      "type": "text",
+      "configurable": false,
+      "pluginOptions": {
+        "better-auth": {
+          "managed": true
+        }
+      }
+    },
+    "teamId": {
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -48,7 +57,7 @@
       }
     },
     "status": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
@@ -77,15 +86,6 @@
         }
       },
       "required": true
-    },
-    "teamId": {
-      "type": "text",
-      "configurable": false,
-      "pluginOptions": {
-        "better-auth": {
-          "managed": true
-        }
-      }
     }
   }
 }

@@ -9,19 +9,48 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "lint:ts:admin": {
+      "dependsOn": ["^lint:ts:admin"]
+    },
+    "lint:ts:server": {
+      "dependsOn": ["^lint:ts:server"]
+    },
     "test:integration": {
-      "dependsOn": ["^test:integration"]
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_CLIENT",
+        "DATABASE_HOST",
+        "DATABASE_PORT",
+        "DATABASE_NAME",
+        "DATABASE_USERNAME",
+        "DATABASE_PASSWORD",
+        "DATABASE_FILENAME"
+      ]
     },
     "test:e2e": {
-      "dependsOn": ["^test:e2e"],
-      "cache": false
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_CLIENT",
+        "DATABASE_HOST",
+        "DATABASE_PORT",
+        "DATABASE_NAME",
+        "DATABASE_USERNAME",
+        "DATABASE_PASSWORD",
+        "DATABASE_FILENAME"
+      ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_CLIENT",
+        "DATABASE_HOST",
+        "DATABASE_PORT",
+        "DATABASE_NAME",
+        "DATABASE_USERNAME",
+        "DATABASE_PASSWORD",
+        "DATABASE_FILENAME"
+      ]
     }
   }
 }

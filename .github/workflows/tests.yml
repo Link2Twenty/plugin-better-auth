@@ -14,12 +14,13 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  install:
-    name: 'install'
+  setup:
+    name: 'setup (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
-    outputs:
-      integration-matrix: ${{ steps.discover.outputs.integration }}
-      e2e-matrix: ${{ steps.discover.outputs.e2e }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -28,64 +29,37 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - name: Cache dependencies
-        id: dependencies-cache
+      - name: Cache setup
+        id: setup-cache
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Install dependencies
-        if: steps.dependencies-cache.outputs.cache-hit != 'true'
-        run: pnpm install
-      - name: Discover test packages
-        id: discover
-        run: node --experimental-strip-types .github/scripts/discover-test-packages.ts
-
-  build:
-    needs: [install]
-    name: 'build'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.18.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Cache build outputs
-        id: build-cache
-        uses: actions/cache@v4
-        with:
-          path: |
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
+      - name: Install dependencies
+        if: steps.setup-cache.outputs.cache-hit != 'true'
+        run: pnpm install --config.inject-workspace-packages=true --no-frozen-lockfile
       - name: Run build
-        if: steps.build-cache.outputs.cache-hit != 'true'
+        if: steps.setup-cache.outputs.cache-hit != 'true'
         run: pnpm run build
 
   lint:
-    needs: [install, build]
-    name: 'lint'
+    needs: [setup]
+    name: 'lint (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -94,24 +68,32 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - name: Restore dependencies
+      - name: Restore setup
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
+            packages/*/dist
+            plugins/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run linting
         run: pnpm run lint
 
   typescript:
-    needs: [install, build]
-    name: 'typescript'
+    needs: [setup]
+    name: 'typescript (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -120,34 +102,32 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - name: Restore dependencies
+      - name: Restore setup
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Restore build outputs
-        uses: actions/cache@v4
-        with:
-          path: |
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run TypeScript checks
-        run: pnpm run check-types
+        run: pnpm run lint:ts
 
-  test-integration:
-    needs: [install, build, lint, typescript]
-    name: 'test:integration (${{ matrix.name }})'
+  test-integration-sqlite:
+    needs: [setup, lint, typescript]
+    name: 'test:integration:sqlite (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.integration-matrix) }}
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -156,34 +136,32 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - name: Restore dependencies
+      - name: Restore setup
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Restore build outputs
-        uses: actions/cache@v4
-        with:
-          path: |
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run integration tests
-        run: pnpm --filter='${{ matrix.package }}' run test:integration
+        run: pnpm run test:integration
 
-  test-e2e:
-    needs: [install, build, lint, typescript]
-    name: 'test:e2e (${{ matrix.name }})'
+  test-integration-postgres:
+    needs: [setup, lint, typescript]
+    name: 'test:integration:postgres (node ${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.install.outputs.e2e-matrix) }}
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -192,29 +170,174 @@ jobs:
           version: 10.18.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - name: Restore dependencies
+      - name: Restore setup
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
+            plugins/*/node_modules
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Restore build outputs
+            packages/*/dist
+            plugins/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
+      - name: Run integration tests
+        run: pnpm run test:integration:postgres
+
+  test-integration-mysql:
+    needs: [setup, lint, typescript]
+    name: 'test:integration:mysql (node ${{ matrix.node-version }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Restore setup
         uses: actions/cache@v4
         with:
           path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            plugins/*/node_modules
+            ~/.cache/ms-playwright
             packages/*/dist
+            plugins/*/dist
             apps/*/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'apps/**') }}
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
+      - name: Run integration tests
+        run: pnpm run test:integration:mysql
+
+  test-e2e-sqlite:
+    needs: [setup, lint, typescript]
+    name: 'test:e2e:sqlite (node ${{ matrix.node-version }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            plugins/*/node_modules
+            ~/.cache/ms-playwright
+            packages/*/dist
+            plugins/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
       - name: Run e2e tests
-        run: pnpm --filter='${{ matrix.package }}' run test:e2e
+        run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}
+          name: playwright-report-node${{ matrix.node-version }}-sqlite
+          path: '**/playwright-report/'
+          retention-days: 30
+
+  test-e2e-postgres:
+    needs: [setup, lint, typescript]
+    name: 'test:e2e:postgres (node ${{ matrix.node-version }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            plugins/*/node_modules
+            ~/.cache/ms-playwright
+            packages/*/dist
+            plugins/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
+      - name: Run e2e tests
+        run: pnpm run test:e2e:postgres
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-node${{ matrix.node-version }}-postgres
+          path: '**/playwright-report/'
+          retention-days: 30
+
+  test-e2e-mysql:
+    needs: [setup, lint, typescript]
+    name: 'test:e2e:mysql (node ${{ matrix.node-version }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            plugins/*/node_modules
+            ~/.cache/ms-playwright
+            packages/*/dist
+            plugins/*/dist
+            apps/*/dist
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-setup-${{ hashFiles('pnpm-lock.yaml', 'packages/**', 'plugins/**', 'apps/**') }}
+      - name: Run e2e tests
+        run: pnpm run test:e2e:mysql
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-node${{ matrix.node-version }}-mysql
           path: '**/playwright-report/'
           retention-days: 30

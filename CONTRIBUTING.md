@@ -13,44 +13,64 @@ Thank you for your interest in contributing! This project is in early beta, so c
 
 ```bash
 git clone https://github.com/strapi-community/plugin-better-auth.git
-cd auth
+cd plugin-better-auth
 pnpm install
 pnpm build
 pnpm dev
 ```
 
+### Dev commands
+
+All dev commands start the playground Strapi app. Postgres and MySQL variants start the required Docker service automatically.
+
+```bash
+pnpm dev                  # SQLite (default)
+pnpm dev:postgres         # Postgres
+pnpm dev:mysql            # MySQL
+```
+
+See [`packages/dev-utils`](./packages/dev-utils/README.md) for details on `dev-strapi` and `with-db`.
+
 ## Project structure
 
 ```
+plugins/
+  plugin-better-auth/           # Better Auth database adapter for Strapi
+  plugin-better-auth-dashboard/ # Admin panel dashboard for Better Auth users
+  plugin-api-permissions/       # Content API RBAC (roles & permissions)
 packages/
-  plugin-better-auth/       # Better Auth database adapter for Strapi
-  plugin-api-permissions/   # Content API RBAC (roles & permissions)
+  dev-utils/                    # Dev tooling: test helpers, dev server, Docker
 apps/
-  playground/            # Development Strapi app
+  playground/                   # Development Strapi app
+  docs/                         # Documentation site
 ```
 
 ## Making changes
 
 1. Fork the repository and create a branch from `main`.
-2. Make your changes in the relevant package under `packages/`.
+2. Make your changes in the relevant plugin under `plugins/`.
 3. Add or update tests where appropriate.
 4. Run the checks below before opening a pull request.
 
 ### Checks
 
 ```bash
-# Type checking
-pnpm check-types
-
 # Linting
 pnpm lint
 
+# Type checking
+pnpm lint:ts
+
 # Integration tests
 pnpm test:integration
+pnpm test:integration:postgres
+pnpm test:integration:mysql
 
-# Integration tests (requires a build first)
+# E2e tests — requires a build first
 pnpm build
 pnpm test:e2e
+pnpm test:e2e:postgres
+pnpm test:e2e:mysql
 ```
 
 ## Pull requests

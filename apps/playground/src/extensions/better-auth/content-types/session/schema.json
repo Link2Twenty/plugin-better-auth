@@ -68,7 +68,7 @@
       "required": true
     },
     "activeOrganizationId": {
-      "type": "string",
+      "type": "text",
       "configurable": false,
       "pluginOptions": {
         "better-auth": {
