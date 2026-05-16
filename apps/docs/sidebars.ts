@@ -23,6 +23,8 @@ const sidebars: SidebarsConfig = {
         'better-auth/client-setup',
         'better-auth/server-usage',
         'better-auth/plugins',
+        'better-auth/public-api',
+        'better-auth/owner-middleware',
         'better-auth/dashboard',
       ],
     },
