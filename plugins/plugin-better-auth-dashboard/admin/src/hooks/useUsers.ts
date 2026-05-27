@@ -22,6 +22,13 @@ export function useUsers(options: UseUsersOptions = {}) {
               field: "email",
               operator: "contains",
               value: search,
+              connector: "OR",
+            },
+            {
+              field: "name",
+              operator: "contains",
+              value: search,
+              connector: "OR",
             },
           ])
         : undefined;

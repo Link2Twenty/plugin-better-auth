@@ -30,7 +30,18 @@ export function UserCombobox({
     queryFn: async () => {
       const whereClause = search
         ? JSON.stringify([
-            { field: "email", operator: "contains", value: search },
+            {
+              field: "email",
+              operator: "contains",
+              value: search,
+              connector: "OR",
+            },
+            {
+              field: "name",
+              operator: "contains",
+              value: search,
+              connector: "OR",
+            },
           ])
         : undefined;
 
