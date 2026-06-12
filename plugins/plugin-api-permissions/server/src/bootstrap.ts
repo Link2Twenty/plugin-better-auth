@@ -32,26 +32,6 @@ const RBAC_ACTIONS = [
   },
 ];
 
-// This list should be kept in sync with the permissions defined in content manager for the API Role content type
-const FULL_ACTIONS = [
-  {
-    pluginAction: "plugin::api-permissions.roles.read",
-    cmAction: "plugin::content-manager.explorer.read",
-  },
-  {
-    pluginAction: "plugin::api-permissions.roles.create",
-    cmAction: "plugin::content-manager.explorer.create",
-  },
-  {
-    pluginAction: "plugin::api-permissions.roles.update",
-    cmAction: "plugin::content-manager.explorer.update",
-  },
-  {
-    pluginAction: "plugin::api-permissions.roles.delete",
-    cmAction: "plugin::content-manager.explorer.delete",
-  },
-];
-
 export default async ({ strapi }: { strapi: Core.Strapi }) => {
   const provider = strapi.service("admin::permission").actionProvider;
 
@@ -86,27 +66,35 @@ export default async ({ strapi }: { strapi: Core.Strapi }) => {
 const manualPermissionOverride = async (strapi: Core.Strapi) => {
   const provider = strapi.service("admin::permission").actionProvider;
 
-  for (const { pluginAction, cmAction } of FULL_ACTIONS) {
-    const admin = provider.get(cmAction);
-    const alias = provider.get(pluginAction);
+  for (const action of ["read", "create", "update", "delete"]) {
+    const adminString = `plugin::content-manager.explorer.${action}`;
+    const aliasString = `plugin::api-permissions.roles.${action}`;
 
-    if (admin) {
-      if (!admin.subjects) admin.subjects = [];
+    const adminAction = provider.get(adminString);
+    const aliasAction = provider.get(aliasString);
 
-      if (!admin.subjects.includes(ROLE_UID)) admin.subjects.push(ROLE_UID);
+    if (adminAction) {
+      if (!adminAction.subjects) adminAction.subjects = [];
+
+      if (!adminAction.subjects.includes(ROLE_UID)) {
+        adminAction.subjects.push(ROLE_UID);
+      }
     }
 
-    if (alias) {
-      if (!alias.aliases) alias.aliases = [];
+    if (aliasAction) {
+      if (!aliasAction.aliases) aliasAction.aliases = [];
 
-      const exists = alias.aliases.some(
+      const exists = aliasAction.aliases.some(
         ({ actionId, subjects }: { actionId: string; subjects?: string[] }) => {
-          return actionId === cmAction && subjects?.includes(ROLE_UID);
+          return actionId === adminString && subjects?.includes(ROLE_UID);
         },
       );
 
       if (!exists) {
-        alias.aliases.push({ actionId: cmAction, subjects: [ROLE_UID] });
+        aliasAction.aliases.push({
+          actionId: adminString,
+          subjects: [ROLE_UID],
+        });
       }
     }
   }
